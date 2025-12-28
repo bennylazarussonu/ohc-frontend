@@ -426,6 +426,7 @@ function App() {
         {activeMenu === "staff" && (
           <Staff/>
         )}
+        Hello
       </div>
     </>
   );
