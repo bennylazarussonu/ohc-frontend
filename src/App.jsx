@@ -17,7 +17,7 @@ import { use } from 'react';
 import Staff from './components/Staff.jsx';
 
 function App() {
-  const {user, loading} = useAuth();
+  const { user, loading } = useAuth();
   const [activeMenu, setActiveMenu] = useState("opd");
   const [msg, setMsg] = useState("");
   const [isNewWorker, setIsNewWorker] = useState(false);
@@ -26,7 +26,7 @@ function App() {
   const [workerSearchLoading, setworkerSearchLoading] = useState(false);
   const [latestReportData, setLatestReportData] = useState(null);
   const [opd, setOpd] = useState({});
-  
+
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState(1);
   const [workerForm, setWorkerForm] = useState({
@@ -43,23 +43,23 @@ function App() {
   });
 
   useEffect(() => {
-  if (!user) return;
+    if (!user) return;
 
-  api.get("/api/doctors").then(res => {
-    setDoctors(res.data);
+    api.get("/api/doctors").then(res => {
+      setDoctors(res.data);
 
-    // 🔒 If logged-in user is DOCTOR, auto-select themselves
-    if (user.role === "DOCTOR") {
-      const matchedDoctor = res.data.find(d =>
-        d.name.toLowerCase().includes(user.userId.toLowerCase())
-      );
+      // 🔒 If logged-in user is DOCTOR, auto-select themselves
+      if (user.role === "DOCTOR") {
+        const matchedDoctor = res.data.find(d =>
+          d.name.toLowerCase().includes(user.userId.toLowerCase())
+        );
 
-      if (matchedDoctor) {
-        setSelectedDoctorId(matchedDoctor.id);
+        if (matchedDoctor) {
+          setSelectedDoctorId(matchedDoctor.id);
+        }
       }
-    }
-  });
-}, [user]);
+    });
+  }, [user]);
 
 
 
@@ -219,11 +219,12 @@ function App() {
     fetchMsg();
   }, []);
 
-    if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
   if (!user) return <Login />;
 
   return (
     <>
+      Hello
       <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"} />
       <div className="p-6 min-h-screen flex flex-col items-center bg-gray-900 w-full text-white">
         {activeMenu === "workers" && (
@@ -376,24 +377,24 @@ function App() {
 
                 <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
                   <select
-  className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
-  value={selectedDoctorId || ""}
-  disabled={user.role === "DOCTOR"}
-  onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
->
-  <option value="">Select Treating Doctor</option>
-  {doctors.map(d => (
-    <option key={d.id} value={d.id}>
-      {d.name} – {d.qualification}
-    </option>
-  ))}
-</select>
-<FaUserDoctor className="text-[13.5px]" />
-{user.role === "DOCTOR" && (
-  <p className="text-xs text-gray-400 mt-1">
-    You are logged in as a doctor. Treating doctor cannot be changed.
-  </p>
-)}
+                    className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
+                    value={selectedDoctorId || ""}
+                    disabled={user.role === "DOCTOR"}
+                    onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
+                  >
+                    <option value="">Select Treating Doctor</option>
+                    {doctors.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} – {d.qualification}
+                      </option>
+                    ))}
+                  </select>
+                  <FaUserDoctor className="text-[13.5px]" />
+                  {user.role === "DOCTOR" && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      You are logged in as a doctor. Treating doctor cannot be changed.
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <OPDSection opd={opd} setOpd={setOpd} onTemplateSelect={handleTemplateSelect} />
@@ -424,9 +425,8 @@ function App() {
           <Profile />
         )}
         {activeMenu === "staff" && (
-          <Staff/>
+          <Staff />
         )}
-        Hello
       </div>
     </>
   );
