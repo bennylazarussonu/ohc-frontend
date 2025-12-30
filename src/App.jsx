@@ -224,7 +224,6 @@ function App() {
 
   return (
     <>
-      Hello
       <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"} />
       <div className="p-6 min-h-screen flex flex-col items-center bg-gray-900 w-full text-white">
         {activeMenu === "workers" && (
