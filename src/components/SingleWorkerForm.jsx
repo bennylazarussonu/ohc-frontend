@@ -66,7 +66,7 @@ function SingleWorkerForm({ onSuccess }) {
 
   return (
     <div className="bg-gray-800 p-4 rounded-xl text-white">
-      <h2 className="text-lg font-bold mb-4">Add Single Worker</h2>
+      <h2 className="text-lg font-bold mb-4">Add New Worker</h2>
 
       <div className="grid grid-cols-3 gap-3 text-sm">
         <input

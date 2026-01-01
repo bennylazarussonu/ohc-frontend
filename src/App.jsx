@@ -18,7 +18,7 @@ import Staff from './components/Staff.jsx';
 
 function App() {
   const { user, loading } = useAuth();
-  const [activeMenu, setActiveMenu] = useState("opd");
+  const [activeMenu, setActiveMenu] = useState("profile");
   const [msg, setMsg] = useState("");
   const [isNewWorker, setIsNewWorker] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
