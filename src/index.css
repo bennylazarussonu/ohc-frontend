@@ -80,19 +80,17 @@ button:focus-visible {
   }
 }
 
-@media print {
-  /* Hide everything */
+/* @media print {
   body * {
     visibility: hidden;
   }
 
-  /* Show only the report */
+
   .print-area,
   .print-area * {
     visibility: visible;
   }
 
-  /* Position report at top-left */
   .print-area {
     position: absolute;
     left: 0;
@@ -100,9 +98,54 @@ button:focus-visible {
     width: 100%;
   }
 
-  /* Explicitly hide buttons/navbar */
   .no-print {
     display: none !important;
+  }
+} */
+
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show only the report */
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+  }
+
+  /* Place the report at the top-left of the page */
+  .print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Explicitly hide UI controls */
+  .no-print {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}
+
+
+
+
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
 }
 

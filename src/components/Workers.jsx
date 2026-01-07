@@ -29,7 +29,7 @@ function BulkUpload() {
       }
     }
     fetchWorkers();
-  }, [tab === "list"]);
+  }, []);
 
   function formatExcelDate(value) {
     if (!value) return "";
@@ -133,7 +133,6 @@ function BulkUpload() {
       gender: worker.gender || "Male",
       dob: worker.dob ? worker.dob.split("T")[0] : "",
       weight: worker.weight || "",
-      designation: worker.designation || "",
       contractor_name: worker.contractor_name || "",
       date_of_joining: worker.date_of_joining ? worker.date_of_joining.split("T")[0] : ""
     });
@@ -216,7 +215,7 @@ function BulkUpload() {
   return (
     <div className="w-full">
       {/* Tabs */}
-      <div className="flex bg-gray-800 rounded mb-4 overflow-hidden p-2 gap-2">
+      {/* <div className="flex bg-gray-800 rounded mb-4 overflow-hidden p-2 gap-2">
         <button
           onClick={() => setTab("bulk")}
           className={`w-1/2 py-1 text-sm font-semibold transition rounded 
@@ -249,10 +248,10 @@ function BulkUpload() {
               ? "bg-blue-600 text-white"
               : "bg-gray-700 text-gray-300 hover:bg-gray-600"}
           `}>All Workers</button>
-      </div>
+      </div> */}
 
       {/* BULK UPLOAD */}
-      {tab === "bulk" && (
+      {/* {tab === "bulk" && (
         <>
           <div className="p-6 bg-gray-800 text-white rounded-xl mb-3">
             <p className="text-lg font-bold mb-2">Bulk Upload Worker Data</p>
@@ -303,14 +302,12 @@ function BulkUpload() {
             </div>
           )}
         </>
-      )}
+      )} */}
 
       {/* SINGLE ENTRY (placeholder) */}
-      {tab === "single" && (
+      {/* {tab === "single" && (
         <SingleWorkerForm />
-      )}
-
-      {tab === "list" && (
+      )} */}
           <div className="p-6 bg-gray-800 text-white w-full overflow-scroll no-scrollbar rounded-xl">
             <p className="text-lg font-bold mb-2">All Workers Data</p>
             {workers.length === 0
@@ -418,7 +415,6 @@ function BulkUpload() {
                 </div>
               )}
           </div>
-      )}
       {editingWorker && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-5 rounded-xl w-[600px]">

@@ -1,5 +1,5 @@
-import BulkUpload from './components/BulkUpload';
-import BulkMedicineUpload from './components/BulkMedicineUpload';
+import BulkUpload from './components/Workers.jsx';
+import BulkMedicineUpload from './components/Medicines.jsx';
 import { FaRegFloppyDisk, FaUser, FaUserDoctor, FaUserPlus } from 'react-icons/fa6'
 import { useState, useEffect } from 'react';
 import api from './api/axios';
@@ -13,8 +13,8 @@ import Doctor from './components/Doctor';
 import { useAuth } from './context/AuthContext.jsx';
 import Login from './components/Login.jsx';
 import Profile from './components/Profile.jsx';
-import { use } from 'react';
 import Staff from './components/Staff.jsx';
+import PreEmployment from './components/PreEmployment.jsx';
 
 function App() {
   const { user, loading } = useAuth();
@@ -417,7 +417,7 @@ function App() {
         {activeMenu === "reports" && (
           <Reports />
         )}
-        { }{activeMenu === "doctors" && (
+        {activeMenu === "doctors" && (
           <Doctor />
         )}
         {activeMenu === "profile" && (
@@ -425,6 +425,13 @@ function App() {
         )}
         {activeMenu === "staff" && (
           <Staff />
+        )}
+        {activeMenu === "pre-emp" && (
+          <PreEmployment/>
+        )}
+
+        {activeMenu === "id-renew" && (
+          "🚧 Will be here soon..."
         )}
       </div>
     </>
