@@ -8,23 +8,38 @@ function PreEmploymentReports() {
   const [loading, setLoading] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState({});
   const [reportModal, setReportModal] = useState(false);
+  const [tab, setTab] = useState("on-going");
 
-  const fetchCompleted = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/api/pre-employment/completed");
-      setRecords(res.data);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to load completed examinations");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchRecords = async (currentTab) => {
+  setLoading(true);
+
+  let url = "/api/pre-employment/completed";
+  if (currentTab === "fit") url = "/api/pre-employment/fit";
+  if (currentTab === "unfit") url = "/api/pre-employment/unfit";
+
+  const res = await api.get(url);
+  setRecords(res.data);
+
+  setLoading(false);
+};
+
+
+  // const fetchCompleted = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await api.get("/api/pre-employment/completed");
+  //     setRecords(res.data);
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Failed to load completed examinations");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchCompleted();
-  }, []);
+    fetchRecords(tab);
+  }, [tab]);
 
   const generateReport = (record) => {
     // 🔜 placeholder: later we’ll generate PDF
@@ -37,6 +52,22 @@ function PreEmploymentReports() {
       <h2 className="text-lg font-bold mb-4">
         Pre-Employment Examination Reports
       </h2>
+
+      <div className="bg-gray-800 flex gap-2 p-2 rounded">
+        {["on-going", "fit", "unfit"].map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`w-1/2 rounded transition w-full text-sm py-1 font-semibold ${
+              tab === t ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-300"
+            }`}
+          >
+            {t === "on-going" && "Pending"}
+            {t === "fit" && "Declared Fit"}
+            {t === "unfit" && "Declared Unfit"}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <p className="text-gray-400">Loading reports...</p>
@@ -71,7 +102,8 @@ function PreEmploymentReports() {
                     {new Date(r.date_of_examination).toLocaleDateString("en-GB")}
                   </td>
                   <td className="p-2 border text-center">
-                    <button
+                    {tab === "on-going" && (
+                      <button
                       onClick={() => {
                         setSelectedCandidate(r)
                         setReportModal(true)}}
@@ -80,6 +112,18 @@ function PreEmploymentReports() {
                       <FaFilePdf />
                       Generate Report
                     </button>
+                    )}
+                    {(tab == "fit" || tab === "unfit") && (
+                      <button
+                      onClick={() => {
+                        setSelectedCandidate(r)
+                        setReportModal(true)}}
+                      className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto"
+                    >
+                      <FaFilePdf />
+                      View Report
+                    </button>
+                    )}
                   </td>
                 </tr>
               ))}

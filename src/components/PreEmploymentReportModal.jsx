@@ -20,9 +20,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   const selectedDoctor = doctors.find(
     d => Number(d.id) === Number(selectedDoctorId)
   );
+  const readOnly = data.status === "Declared Fit" || data.status === "Declared Unfit";
 
-  const [form, setForm] = useState(data);
-  const initialVisionForm = {
+  const [form, setForm] = useState({
+    ...data,
+    physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${data.name} ${data.fathers_name ? (`SON OF ${data.fathers_name}`): ("")} ${data.residence ? (`A RESIDENT OF ${data.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(data.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(data.dob)): ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+  });
+
+  const [visionForm, setVisionForm] = useState({
     far_left_wo: form.opthalmic_examination?.far_vision?.without_glasses?.left ?? 6,
     far_right_wo: form.opthalmic_examination?.far_vision?.without_glasses?.right ?? 6,
     far_left_w: form.opthalmic_examination?.far_vision?.with_glasses?.left ?? "",
@@ -36,9 +41,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     color_perception: form.opthalmic_examination?.color_perception ?? "",
     without_glasses_diagnosis: form.opthalmic_examination?.without_glasses_diagnosis ?? "",
     with_glasses_diagnosis: form.opthalmic_examination?.with_glasses_diagnosis ?? ""
-  };
-
-  const [visionForm, setVisionForm] = useState(initialVisionForm);
+  });
 
   console.log("Form: ", form);
   console.log("Vision Form: ", visionForm);
@@ -161,6 +164,26 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   };
 
 
+  useEffect(() => {
+  setForm(data);
+
+  setVisionForm({
+    far_left_wo: data.opthalmic_examination?.far_vision?.without_glasses?.left ?? 6,
+    far_right_wo: data.opthalmic_examination?.far_vision?.without_glasses?.right ?? 6,
+    far_left_w: data.opthalmic_examination?.far_vision?.with_glasses?.left ?? "",
+    far_right_w: data.opthalmic_examination?.far_vision?.with_glasses?.right ?? "",
+    near_left_wo: data.opthalmic_examination?.near_vision?.without_glasses?.left ?? 6,
+    near_right_wo: data.opthalmic_examination?.near_vision?.without_glasses?.right ?? 6,
+    near_left_w: data.opthalmic_examination?.near_vision?.with_glasses?.left ?? "",
+    near_right_w: data.opthalmic_examination?.near_vision?.with_glasses?.right ?? "",
+    color_perception: data.opthalmic_examination?.color_perception ?? "",
+    without_glasses_diagnosis: data.opthalmic_examination?.without_glasses_diagnosis ?? "",
+    with_glasses_diagnosis: data.opthalmic_examination?.with_glasses_diagnosis ?? ""
+  });
+
+  setSelectedDoctorId(data.medical_examiner_id ?? null);
+}, [data]);
+
 
 
   useEffect(() => {
@@ -184,10 +207,12 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
   // 1) useEffect to compute diagnoses from visionForm
   useEffect(() => {
-    setForm({
-    ...form,
-    physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name} ${form.fathers_name ? (`SON OF ${form.fathers_name}`): ("")} ${form.residence ? (`A RESIDENT OF ${form.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(form.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(form.dob)): ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
-  });
+  //   setForm(prev => ({
+  //   ...prev,
+  //   physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name} ${form.fathers_name ? (`SON OF ${form.fathers_name}`): ("")} ${form.residence ? (`A RESIDENT OF ${form.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(form.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(form.dob)): ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+  // }));
+  // setSelectedDoctorId(prev => prev ?? form?.medical_examiner_id);
+
     const inputs = {
       "Distant Right": {
         without: visionForm.far_right_wo,
@@ -335,6 +360,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
       return;
     }
 
+    if(form.physical_parameters.chest_circumference?.inspiration < form.physical_parameters.chest_circumference?.expiration){
+      alert("Chest Circumference on Expiration cannot be greater than Chest Circumference on Inspiration");
+      return;
+    }
+
     try {
       await api.post("/api/pre-employment/finalize", {
   preemployment_id: data.id,  // string ID like "PRE001"
@@ -355,11 +385,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
       window.print();
 
       // Reset
-      setTimeout(() => {
-        printArea.style.transform = '';
-        printArea.style.height = '';
-        printArea.style.transformOrigin = '';
-      }, 1000);
+      // setTimeout(() => {
+      //   printArea.style.transform = '';
+      //   printArea.style.height = '';
+      //   printArea.style.transformOrigin = '';
+      // }, 1000);
       //   onSuccess();
       //   onClose();
     } catch (err) {
@@ -371,6 +401,21 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   return (
     <div className="modal-overlay fixed inset-0 bg-black/70 z-50 flex justify-center items-start overflow-auto">
       <div className="w-[95%] max-w-6xl">
+        {/* Actions */}
+        <div className="flex justify-end gap-4 mb-4 no-print">
+          <button onClick={onClose}>
+            <FaX />
+          </button>
+          {!readOnly && (
+            <button
+            onClick={handleSave}
+            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+          >
+            <FaPrint />
+            Save & Print Report
+          </button>
+          )}
+        </div>
         <div className="print-area bg-white text-black w-[95vw] max-w-6xl top-0 left-0 p-6 rounded shadow-lg text-sm/3">
 
           {/* Header */}
@@ -449,6 +494,26 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <p className="text-sm/4">: {form.gender}</p>
               </div>
             )}
+            {form.aadhar_no && (
+              <div className="grid col-span-2 grid-cols-2 font-semibold">
+                <p>Aadhar</p>
+                <p className="text-sm/4">: {form.aadhar_no}</p>
+              </div>
+            )}
+            {form.phone_no && (
+              <div className="grid col-span-2 grid-cols-2 font-semibold">
+                <p>Phone No</p>
+                <p className="text-sm/4">: {form.phone_no}</p>
+              </div>
+            )}
+            {form.residence && (
+              <div className="col-span-4 font-semibold">
+                <div className="grid grid-cols-4">
+                  <p>Residence</p>
+                  <p className="text-sm/4 col-span-3">: {form.residence}</p>
+                </div>
+              </div>
+            )}
             {/* {form.date_of_examination && (
             <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
               <p>Date of Examination</p>
@@ -471,7 +536,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   value={form[key]}
                   rows={3}
                   className="w-full text-sm/4 rounded p-0 col-span-3 resize-none no-scrollbar"
-                  onChange={e => setForm({ ...form, [key]: e.target.value })}
+                  onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
                 />
               </div>
               <hr className="border-t bg-gray-900 border-gray-900 mb-1" />
@@ -492,7 +557,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 value={form[key]}
                 rows={key === "general_examination" ? (2) : (5)}
                 className="w-full text-sm/4 rounded pb-[0.5px] col-span-3 no-scrollbar resize-none"
-                onChange={e => setForm({ ...form, [key]: e.target.value })}
+                onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
               />
             </div>
           ))}
@@ -514,16 +579,15 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   ["inspiration", "expiration"].includes(key)
                     ? form.physical_parameters.chest_circumference?.[key] ?? ""
                     : form.physical_parameters[key] ?? "";
-                if (value) {
                   return (
-                    <div key={key} className="grid col-span-2 grid-cols-2 gap-x-1 mb-[1px]">
+                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${value ? "": "no-print"}`}>
                       <div className="flex justify-between items-center">
                         <div><p>{label}</p></div>
                         <div>:</div>
                       </div>
                       <div className="flex items-center gap-1">
                         <input
-                          type="number"
+                          type="text"
                           className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                           value={value}
                           onChange={e => {
@@ -559,7 +623,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
                     </div>
                   );
-                }
 
               })}
               {[
@@ -567,16 +630,16 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               ].map(([label, key, units]) => {
                 const systolic = (form.physical_parameters?.blood_pressure?.systolic);
                 const diastolic =  form.physical_parameters?.blood_pressure?.diastolic;
-                if(systolic && diastolic){
+                
                   return (
-                    <div key={key} className="grid col-span-2 grid-cols-2 gap-x-1 mb-[1px]">
+                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${systolic & diastolic ? (""): "no-print"}`}>
                       <div className="flex justify-between items-center">
                         <div><p>{label}</p></div>
                         <div>:</div>
                       </div>
                       <div className="flex items-center gap-1">
                         <input
-                          type="number"
+                          type="text"
                           className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                           value={systolic}
                           onChange={e => {setForm(prev => ({
@@ -591,7 +654,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                           }))}}
                         />/
                         <input
-                          type="number"
+                          type="text"
                           className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                           value={diastolic}
                           onChange={e => {setForm(prev => ({
@@ -609,7 +672,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                       </div>
                     </div>
                   );
-                }
               })}
             </div>
             <div className="col-span-2">
@@ -624,16 +686,15 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   ["inspiration", "expiration"].includes(key)
                     ? form.physical_parameters.chest_circumference?.[key] ?? ""
                     : form.physical_parameters[key] ?? "";
-                if (value) {
                   return (
-                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px]`}>
+                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${value ? "": "no-print"}`}>
                       <div className="flex justify-between items-center">
                         <div><p>{label}</p></div>
                         <div>:</div>
                       </div>
                       <div className="flex items-center gap-1">
                         <input
-                          type="number"
+                          type="text"
                           className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                           value={value}
                           onChange={e => {
@@ -664,7 +725,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
                     </div>
                   );
-                }
 
               })}
             </div>
@@ -701,9 +761,9 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             )} */}
 
             {/* Chest Expansion (auto) */}
-            {form.physical_parameters.chest_circumference?.inspiration &&
-              form.physical_parameters.chest_circumference?.expiration && (
-                <div className="grid col-span-2 grid-cols-2 gap-x-1 mb-[1px]">
+            {(form.physical_parameters.chest_circumference?.inspiration &&
+              form.physical_parameters.chest_circumference?.expiration) ? (
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${(form.physical_parameters.chest_circumference?.inspiration && form.physical_parameters.chest_circumference?.expiration) ? (""): ("no-print")}`}>
                   <div className="flex justify-between items-center">
                     <p>CHEST EXPANSION</p>:
                   </div>
@@ -713,7 +773,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     cm
                   </p>
                 </div>
-              )}
+              ): ("")}
           </div>
 
           {/* Systemic Examination */}
@@ -954,7 +1014,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <textarea
                 value={form?.clinical_impression}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
-                onChange={e => setForm({ ...form, ["clinical_impression"]: e.target.value })}></textarea>
+                onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
             </div>
             <div className="col-span-4 mb-2">
               <p className="font-semibold">FINAL RECOMMENDATION: </p>
@@ -963,7 +1023,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <textarea
                 value={form?.final_recommendation}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
-                onChange={e => setForm({ ...form, ["final_recommendation"]: e.target.value })}></textarea>
+                onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
             </div>
 
           </div>
@@ -978,7 +1038,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     rows={6}
                     value={form?.physical_fitness}
                     className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
-                    onChange={e => setForm({ ...form, ["physical_fitness"]: e.target.value })}
+                    onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
                   ></textarea>
                 </div>
             </div>
@@ -1011,13 +1071,13 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <input 
             value={form.reason_for_certificate_refusal}
             className="border border-none p-0 pl-1 w-3/4"
-            onChange={e => setForm({...form, ["reason_for_certificate_refusal"]: e.target.value})} />
+            onChange={e => setForm(prev => ({...prev, ["reason_for_certificate_refusal"]: e.target.value}))} />
             <br />
             (ii) Certificate being revoked:
             <input 
               value={form.reason_for_certificate_revoke}
               className="border border-none p-0 pl-1 w-3/4"
-              onChange={e => setForm({...form, ["reason_for_certificate_revoke"]: e.target.value})}
+              onChange={e => setForm(prev => ({...prev, ["reason_for_certificate_revoke"]: e.target.value}))}
             />
           </div>
 
@@ -1029,7 +1089,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input
                 type="radio"
                 checked={form.duty_fit === true}
-                onChange={() => setForm({ ...form, duty_fit: true })}
+                onChange={() => setForm( prev => ({ ...prev, duty_fit: true }))}
               />
               <b>FIT FOR DUTY</b>
             </label>
@@ -1038,7 +1098,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input
                 type="radio"
                 checked={form.duty_fit === false}
-                onChange={() => setForm({ ...form, duty_fit: false })}
+                onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
               />
               <b>UNFIT FOR DUTY</b>
             </label>
@@ -1061,20 +1121,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           </select>
 
 
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-4 mt-6 no-print">
-          <button onClick={onClose}>
-            <FaX />
-          </button>
-          <button
-            onClick={handleSave}
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
-          >
-            <FaPrint />
-            Save & Print Report
-          </button>
         </div>
       </div>
     </div>

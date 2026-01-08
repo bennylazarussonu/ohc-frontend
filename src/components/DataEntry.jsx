@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import api from "../api/axios";
 import { FaFloppyDisk } from "react-icons/fa6";
 
 function DataEntry() {
+  const dobRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [dobFocus, setDobFocus] = useState(false);
+  const [dojFocus, setDojFocus] = useState(false);
+
 
   const [form, setForm] = useState({
     name: "",
@@ -16,12 +20,13 @@ function DataEntry() {
     designation: "",
     contractor_name: "",
     date_of_joining: "",
-    identification_marks: ""
+    identification_marks: "",
+    residence: ""
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    let { name, value } = e.target;
+  setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async () => {
@@ -56,7 +61,8 @@ function DataEntry() {
         designation: "",
         contractor_name: "",
         date_of_joining: "",
-        identification_marks: ""
+        identification_marks: "",
+        residence: ""
       });
 
     } catch (err) {
@@ -116,12 +122,16 @@ function DataEntry() {
         </select>
 
         <input
-          type="date"
-          name="dob"
-          className="p-2 bg-gray-700 rounded"
-          value={form.dob}
-          onChange={handleChange}
-        />
+  type={dobFocus ? "date" : "text"}
+  name="dob"
+  placeholder="Date of Birth"
+  className="p-2 bg-gray-700 rounded text-white"
+  value={form.dob}
+  onFocus={() => setDobFocus(true)}
+  // onBlur={() => setDobFocus(false)}
+  onChange={handleChange}
+/>
+
 
         <input
           name="phone_no"
@@ -148,10 +158,22 @@ function DataEntry() {
         />
 
         <input
-          type="date"
+        type={dojFocus ? "date" : "text"}
           name="date_of_joining"
+          placeholder="Date of Joining"
           className="p-2 bg-gray-700 rounded"
           value={form.date_of_joining}
+          onFocus={() => setDojFocus(true)}
+  // onBlur={() => setDojFocus(false)}
+          onChange={handleChange}
+        />
+
+        <input 
+          name="residence"
+          placeholder="Residence"
+          type="text"
+          className="p-2 bg-gray-700 rounded"
+          value={form.residence}
           onChange={handleChange}
         />
 

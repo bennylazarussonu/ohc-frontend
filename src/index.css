@@ -80,6 +80,12 @@ button:focus-visible {
   }
 }
 
+input[type="date"]:not(:focus):invalid::before {
+  content: attr(data-placeholder) !important;
+  color: #999;
+}
+
+
 /* @media print {
   body * {
     visibility: hidden;
