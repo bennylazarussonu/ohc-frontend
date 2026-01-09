@@ -18,6 +18,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   const { user, loading } = useAuth();
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+  const [idMarksText, setIdMarksText] = useState("");
   const selectedDoctor = doctors.find(
     d => Number(d.id) === Number(selectedDoctorId)
   );
@@ -188,6 +189,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
     setSelectedDoctorId(data.medical_examiner_id ?? null);
   }, [data]);
+
+  useEffect(() => {
+  setIdMarksText(form.identification_marks?.join(", ") || "");
+}, [form.identification_marks]);
+
 
 
 
@@ -679,7 +685,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 </div>
                 {/* <p className="text-sm/4 col-span-3">: {form.name}</p> */}
                 <input type="text"
-                  className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                  className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                   value={form.name}
                   onChange={e => setForm(prev => ({
                     ...prev,
@@ -777,26 +783,26 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 </div>
               </div>
             </div>
-            {(form.identification_marks.length > 0) && (
-              <div className="grid col-span-4 grid-cols-4 font-semibold gap-x-1 p-0">
+              <div className={`grid col-span-4 grid-cols-4 font-semibold gap-x-1 p-0 ${(!form.identification_marks || form.identification_marks.length <= 0) ? ("no-print"): ("")}`}>
                 <div className="flex justify-between">
                   <p>ID Marks</p>
                   :
                 </div>
                 <input type="text"
                   className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
-                  value={form.identification_marks?.join(", ") || ""}
-                  onChange={e =>
-                    setForm(prev => ({
-                      ...prev,
-                      identification_marks: e.target.value
-                        .split(",")
-                        .map(s => s.trim())
-                    }))
-                  }
+                  value={idMarksText}
+                  onChange={e => setIdMarksText(e.target.value)}
+                  onBlur={() => {
+    setForm(prev => ({
+      ...prev,
+      identification_marks: idMarksText
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+    }));
+  }}
                 />
               </div>
-            )}
             <div className={`col-span-4 font-semibold gap-x-1 ${!form.residence ? ("no-print") : ("")}`}>
               <div className="grid grid-cols-4">
                 <div className="flex justify-between">
@@ -1258,7 +1264,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               :
             </div>
             <textarea
-              rows={(visionForm.without_glasses_diagnosis.length < 100) ? (2) : (Math.ceil(visionForm.without_glasses_diagnosis.length / 100))}
+              rows={(visionForm.without_glasses_diagnosis.length < 100) ? (1) : (Math.ceil(visionForm.without_glasses_diagnosis.length / 100))}
               className="bg-transparent col-span-3 resize-none no-scrollbar"
               placeholder="Diagnosis (Without Glasses)"
               value={visionForm.without_glasses_diagnosis || ""}
@@ -1269,7 +1275,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               :
             </div>
             <textarea
-              rows={(visionForm.with_glasses_diagnosis.length < 100) ? (2) : (Math.ceil(visionForm.with_glasses_diagnosis.length / 100))}
+              rows={(visionForm.with_glasses_diagnosis.length < 100) ? (1) : (Math.ceil(visionForm.with_glasses_diagnosis.length / 100))}
               className="bg-transparent col-span-3 resize-none"
               placeholder="Diagnosis (With Glasses)"
               value={visionForm.with_glasses_diagnosis || ""}
@@ -1308,10 +1314,10 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             </select>
           </div>
 
-          <hr className="border-t border-gray-900 bg-gray-900 my-2" />
+          <hr className="border-t border-gray-900 bg-gray-900 my-1" />
 
-          <div className="grid grid-cols-4">
-            <div className="col-span-4 mb-2">
+          <div className="grid grid-cols-4 gap-0">
+            <div className="col-span-4">
               <p className="font-semibold">CLINICAL IMPRESSION: </p>
             </div>
             <div className="col-span-4">
@@ -1320,7 +1326,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
             </div>
-            <div className="col-span-4 mb-2">
+            <div className="col-span-4">
               <p className="font-semibold">FINAL RECOMMENDATION: </p>
             </div>
             <div className="col-span-4">
@@ -1334,12 +1340,12 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
           <div className="flex w-full">
             <div className="w-3/4">
-              <div className="col-span-4 mb-2">
+              <div className="col-span-4">
                 <p className="font-semibold">PHYSICAL FITNESS: </p>
               </div>
               <div className="col-span-4">
                 <textarea
-                  rows={6}
+                  rows={form.physical_fitness.length < 100? (2): (Math.ceil(form.physical_fitness.length / 85))}
                   value={form?.physical_fitness}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
@@ -1351,7 +1357,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <div className="mt-4 flex justify-end">
                   <div className="text-right leading-tight">
                     <p className="font-semibold uppercase">
-                      DR. {selectedDoctor.name}
+                      {selectedDoctor.name}
                     </p>
                     <p className="uppercase">
                       {selectedDoctor.qualification}
@@ -1369,7 +1375,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               )}
             </div>
           </div>
-          <div className="text-sm/5">
+          <div className="text-sm/5 m-0 p-0">
             <p className="font-semibold">Reason for:</p>
             (i) Refusal of Certificate:
             <input
@@ -1406,6 +1412,9 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               />
               <b>UNFIT FOR DUTY</b>
             </label>
+          </div>
+          <div className="my-12 w-1/2 flex justify-start items-center">
+            <p className="font-bold text-sm text-left">Signature / Left thumb impression of Construction Worker</p>
           </div>
 
           {/* Medical Examiner */}
