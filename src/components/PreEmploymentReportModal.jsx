@@ -1336,16 +1336,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
         }}></div>
 
           {/* ===== INSTRUCTION PAGE ===== */}
-          <div className="instruction-page">
+          <div className="hidden instruction-page">
             <img
               src={image}
               alt="Health Instructions"
               className="instruction-image"
             />
           </div>
-
         </div>
-        
       </div>
     </div>
   );
