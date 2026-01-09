@@ -138,11 +138,16 @@ function PreEmploymentReports() {
       
     </div>
     {reportModal && (
-        <PreEmploymentReportModal data={selectedCandidate} onClose={() => {
+        <PreEmploymentReportModal 
+        data={selectedCandidate} 
+        onClose={() => {
           setReportModal(false)
           setSelectedCandidate({})
-          fetchCompleted()
-        }}/>
+        }}
+        onSuccess={() => {
+          fetchRecords(tab);
+        }}
+        />
       )}
     </>
   );

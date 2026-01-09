@@ -25,7 +25,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
   const [form, setForm] = useState({
     ...data,
-    physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${data.name} ${data.fathers_name ? (`SON OF ${data.fathers_name}`): ("")} ${data.residence ? (`A RESIDENT OF ${data.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(data.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(data.dob)): ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+    physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${data.name} ${data.fathers_name ? (`SON OF ${data.fathers_name}`) : ("")} ${data.residence ? (`A RESIDENT OF ${data.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(data.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(data.dob)) : ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
   });
 
   const [visionForm, setVisionForm] = useState({
@@ -166,28 +166,28 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
 
   useEffect(() => {
-  setForm(prev => ({
-    ...prev,
-    ...data
-  }));
+    setForm(prev => ({
+      ...prev,
+      ...data
+    }));
 
 
-  setVisionForm({
-    far_left_wo: data.opthalmic_examination?.far_vision?.without_glasses?.left ?? 6,
-    far_right_wo: data.opthalmic_examination?.far_vision?.without_glasses?.right ?? 6,
-    far_left_w: data.opthalmic_examination?.far_vision?.with_glasses?.left ?? "",
-    far_right_w: data.opthalmic_examination?.far_vision?.with_glasses?.right ?? "",
-    near_left_wo: data.opthalmic_examination?.near_vision?.without_glasses?.left ?? 6,
-    near_right_wo: data.opthalmic_examination?.near_vision?.without_glasses?.right ?? 6,
-    near_left_w: data.opthalmic_examination?.near_vision?.with_glasses?.left ?? "",
-    near_right_w: data.opthalmic_examination?.near_vision?.with_glasses?.right ?? "",
-    color_perception: data.opthalmic_examination?.color_perception ?? "",
-    without_glasses_diagnosis: data.opthalmic_examination?.without_glasses_diagnosis ?? "",
-    with_glasses_diagnosis: data.opthalmic_examination?.with_glasses_diagnosis ?? ""
-  });
+    setVisionForm({
+      far_left_wo: data.opthalmic_examination?.far_vision?.without_glasses?.left ?? 6,
+      far_right_wo: data.opthalmic_examination?.far_vision?.without_glasses?.right ?? 6,
+      far_left_w: data.opthalmic_examination?.far_vision?.with_glasses?.left ?? "",
+      far_right_w: data.opthalmic_examination?.far_vision?.with_glasses?.right ?? "",
+      near_left_wo: data.opthalmic_examination?.near_vision?.without_glasses?.left ?? 6,
+      near_right_wo: data.opthalmic_examination?.near_vision?.without_glasses?.right ?? 6,
+      near_left_w: data.opthalmic_examination?.near_vision?.with_glasses?.left ?? "",
+      near_right_w: data.opthalmic_examination?.near_vision?.with_glasses?.right ?? "",
+      color_perception: data.opthalmic_examination?.color_perception ?? "",
+      without_glasses_diagnosis: data.opthalmic_examination?.without_glasses_diagnosis ?? "",
+      with_glasses_diagnosis: data.opthalmic_examination?.with_glasses_diagnosis ?? ""
+    });
 
-  setSelectedDoctorId(data.medical_examiner_id ?? null);
-}, [data]);
+    setSelectedDoctorId(data.medical_examiner_id ?? null);
+  }, [data]);
 
 
 
@@ -212,11 +212,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
   // 1) useEffect to compute diagnoses from visionForm
   useEffect(() => {
-  //   setForm(prev => ({
-  //   ...prev,
-  //   physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name} ${form.fathers_name ? (`SON OF ${form.fathers_name}`): ("")} ${form.residence ? (`A RESIDENT OF ${form.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(form.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(form.dob)): ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
-  // }));
-  // setSelectedDoctorId(prev => prev ?? form?.medical_examiner_id);
+    //   setForm(prev => ({
+    //   ...prev,
+    //   physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name} ${form.fathers_name ? (`SON OF ${form.fathers_name}`): ("")} ${form.residence ? (`A RESIDENT OF ${form.residence}`) : ("")} WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${(form.dob) ? ("AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS " + calculateAge(form.dob)): ("")} AND THAT HE IS FIT FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+    // }));
+    // setSelectedDoctorId(prev => prev ?? form?.medical_examiner_id);
 
     const inputs = {
       "Distant Right": {
@@ -360,230 +360,234 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
       return;
     }
 
-    if(!selectedDoctorId){
+    if (!selectedDoctorId) {
       alert("Please select a Medical Examiner");
       return;
     }
 
-    if(form.physical_parameters.chest_circumference?.inspiration < form.physical_parameters.chest_circumference?.expiration){
+    if (form.physical_parameters.chest_circumference?.inspiration < form.physical_parameters.chest_circumference?.expiration) {
       alert("Chest Circumference on Expiration cannot be greater than Chest Circumference on Inspiration");
       return;
     }
 
     try {
       await api.post("/api/pre-employment/finalize", {
-  preemployment_id: data.id,  // string ID like "PRE001"
-  medical_examiner_id: selectedDoctorId,
-  ...form
-});
-    alert("Successfully saved");
+        preemployment_id: data.id,  // string ID like "PRE001"
+        medical_examiner_id: selectedDoctorId,
+        ...form
+      });
+      alert("Successfully saved");
 
-    window.print();
+      onSuccess();
+      onClose();
+      setTimeout(() => {
+        window.print();
+      }, 0);
 
 
-    // const printArea = document.querySelector('.print-area');
-    // const scale = 0.95; // Your perfect scale
+      // const printArea = document.querySelector('.print-area');
+      // const scale = 0.95; // Your perfect scale
 
-    // // Apply 75% scale before print
-    // printArea.style.transform = `scale(${scale})`;
-    // printArea.style.transformOrigin = 'center';
-    // printArea.style.width = `${100 / scale}%`;
+      // // Apply 75% scale before print
+      // printArea.style.transform = `scale(${scale})`;
+      // printArea.style.transformOrigin = 'center';
+      // printArea.style.width = `${100 / scale}%`;
 
-    // Clone the entire print area
-    // const printArea = document.querySelector('.print-area');
-    // const clonedArea = printArea.cloneNode(true);
-    
-    // // Remove all no-print elements from clone
-    // const noPrintElements = clonedArea.querySelectorAll('.no-print');
-    // noPrintElements.forEach(el => el.remove());
-    
-    // // Get ALL CSS from the current document
-    // const allStyles = [];
-    
-    // // Get all style tags
-    // document.querySelectorAll('style').forEach(style => {
-    //   allStyles.push(`<style>${style.innerHTML}</style>`);
-    // });
-    
-    // // Get all stylesheet links
-    // document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-    //   allStyles.push(`<link rel="stylesheet" href="${link.href}">`);
-    // });
-    
-    // // Create a new window
-    // const printWindow = window.open('', '_blank');
-    
-    // // Build the HTML with exact same styles
-    // printWindow.document.write(`
-    //   <!DOCTYPE html>
-    //   <html>
-    //     <head>
-    //       <title>Medical Report - ${data.name}</title>
-    //       <meta charset="UTF-8">
-    //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    //       ${allStyles.join('\n')}
-    //       <style>
-    //         /* Print-specific overrides */
-    //         @media print {
-    //           body {
-    //             margin: 0 !important;
-    //             padding: 0 !important;
-    //             background: white !important;
-    //             -webkit-print-color-adjust: exact;
-    //             print-color-adjust: exact;
-    //           }
-              
-    //           .print-area {
-    //             width: 100% !important;
-    //             max-width: 100% !important;
-    //             margin: 0 auto !important;
-    //             padding: 0 !important;
-    //             transform: none !important;
-    //             box-shadow: none !important;
-    //             border: none !important;
-    //           }
-              
-    //           /* Ensure grid layout works in print */
-    //           .grid {
-    //             display: grid !important;
-    //           }
-              
-    //           .grid-cols-4 {
-    //             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    //           }
-              
-    //           .grid-cols-2 {
-    //             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    //           }
-              
-    //           .grid-cols-5 {
-    //             grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    //           }
-              
-    //           .col-span-1 { grid-column: span 1 / span 1 !important; }
-    //           .col-span-2 { grid-column: span 2 / span 2 !important; }
-    //           .col-span-3 { grid-column: span 3 / span 3 !important; }
-    //           .col-span-4 { grid-column: span 4 / span 4 !important; }
-              
-    //           /* Remove borders from form elements */
-    //           textarea, input, select {
-    //             border: none !important;
-    //             background: transparent !important;
-    //             outline: none !important;
-    //             box-shadow: none !important;
-    //           }
-              
-    //           select {
-    //             appearance: none !important;
-    //             -webkit-appearance: none !important;
-    //             -moz-appearance: none !important;
-    //           }
-              
-    //           /* Page setup */
-    //           @page {
-    //             margin: 15mm;
-    //             size: A4;
-    //           }
-              
-    //           /* Hide instruction page if not needed */
-    //           .instruction-page {
-    //             page-break-before: always;
-    //           }
-              
-    //           /* Force no page breaks inside sections */
-    //           .print-area > div,
-    //           .print-area > section {
-    //             page-break-inside: avoid;
-    //           }
-    //         }
-            
-    //         /* Non-print styles to ensure layout */
-    //         body {
-    //           font-family: system-ui, -apple-system, sans-serif;
-    //           background: white;
-    //           color: black;
-    //         }
-            
-    //         .print-area {
-    //           width: 210mm;
-    //           min-height: 297mm;
-    //           padding: 20px;
-    //           margin: 0 auto;
-    //           background: white;
-    //         }
-            
-    //         /* Ensure all Tailwind utilities work */
-    //         .bg-white { background-color: white !important; }
-    //         .text-black { color: black !important; }
-    //         .border { border-width: 1px !important; }
-    //         .border-gray-700 { border-color: #374151 !important; }
-    //         .border-gray-900 { border-color: #111827 !important; }
-    //         .rounded { border-radius: 0.25rem !important; }
-    //         .shadow-lg { box-shadow: none !important; }
-    //         .p-6 { padding: 1.5rem !important; }
-    //         .gap-x-15 { column-gap: 3.75rem !important; }
-    //         .gap-x-1 { column-gap: 0.25rem !important; }
-    //         .gap-x-2 { column-gap: 0.5rem !important; }
-    //         .mb-1 { margin-bottom: 0.25rem !important; }
-    //         .mb-2 { margin-bottom: 0.5rem !important; }
-    //         .mb-4 { margin-bottom: 1rem !important; }
-    //         .mt-2 { margin-top: 0.5rem !important; }
-    //         .mt-3 { margin-top: 0.75rem !important; }
-    //         .mt-4 { margin-top: 1rem !important; }
-    //         .my-2 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
-    //         .my-4 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
-    //         .text-sm { font-size: 0.875rem !important; }
-    //         .text-sm\\/3 { font-size: 0.875rem !important; line-height: 1.3 !important; }
-    //         .text-sm\\/4 { font-size: 0.875rem !important; line-height: 1.4 !important; }
-    //         .text-sm\\/5 { font-size: 0.875rem !important; line-height: 1.5 !important; }
-    //         .text-xs { font-size: 0.75rem !important; }
-    //         .text-base\\/3 { font-size: 1rem !important; line-height: 1.3 !important; }
-    //         .font-semibold { font-weight: 600 !important; }
-    //         .font-bold { font-weight: 700 !important; }
-    //         .text-center { text-align: center !important; }
-    //         .text-left { text-align: left !important; }
-    //         .text-right { text-align: right !important; }
-    //         .w-full { width: 100% !important; }
-    //         .w-3\\/4 { width: 75% !important; }
-    //         .w-1\\/4 { width: 25% !important; }
-    //         .w-2\\/8 { width: 25% !important; }
-    //         .flex { display: flex !important; }
-    //         .justify-between { justify-content: space-between !important; }
-    //         .justify-center { justify-content: center !important; }
-    //         .justify-end { justify-content: flex-end !important; }
-    //         .items-center { align-items: center !important; }
-    //         .items-start { align-items: flex-start !important; }
-    //         .gap-1 { gap: 0.25rem !important; }
-    //         .gap-2 { gap: 0.5rem !important; }
-    //         .gap-4 { gap: 1rem !important; }
-    //         .gap-6 { gap: 1.5rem !important; }
-    //         .leading-tight { line-height: 1.25 !important; }
-    //         .uppercase { text-transform: uppercase !important; }
-    //         .resize-none { resize: none !important; }
-    //         .no-scrollbar::-webkit-scrollbar { display: none !important; }
-    //         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-    //         .whitespace-nowrap { white-space: nowrap !important; }
-    //       </style>
-    //     </head>
-    //     <body class="bg-white">
-    //       ${clonedArea.outerHTML}
-    //       <script>
-    //         // Wait for all styles to load
-    //         window.addEventListener('load', function() {
-    //           // Small delay to ensure rendering
-    //           setTimeout(function() {
-    //             window.print();
-    //             // Close after printing
-    //             window.onafterprint = function() {
-    //               window.close();
-    //             };
-    //           }, 300);
-    //         });
-    //       </script>
-    //     </body>
-    //   </html>
-    // `);
-    // printWindow.document.close();
+      // Clone the entire print area
+      // const printArea = document.querySelector('.print-area');
+      // const clonedArea = printArea.cloneNode(true);
+
+      // // Remove all no-print elements from clone
+      // const noPrintElements = clonedArea.querySelectorAll('.no-print');
+      // noPrintElements.forEach(el => el.remove());
+
+      // // Get ALL CSS from the current document
+      // const allStyles = [];
+
+      // // Get all style tags
+      // document.querySelectorAll('style').forEach(style => {
+      //   allStyles.push(`<style>${style.innerHTML}</style>`);
+      // });
+
+      // // Get all stylesheet links
+      // document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+      //   allStyles.push(`<link rel="stylesheet" href="${link.href}">`);
+      // });
+
+      // // Create a new window
+      // const printWindow = window.open('', '_blank');
+
+      // // Build the HTML with exact same styles
+      // printWindow.document.write(`
+      //   <!DOCTYPE html>
+      //   <html>
+      //     <head>
+      //       <title>Medical Report - ${data.name}</title>
+      //       <meta charset="UTF-8">
+      //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      //       ${allStyles.join('\n')}
+      //       <style>
+      //         /* Print-specific overrides */
+      //         @media print {
+      //           body {
+      //             margin: 0 !important;
+      //             padding: 0 !important;
+      //             background: white !important;
+      //             -webkit-print-color-adjust: exact;
+      //             print-color-adjust: exact;
+      //           }
+
+      //           .print-area {
+      //             width: 100% !important;
+      //             max-width: 100% !important;
+      //             margin: 0 auto !important;
+      //             padding: 0 !important;
+      //             transform: none !important;
+      //             box-shadow: none !important;
+      //             border: none !important;
+      //           }
+
+      //           /* Ensure grid layout works in print */
+      //           .grid {
+      //             display: grid !important;
+      //           }
+
+      //           .grid-cols-4 {
+      //             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      //           }
+
+      //           .grid-cols-2 {
+      //             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      //           }
+
+      //           .grid-cols-5 {
+      //             grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      //           }
+
+      //           .col-span-1 { grid-column: span 1 / span 1 !important; }
+      //           .col-span-2 { grid-column: span 2 / span 2 !important; }
+      //           .col-span-3 { grid-column: span 3 / span 3 !important; }
+      //           .col-span-4 { grid-column: span 4 / span 4 !important; }
+
+      //           /* Remove borders from form elements */
+      //           textarea, input, select {
+      //             border: none !important;
+      //             background: transparent !important;
+      //             outline: none !important;
+      //             box-shadow: none !important;
+      //           }
+
+      //           select {
+      //             appearance: none !important;
+      //             -webkit-appearance: none !important;
+      //             -moz-appearance: none !important;
+      //           }
+
+      //           /* Page setup */
+      //           @page {
+      //             margin: 15mm;
+      //             size: A4;
+      //           }
+
+      //           /* Hide instruction page if not needed */
+      //           .instruction-page {
+      //             page-break-before: always;
+      //           }
+
+      //           /* Force no page breaks inside sections */
+      //           .print-area > div,
+      //           .print-area > section {
+      //             page-break-inside: avoid;
+      //           }
+      //         }
+
+      //         /* Non-print styles to ensure layout */
+      //         body {
+      //           font-family: system-ui, -apple-system, sans-serif;
+      //           background: white;
+      //           color: black;
+      //         }
+
+      //         .print-area {
+      //           width: 210mm;
+      //           min-height: 297mm;
+      //           padding: 20px;
+      //           margin: 0 auto;
+      //           background: white;
+      //         }
+
+      //         /* Ensure all Tailwind utilities work */
+      //         .bg-white { background-color: white !important; }
+      //         .text-black { color: black !important; }
+      //         .border { border-width: 1px !important; }
+      //         .border-gray-700 { border-color: #374151 !important; }
+      //         .border-gray-900 { border-color: #111827 !important; }
+      //         .rounded { border-radius: 0.25rem !important; }
+      //         .shadow-lg { box-shadow: none !important; }
+      //         .p-6 { padding: 1.5rem !important; }
+      //         .gap-x-15 { column-gap: 3.75rem !important; }
+      //         .gap-x-1 { column-gap: 0.25rem !important; }
+      //         .gap-x-2 { column-gap: 0.5rem !important; }
+      //         .mb-1 { margin-bottom: 0.25rem !important; }
+      //         .mb-2 { margin-bottom: 0.5rem !important; }
+      //         .mb-4 { margin-bottom: 1rem !important; }
+      //         .mt-2 { margin-top: 0.5rem !important; }
+      //         .mt-3 { margin-top: 0.75rem !important; }
+      //         .mt-4 { margin-top: 1rem !important; }
+      //         .my-2 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+      //         .my-4 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+      //         .text-sm { font-size: 0.875rem !important; }
+      //         .text-sm\\/3 { font-size: 0.875rem !important; line-height: 1.3 !important; }
+      //         .text-sm\\/4 { font-size: 0.875rem !important; line-height: 1.4 !important; }
+      //         .text-sm\\/5 { font-size: 0.875rem !important; line-height: 1.5 !important; }
+      //         .text-xs { font-size: 0.75rem !important; }
+      //         .text-base\\/3 { font-size: 1rem !important; line-height: 1.3 !important; }
+      //         .font-semibold { font-weight: 600 !important; }
+      //         .font-bold { font-weight: 700 !important; }
+      //         .text-center { text-align: center !important; }
+      //         .text-left { text-align: left !important; }
+      //         .text-right { text-align: right !important; }
+      //         .w-full { width: 100% !important; }
+      //         .w-3\\/4 { width: 75% !important; }
+      //         .w-1\\/4 { width: 25% !important; }
+      //         .w-2\\/8 { width: 25% !important; }
+      //         .flex { display: flex !important; }
+      //         .justify-between { justify-content: space-between !important; }
+      //         .justify-center { justify-content: center !important; }
+      //         .justify-end { justify-content: flex-end !important; }
+      //         .items-center { align-items: center !important; }
+      //         .items-start { align-items: flex-start !important; }
+      //         .gap-1 { gap: 0.25rem !important; }
+      //         .gap-2 { gap: 0.5rem !important; }
+      //         .gap-4 { gap: 1rem !important; }
+      //         .gap-6 { gap: 1.5rem !important; }
+      //         .leading-tight { line-height: 1.25 !important; }
+      //         .uppercase { text-transform: uppercase !important; }
+      //         .resize-none { resize: none !important; }
+      //         .no-scrollbar::-webkit-scrollbar { display: none !important; }
+      //         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+      //         .whitespace-nowrap { white-space: nowrap !important; }
+      //       </style>
+      //     </head>
+      //     <body class="bg-white">
+      //       ${clonedArea.outerHTML}
+      //       <script>
+      //         // Wait for all styles to load
+      //         window.addEventListener('load', function() {
+      //           // Small delay to ensure rendering
+      //           setTimeout(function() {
+      //             window.print();
+      //             // Close after printing
+      //             window.onafterprint = function() {
+      //               window.close();
+      //             };
+      //           }, 300);
+      //         });
+      //       </script>
+      //     </body>
+      //   </html>
+      // `);
+      // printWindow.document.close();
 
       // Reset
       // setTimeout(() => {
@@ -609,12 +613,12 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           </button>
           {(user?.role === "ADMIN" || !readOnly) && (
             <button
-            onClick={handleSave}
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
-          >
-            <FaPrint />
-            Save & Print Report
-          </button>
+              onClick={handleSave}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <FaPrint />
+              Save & Print Report
+            </button>
           )}
         </div>
         <div className="print-area bg-white text-black w-[95vw] max-w-6xl top-0 left-0 p-6 rounded shadow-lg text-sm/3">
@@ -624,7 +628,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <h2 className="text-xl font-bold">PRE-EMPLOYMENT MEDICAL REPORT</h2>
           </div> */}
           <div className="w-full flex justify-center items-center flex-col">
-            <img src={letterhead} alt="Letterhead Banner" style={{width: "100%", height: "100%"}} />
+            <img src={letterhead} alt="Letterhead Banner" style={{ width: "100%", height: "100%" }} />
             {/* <h1 className="text-[32px]/10 font-bold m-0 p-0">MEGHA ENGINEERING & INFRASTRUCTURES LTD.</h1> */}
             <p className="text-base/3 font-bold mb-[2px]">FORM XXXIX (See Rule 122)</p>
           </div>
@@ -654,73 +658,153 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               </div>
             )}
             <div className="grid grid-cols-2 col-span-2 font-semibold">
-              <p>Date </p>
+              <p>Date of Examination</p>
               <p className="">: {formatISTDate(form.date_of_examination)}</p>
             </div>
             <div className="col-span-2"></div>
             <div className="col-span-4 border-b border-gray-900"></div>
             {form.name && (
-                  <div className="grid col-span-4 grid-cols-4 font-semibold p-0">
-                    <p>Name</p>
-                    <p className="text-sm/4 col-span-3">: {form.name}</p>
-                  </div>
-                )}
+              <div className="grid col-span-4 grid-cols-4 gap-x-1 font-semibold p-0">
+                <div className="flex justify-between">
+                  <p>Name</p>
+                  :
+                </div>
+                {/* <p className="text-sm/4 col-span-3">: {form.name}</p> */}
+                <input type="text"
+                  className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                  value={form.name}
+                  onChange={e => setForm(prev => ({
+                    ...prev,
+                    name: e.target.value
+                  }))}
+                />
+              </div>
+            )}
             <div className="col-span-4 grid grid-cols-2">
               <div>
-                {form.fathers_name && (
-                  <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold p-0 ${!form.fathers_name ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
                     <p>Father's Name</p>
-                    <p className="text-sm/4">: {form.fathers_name}</p>
+                    :
                   </div>
-                )}
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.fathers_name}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      fathers_name: e.target.value
+                    }))}
+                  />
+                </div>
                 {form.gender && (
-                  <div className="grid col-span-2 grid-cols-2 font-semibold">
-                    <p>Gender</p>
-                    <p className="text-sm/4">: {form.gender}</p>
+                  <div className="grid col-span-2 grid-cols-2 gap-x-1 font-semibold">
+                    <div className="flex justify-between">
+                      <p>Gender</p>
+                      :
+                    </div>
+                    <select
+                      style={{ appearance: "none", "-webkit-appearance": "none", "-moz-appearance": "none" }}
+                      className="bg-transparent text-sm/4e focus:outline-none"
+                      value={form.gender}
+                      onChange={e =>
+                        setForm(prev => ({ ...prev, gender: e.target.value }))
+                      }
+                    >
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                      <option value="OTHER">Other</option>
+                    </select>
                   </div>
                 )}
-                {form.dob && (
-                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
                     <p>Age</p>
-                    <p className="text-left text-sm/4">: {calculateAge(form.dob)} Years</p>
+                    :
                   </div>
-                )}
+                  <p className="text-left text-sm/4"> {calculateAge(form.dob)} Years</p>
+                </div>
               </div>
               <div>
-                {form.dob && (
-                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
                     <p>Date of Birth</p>
-                    <p className="text-left text-sm/4">: {formatISTDate(form.dob)}</p>
+                    :
                   </div>
-                )}
-                {form.aadhar_no && (
-                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                  <input type="date"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.dob ? form.dob.split("T")[0] : ""}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      dob: e.target.value
+                    }))}
+                  />
+                </div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.aadhar_no ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
                     <p>Aadhar</p>
-                    <p className="text-sm/4">: {form.aadhar_no}</p>
+                    :
                   </div>
-                )}
-                {form.phone_no && (
-                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.aadhar_no}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      aadhar_no: e.target.value
+                    }))}
+                  />
+                </div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.phone_no ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
                     <p>Phone No</p>
-                    <p className="text-sm/4">: {form.phone_no}</p>
+                    :
                   </div>
-                )}
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.phone_no}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      phone_no: e.target.value
+                    }))}
+                  />
+                </div>
               </div>
             </div>
             {(form.identification_marks.length > 0) && (
-                  <div className="grid col-span-4 grid-cols-4 font-semibold p-0">
-                    <p>ID Mark:</p>
-                    <p className="text-sm/4 col-span-3">: {form.identification_marks.join(", ")}</p>
-                  </div>
-                )}
-            {form.residence && (
-              <div className="col-span-4 font-semibold">
-                <div className="grid grid-cols-4">
-                  <p>Residence</p>
-                  <p className="text-sm/4 col-span-3">: {form.residence}</p>
+              <div className="grid col-span-4 grid-cols-4 font-semibold gap-x-1 p-0">
+                <div className="flex justify-between">
+                  <p>ID Marks</p>
+                  :
                 </div>
+                <input type="text"
+                  className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
+                  value={form.identification_marks?.join(", ") || ""}
+                  onChange={e =>
+                    setForm(prev => ({
+                      ...prev,
+                      identification_marks: e.target.value
+                        .split(",")
+                        .map(s => s.trim())
+                    }))
+                  }
+                />
               </div>
             )}
+            <div className={`col-span-4 font-semibold gap-x-1 ${!form.residence ? ("no-print") : ("")}`}>
+              <div className="grid grid-cols-4">
+                <div className="flex justify-between">
+                  <p>Address</p>
+                  :
+                </div>
+                <input type="text"
+                  className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
+                  value={form.residence}
+                  onChange={e => setForm(prev => ({
+                    ...prev,
+                    residence: e.target.value
+                  }))}
+                />
+              </div>
+            </div>
             {/* {form.date_of_examination && (
             <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
               <p>Date of Examination</p>
@@ -786,28 +870,28 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   ["inspiration", "expiration"].includes(key)
                     ? form.physical_parameters.chest_circumference?.[key] ?? ""
                     : form.physical_parameters[key] ?? "";
-                  return (
-                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${value ? "": "no-print"}`}>
-                      <div className="flex justify-between items-center">
-                        <div><p>{label}</p></div>
-                        <div>:</div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
-                          value={value}
-                          onChange={e => {
-                            const v = e.target.value;
-                            setForm(prev => {
-                              const height = key === "height" ? v : prev.physical_parameters.height;
-                              const weight = key === "weight" ? v : prev.physical_parameters.weight;
-                              let bmi = prev.physical_parameters.bmi;
-                              if(height && weight){
-                                const hm = height / 100;
-                                bmi = Number((weight / (hm *hm)).toFixed(2));
-                              }
-                              return {
+                return (
+                  <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${value ? "" : "no-print"}`}>
+                    <div className="flex justify-between items-center">
+                      <div><p>{label}</p></div>
+                      <div>:</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
+                        value={value}
+                        onChange={e => {
+                          const v = e.target.value;
+                          setForm(prev => {
+                            const height = key === "height" ? v : prev.physical_parameters.height;
+                            const weight = key === "weight" ? v : prev.physical_parameters.weight;
+                            let bmi = prev.physical_parameters.bmi;
+                            if (height && weight) {
+                              const hm = height / 100;
+                              bmi = Number((weight / (hm * hm)).toFixed(2));
+                            }
+                            return {
                               ...prev,
                               physical_parameters: {
                                 ...prev.physical_parameters,
@@ -818,38 +902,39 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                                       [key]: Number(v)
                                     }
                                   }
-                                  : {[key]: Number(v) }),
-                                  bmi
+                                  : { [key]: Number(v) }),
+                                bmi
                               }
                             };
-                            });
-                          }}
-                        />
-                        {unit && <span className="text-xs whitespace-nowrap">{unit}</span>}
-                      </div>
-
+                          });
+                        }}
+                      />
+                      {unit && <span className="text-xs whitespace-nowrap">{unit}</span>}
                     </div>
-                  );
+
+                  </div>
+                );
 
               })}
               {[
                 ["BLOOD PRESSURE", "blood_pressure", "mmHg"]
               ].map(([label, key, units]) => {
                 const systolic = (form.physical_parameters?.blood_pressure?.systolic);
-                const diastolic =  form.physical_parameters?.blood_pressure?.diastolic;
-                
-                  return (
-                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${systolic && diastolic ? (""): "no-print"}`}>
-                      <div className="flex justify-between items-center">
-                        <div><p>{label}</p></div>
-                        <div>:</div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
-                          value={systolic}
-                          onChange={e => {setForm(prev => ({
+                const diastolic = form.physical_parameters?.blood_pressure?.diastolic;
+
+                return (
+                  <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${systolic && diastolic ? ("") : "no-print"}`}>
+                    <div className="flex justify-between items-center">
+                      <div><p>{label}</p></div>
+                      <div>:</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
+                        value={systolic}
+                        onChange={e => {
+                          setForm(prev => ({
                             ...prev,
                             physical_parameters: {
                               ...prev.physical_parameters,
@@ -858,13 +943,15 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                                 systolic: Number(e.target.value)
                               }
                             }
-                          }))}}
-                        />/
-                        <input
-                          type="text"
-                          className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
-                          value={diastolic}
-                          onChange={e => {setForm(prev => ({
+                          }))
+                        }}
+                      />/
+                      <input
+                        type="text"
+                        className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
+                        value={diastolic}
+                        onChange={e => {
+                          setForm(prev => ({
                             ...prev,
                             physical_parameters: {
                               ...prev.physical_parameters,
@@ -873,12 +960,13 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                                 diastolic: Number(e.target.value)
                               }
                             }
-                          }))}}
-                        />
-                        {units && <span className="text-xs whitespace-nowrap">{units}</span>}
-                      </div>
+                          }))
+                        }}
+                      />
+                      {units && <span className="text-xs whitespace-nowrap">{units}</span>}
                     </div>
-                  );
+                  </div>
+                );
               })}
             </div>
             <div className="col-span-2">
@@ -893,24 +981,25 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   ["inspiration", "expiration"].includes(key)
                     ? form.physical_parameters.chest_circumference?.[key] ?? ""
                     : form.physical_parameters[key] ?? "";
-                  return (
-                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${value ? "": "no-print"}`}>
-                      <div className="flex justify-between items-center">
-                        <div><p>{label}</p></div>
-                        <div>:</div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
-                          value={value}
-                          onChange={e => {
-                            const v = e.target.value;
-                            setForm(prev => {
-                              const inspiration = key === "inspiration" ? v : prev.physical_parameters.chest_circumference?.inspiration;
-                              const expiration = key === "expiration" ? v : prev.physical_parameters.chest_circumference?.expiration;
-                              const expansion = inspiration && expiration ? inspiration - expiration : prev.physical_parameters.chest_circumference.expansion;
-                              return {...prev,
+                return (
+                  <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${value ? "" : "no-print"}`}>
+                    <div className="flex justify-between items-center">
+                      <div><p>{label}</p></div>
+                      <div>:</div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
+                        value={value}
+                        onChange={e => {
+                          const v = e.target.value;
+                          setForm(prev => {
+                            const inspiration = key === "inspiration" ? v : prev.physical_parameters.chest_circumference?.inspiration;
+                            const expiration = key === "expiration" ? v : prev.physical_parameters.chest_circumference?.expiration;
+                            const expansion = inspiration && expiration ? inspiration - expiration : prev.physical_parameters.chest_circumference.expansion;
+                            return {
+                              ...prev,
                               physical_parameters: {
                                 ...prev.physical_parameters,
                                 ...(key === "inspiration" || key === "expiration"
@@ -924,14 +1013,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                                   : { [key]: Number(v) })
                               }
                             };
-                            });
-                          }}
-                        />
-                        {unit && <span className="text-xs whitespace-nowrap">{unit}</span>}
-                      </div>
-
+                          });
+                        }}
+                      />
+                      {unit && <span className="text-xs whitespace-nowrap">{unit}</span>}
                     </div>
-                  );
+
+                  </div>
+                );
 
               })}
             </div>
@@ -970,17 +1059,17 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             {/* Chest Expansion (auto) */}
             {(form.physical_parameters.chest_circumference?.inspiration &&
               form.physical_parameters.chest_circumference?.expiration) ? (
-                <div className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${(form.physical_parameters.chest_circumference?.inspiration && form.physical_parameters.chest_circumference?.expiration) ? (""): ("no-print")}`}>
-                  <div className="flex justify-between items-center">
-                    <p>CHEST EXPANSION</p>:
-                  </div>
-                  <p className="flex items-center justify-between">
-                    {form.physical_parameters.chest_circumference.inspiration -
-                      form.physical_parameters.chest_circumference.expiration}{" "}
-                    cm
-                  </p>
+              <div className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${(form.physical_parameters.chest_circumference?.inspiration && form.physical_parameters.chest_circumference?.expiration) ? ("") : ("no-print")}`}>
+                <div className="flex justify-between items-center">
+                  <p>CHEST EXPANSION</p>:
                 </div>
-              ): ("")}
+                <p className="flex items-center justify-between">
+                  {form.physical_parameters.chest_circumference.inspiration -
+                    form.physical_parameters.chest_circumference.expiration}{" "}
+                  cm
+                </p>
+              </div>
+            ) : ("")}
           </div>
 
           {/* Systemic Examination */}
@@ -1237,17 +1326,17 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
           <div className="flex w-full">
             <div className="w-3/4">
-                <div className="col-span-4 mb-2">
-                  <p className="font-semibold">PHYSICAL FITNESS: </p>
-                </div>
-                <div className="col-span-4">
-                  <textarea
-                    rows={6}
-                    value={form?.physical_fitness}
-                    className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
-                    onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
-                  ></textarea>
-                </div>
+              <div className="col-span-4 mb-2">
+                <p className="font-semibold">PHYSICAL FITNESS: </p>
+              </div>
+              <div className="col-span-4">
+                <textarea
+                  rows={6}
+                  value={form?.physical_fitness}
+                  className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
+                  onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
+                ></textarea>
+              </div>
             </div>
             <div className="w-1/4">
               {selectedDoctor && (
@@ -1275,16 +1364,16 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <div className="text-sm/5">
             <p className="font-semibold">Reason for:</p>
             (i) Refusal of Certificate:
-            <input 
-            value={form.reason_for_certificate_refusal}
-            className="border border-none p-0 pl-1 w-3/4"
-            onChange={e => setForm(prev => ({...prev, ["reason_for_certificate_refusal"]: e.target.value}))} />
+            <input
+              value={form.reason_for_certificate_refusal}
+              className="border border-none p-0 pl-1 w-3/4"
+              onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_refusal"]: e.target.value }))} />
             <br />
             (ii) Certificate being revoked:
-            <input 
+            <input
               value={form.reason_for_certificate_revoke}
               className="border border-none p-0 pl-1 w-3/4"
-              onChange={e => setForm(prev => ({...prev, ["reason_for_certificate_revoke"]: e.target.value}))}
+              onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_revoke"]: e.target.value }))}
             />
           </div>
 
@@ -1296,7 +1385,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input
                 type="radio"
                 checked={form.duty_fit === true}
-                onChange={() => setForm( prev => ({ ...prev, duty_fit: true }))}
+                onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
               <b>FIT FOR DUTY</b>
             </label>
@@ -1328,12 +1417,12 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           </select>
 
           {/* ===== PAGE BREAK ===== */}
-          <div className="page-break" style={{ 
-          pageBreakAfter: 'always', 
-          breakAfter: 'page',
-          display: 'block',
-          height: 0 
-        }}></div>
+          <div className="page-break" style={{
+            pageBreakAfter: 'always',
+            breakAfter: 'page',
+            display: 'block',
+            height: 0
+          }}></div>
 
           {/* ===== INSTRUCTION PAGE ===== */}
           <div className="hidden instruction-page">
