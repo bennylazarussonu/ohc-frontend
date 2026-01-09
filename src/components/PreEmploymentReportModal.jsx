@@ -378,6 +378,8 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 });
     alert("Successfully saved");
 
+    window.print();
+
 
     // const printArea = document.querySelector('.print-area');
     // const scale = 0.95; // Your perfect scale
