@@ -1316,12 +1316,13 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
           <hr className="border-t border-gray-900 bg-gray-900 my-1" />
 
-          <div className="grid grid-cols-4 gap-0">
+          <div className="grid grid-cols-4 mb-2">
             <div className="col-span-4">
               <p className="font-semibold">CLINICAL IMPRESSION: </p>
             </div>
-            <div className="col-span-4">
+            <div className="col-span-4 mb-1">
               <textarea
+                rows={form.clinical_impression.length < 100 ? (1): (Math.ceil(form.clinical_impression.length / 100))}
                 value={form?.clinical_impression}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
@@ -1331,6 +1332,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             </div>
             <div className="col-span-4">
               <textarea
+                rows={form.final_recommendation.length < 100 ? (1): (Math.ceil(form.final_recommendation.length / 100))}
                 value={form?.final_recommendation}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
@@ -1338,14 +1340,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
           </div>
 
-          <div className="flex w-full">
+          <div className="flex w-full mt-0">
             <div className="w-3/4">
               <div className="col-span-4">
                 <p className="font-semibold">PHYSICAL FITNESS: </p>
               </div>
               <div className="col-span-4">
                 <textarea
-                  rows={form.physical_fitness.length < 100? (2): (Math.ceil(form.physical_fitness.length / 85))}
+                  rows={form.physical_fitness.length < 100? (2): (Math.ceil(form.physical_fitness.length / 95))}
                   value={form?.physical_fitness}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
@@ -1413,7 +1415,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <b>UNFIT FOR DUTY</b>
             </label>
           </div>
-          <div className="my-12 w-1/2 flex justify-start items-center">
+          <div className="my-16 w-1/2 flex justify-start items-center">
             <p className="font-bold text-sm text-left">Signature / Left thumb impression of Construction Worker</p>
           </div>
 
