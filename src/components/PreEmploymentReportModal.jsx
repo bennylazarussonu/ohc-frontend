@@ -406,7 +406,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <button onClick={onClose}>
             <FaX />
           </button>
-          {!readOnly && (
+          {(user === "ADMIN" || !readOnly) && (
             <button
             onClick={handleSave}
             className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
@@ -479,7 +479,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             {form.dob && (
               <div className="grid col-span-2 grid-cols-2 font-semibold">
                 <p>Age</p>
-                <p className="text-left text-sm/4">: {calculateAge(form.dob)}</p>
+                <p className="text-left text-sm/4">: {calculateAge(form.dob)} Years</p>
               </div>
             )}
             {(form.identification_marks.length > 0) && (
@@ -555,7 +555,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               </div>
               <textarea
                 value={form[key]}
-                rows={key === "general_examination" ? (2) : (5)}
+                rows={(Math.ceil(form[key].length / 100))}
                 className="w-full text-sm/4 rounded pb-[0.5px] col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
               />
@@ -1109,7 +1109,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <select
             className="w-2/8 rounded text-[12.5px] border no-print"
             value={selectedDoctorId || ""}
-            disabled={user?.role === "DOCTOR"}
+            disabled={user?.role === "DOCTOR" || readOnly}
             onChange={e => setSelectedDoctorId(Number(e.target.value))}
           >
             <option value="">Select Treating Doctor</option>

@@ -54,12 +54,16 @@ function PreEmploymentReports() {
       </h2>
 
       <div className="bg-gray-800 flex gap-2 p-2 rounded">
-        {["on-going", "fit", "unfit"].map(t => (
+        {[
+          ["on-going", "bg-yellow-600", "text-yellow-500"], 
+          ["fit", "bg-green-700", "text-green-300"], 
+          ["unfit", "bg-red-700", "text-red-300"]
+        ].map(([t, bgColor, textColor]) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`w-1/2 rounded transition w-full text-sm py-1 font-semibold ${
-              tab === t ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-300"
+              (tab === t) ? `${bgColor} text-white` : `bg-gray-700 ${textColor}`
             }`}
           >
             {t === "on-going" && "Pending"}

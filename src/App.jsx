@@ -1,6 +1,6 @@
 import BulkUpload from './components/Workers.jsx';
 import BulkMedicineUpload from './components/Medicines.jsx';
-import { FaRegFloppyDisk, FaUser, FaUserDoctor, FaUserPlus } from 'react-icons/fa6'
+import { FaPenToSquare, FaRegFloppyDisk, FaUser, FaUserDoctor, FaUserPlus } from 'react-icons/fa6'
 import { useState, useEffect } from 'react';
 import api from './api/axios';
 import WorkerSection from './components/WorkerSection';
@@ -15,17 +15,21 @@ import Login from './components/Login.jsx';
 import Profile from './components/Profile.jsx';
 import Staff from './components/Staff.jsx';
 import PreEmployment from './components/PreEmployment.jsx';
+import IdRenewal from './components/IdRenewal.jsx';
 
 function App() {
   const { user, loading } = useAuth();
   const [activeMenu, setActiveMenu] = useState("profile");
   const [msg, setMsg] = useState("");
   const [isNewWorker, setIsNewWorker] = useState(false);
+  const [isEditingWorker, setIsEditingWorker] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [prescription, setPrescription] = useState([]);
   const [workerSearchLoading, setworkerSearchLoading] = useState(false);
   const [latestReportData, setLatestReportData] = useState(null);
   const [opd, setOpd] = useState({});
+  const [workerSearch, setWorkerSearch] = useState("");
+  const [workerResults, setWorkerResults] = useState([]);
 
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState(1);
@@ -60,6 +64,29 @@ function App() {
       }
     });
   }, [user]);
+
+
+  let timer;
+  const searchWorkers = (value) => {
+  setWorkerSearch(value);
+  clearTimeout(timer);
+
+  if (value.trim().length < 2) {
+    setWorkerResults([]);
+    return;
+  }
+
+  try {
+    timer = setTimeout(async () => {
+      const res = await api.get("/api/workers/search", {
+      params: { q: value }
+    });
+    setWorkerResults(res.data);
+    }, 300)
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 
 
@@ -98,6 +125,11 @@ function App() {
 
   const handleSubmit = async () => {
     try {
+      if (isEditingWorker) {
+  alert("Finish editing worker before saving OPD");
+  return;
+}
+
       // if (!selectedWorker) {
       //   alert("Please select a worker");
       //   return;
@@ -260,7 +292,7 @@ function App() {
             ) : (
               <div className="w-full">
                 <div className="flex w-full gap-2">
-                  <WorkerSection onSelect={(worker) => {
+                  {/* <WorkerSection onSelect={(worker) => {
                     setSelectedWorker(worker);
                     setIsNewWorker(false);
                     setWorkerForm({
@@ -275,7 +307,33 @@ function App() {
                       contractor_name: worker.contractor_name || "",
                       date_of_joining: worker.date_of_joining ? worker.date_of_joining.split("T")[0] : "",
                     })
-                  }} />
+                  }} /> */}
+                  <WorkerSection
+  search={workerSearch}
+  results={workerResults}
+  onSearch={searchWorkers}
+  onSelect={(worker) => {
+    setSelectedWorker(worker);
+    setIsNewWorker(false);
+    setWorkerForm({
+      name: worker.name || "",
+      fathers_name: worker.fathers_name || "",
+      dob: worker.dob ? worker.dob.split("T")[0] : "",
+      phone_no: worker.phone_no || "",
+      employee_id: worker.employee_id || "",
+      aadhar_no: worker.aadhar_no || "",
+      gender: worker.gender || "Male",
+      designation: worker.designation || "",
+      contractor_name: worker.contractor_name || "",
+      date_of_joining: worker.date_of_joining
+        ? worker.date_of_joining.split("T")[0]
+        : ""
+    });
+    setWorkerSearch("");
+    setWorkerResults([]);
+  }}
+/>
+
                   <button
                     onClick={() => {
                       setSelectedWorker(null);
@@ -302,10 +360,19 @@ function App() {
                 </div>
 
 
-                {selectedWorker && !isNewWorker && (
+                {selectedWorker && !isNewWorker && !isEditingWorker && (
                   <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
-                    <div className="flex items-center gap-2">
-                      <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className='flex items-center gap-2'>
+                        <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
+                      </div>
+                      <button 
+                        className="flex items-center gap-2 text-sm text-green-400"
+                        onClick={() => setIsEditingWorker(true)}
+                      >
+                        <FaPenToSquare/>
+                        <p>Edit Worker</p>
+                      </button>
                     </div>
                     <div className="col-span-3">
                       <p className='text-[14px]'><b>{selectedWorker.name}</b></p>
@@ -314,7 +381,7 @@ function App() {
                     <p className='font-light text-gray-300 text-[12.5px]'>Phone No: <b>{selectedWorker.phone_no}</b> | DOB: <b>{formatDate(selectedWorker.dob)}</b></p>
                   </div>
                 )}
-                {isNewWorker && (
+                {(isNewWorker || isEditingWorker) && (
                   <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
                     <div className="flex items-center gap-2 mb-2">
                       <FaUser className="text-[16px]" />
@@ -332,19 +399,23 @@ function App() {
                         ["contractor_name", "Contractor Name"],
                         ["date_of_joining", "Date of Joining"]
                       ].map(([key, label]) => (
-                        <input
+                        <div>
+                          <input
                           key={key}
+                          type={(key === "date_of_joining" ? ("date"): ("text"))}
                           placeholder={label}
-                          className="p-2 bg-gray-700 rounded"
+                          className="p-2 bg-gray-700 rounded w-full"
                           value={workerForm[key]}
                           onChange={(e) =>
                             setWorkerForm({ ...workerForm, [key]: e.target.value })
                           }
                         />
+                        {(<span className='text-xs text-gray-300'>{label}</span>)}
+                        </div>
                       ))}
-
-                      <select
-                        className="p-2 bg-gray-700 rounded"
+                      <div>
+                        <select
+                        className="p-2 bg-gray-700 rounded w-full"
                         value={workerForm.gender}
                         onChange={(e) =>
                           setWorkerForm({ ...workerForm, gender: e.target.value })
@@ -354,16 +425,21 @@ function App() {
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                       </select>
+                      <span className='text-xs text-gray-300'>Gender</span>
+                      </div>
 
-
-                      <input
+                      
+                      <div>
+                        <input
                         type="date"
-                        className="p-2 bg-gray-700 rounded"
+                        className="p-2 bg-gray-700 rounded w-full"
                         value={workerForm.dob}
                         onChange={(e) =>
                           setWorkerForm({ ...workerForm, dob: e.target.value })
                         }
                       />
+                      <span className="text-xs text-gray-300">Date of Birth</span>
+                      </div>
                     </div>
 
                     {!selectedWorker && (
@@ -373,6 +449,54 @@ function App() {
                     )}
                   </div>
                 )}
+                {isEditingWorker && (
+  <div className="flex gap-2 mt-3">
+    <button
+      onClick={async () => {
+        try {
+          const res = await api.put(
+            `/api/workers/${selectedWorker.id}`,
+            workerForm
+          );
+
+          setSelectedWorker(res.data);
+          setIsEditingWorker(false);
+          alert("Worker updated successfully");
+        } catch (err) {
+          console.error(err);
+          alert("Failed to update worker");
+        }
+      }}
+      className="bg-green-600 px-3 py-1 rounded text-sm"
+    >
+      Save Changes
+    </button>
+
+    <button
+      onClick={() => {
+        setIsEditingWorker(false);
+        setWorkerForm({
+          name: selectedWorker.name || "",
+          fathers_name: selectedWorker.fathers_name || "",
+          dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
+          phone_no: selectedWorker.phone_no || "",
+          employee_id: selectedWorker.employee_id || "",
+          aadhar_no: selectedWorker.aadhar_no || "",
+          gender: selectedWorker.gender || "Male",
+          designation: selectedWorker.designation || "",
+          contractor_name: selectedWorker.contractor_name || "",
+          date_of_joining: selectedWorker.date_of_joining
+            ? selectedWorker.date_of_joining.split("T")[0]
+            : ""
+        });
+      }}
+      className="bg-gray-600 px-3 py-1 rounded text-sm"
+    >
+      Cancel
+    </button>
+  </div>
+)}
+
 
                 <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
                   <select
@@ -431,7 +555,7 @@ function App() {
         )}
 
         {activeMenu === "id-renew" && (
-          "🚧 Will be here soon..."
+          <IdRenewal/>
         )}
       </div>
     </>
