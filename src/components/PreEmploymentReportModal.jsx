@@ -652,9 +652,19 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               </p>
             </div>
             {form.contractor_name && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold">
-                <p>Contractor Name</p>
-                <p className="text-sm/4">: {form.contractor_name}</p>
+              <div className="grid col-span-2 grid-cols-2 gap-x-1 font-semibold">
+                <div className="flex justify-between">
+                  <p>Contractor Name</p>
+                  :
+                </div>
+                <input type="text"
+                  className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                  value={form.contractor_name}
+                  onChange={e => setForm(prev => ({
+                    ...prev,
+                    contractor_name: e.target.value
+                  }))}
+                  />
               </div>
             )}
             <div className="grid grid-cols-2 col-span-2 font-semibold">
