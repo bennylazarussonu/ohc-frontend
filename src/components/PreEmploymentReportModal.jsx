@@ -651,8 +651,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <p className="text-sm/3">: MAHSRC, UG-HSR TERMINAL, BKC, MUMBAI - 400051 (PROJECT NO. 3264 - PKG. C-1)
               </p>
             </div>
-            {form.contractor_name && (
-              <div className="grid col-span-2 grid-cols-2 gap-x-1 font-semibold">
+              <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.contractor_name ? ("no-print"): ("")}`}>
                 <div className="flex justify-between">
                   <p>Contractor Name</p>
                   :
@@ -666,7 +665,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   }))}
                   />
               </div>
-            )}
             <div className="grid grid-cols-2 col-span-2 font-semibold">
               <p>Date of Examination</p>
               <p className="">: {formatISTDate(form.date_of_examination)}</p>
