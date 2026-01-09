@@ -3,6 +3,7 @@ import api from "../api/axios";
 import { FaX, FaPrint, FaXmark } from "react-icons/fa6";
 import { useAuth } from '../context/AuthContext';
 import letterhead from "../assets/preemp_banner.png"
+import image from "../assets/image.png";
 
 function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   // const [form, setForm] = useState({
@@ -165,7 +166,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
 
   useEffect(() => {
-  setForm(data);
+  setForm(prev => ({
+    ...prev,
+    ...data
+  }));
+
 
   setVisionForm({
     far_left_wo: data.opthalmic_examination?.far_vision?.without_glasses?.left ?? 6,
@@ -406,7 +411,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <button onClick={onClose}>
             <FaX />
           </button>
-          {(user === "ADMIN" || !readOnly) && (
+          {(user?.role === "ADMIN" || !readOnly) && (
             <button
             onClick={handleSave}
             className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
@@ -421,7 +426,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           {/* Header */}
           {/* <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">PRE-EMPLOYMENT MEDICAL REPORT</h2>
-        </div> */}
+          </div> */}
           <div className="w-full flex justify-center items-center flex-col">
             <img src={letterhead} alt="Letterhead Banner" style={{width: "100%", height: "100%"}} />
             {/* <h1 className="text-[32px]/10 font-bold m-0 p-0">MEGHA ENGINEERING & INFRASTRUCTURES LTD.</h1> */}
@@ -459,53 +464,59 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <div className="col-span-2"></div>
             <div className="col-span-4 border-b border-gray-900"></div>
             {form.name && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
-                <p>Name</p>
-                <p className="text-sm/4">: {form.name}</p>
+                  <div className="grid col-span-4 grid-cols-4 font-semibold p-0">
+                    <p>Name</p>
+                    <p className="text-sm/4 col-span-3">: {form.name}</p>
+                  </div>
+                )}
+            <div className="col-span-4 grid grid-cols-2">
+              <div>
+                {form.fathers_name && (
+                  <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
+                    <p>Father's Name</p>
+                    <p className="text-sm/4">: {form.fathers_name}</p>
+                  </div>
+                )}
+                {form.gender && (
+                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                    <p>Gender</p>
+                    <p className="text-sm/4">: {form.gender}</p>
+                  </div>
+                )}
+                {form.dob && (
+                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                    <p>Age</p>
+                    <p className="text-left text-sm/4">: {calculateAge(form.dob)} Years</p>
+                  </div>
+                )}
               </div>
-            )}
-            {form.dob && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold">
-                <p>Date of Birth</p>
-                <p className="text-left text-sm/4">: {formatISTDate(form.dob)}</p>
+              <div>
+                {form.dob && (
+                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                    <p>Date of Birth</p>
+                    <p className="text-left text-sm/4">: {formatISTDate(form.dob)}</p>
+                  </div>
+                )}
+                {form.aadhar_no && (
+                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                    <p>Aadhar</p>
+                    <p className="text-sm/4">: {form.aadhar_no}</p>
+                  </div>
+                )}
+                {form.phone_no && (
+                  <div className="grid col-span-2 grid-cols-2 font-semibold">
+                    <p>Phone No</p>
+                    <p className="text-sm/4">: {form.phone_no}</p>
+                  </div>
+                )}
               </div>
-            )}
-            {form.fathers_name && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
-                <p>Father's Name</p>
-                <p className="text-sm/4">: {form.fathers_name}</p>
-              </div>
-            )}
-            {form.dob && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold">
-                <p>Age</p>
-                <p className="text-left text-sm/4">: {calculateAge(form.dob)} Years</p>
-              </div>
-            )}
+            </div>
             {(form.identification_marks.length > 0) && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
-                <p>ID Mark:</p>
-                <p className="text-sm/4">: {form.identification_marks.join(", ")}</p>
-              </div>
-            )}
-            {form.gender && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold">
-                <p>Gender</p>
-                <p className="text-sm/4">: {form.gender}</p>
-              </div>
-            )}
-            {form.aadhar_no && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold">
-                <p>Aadhar</p>
-                <p className="text-sm/4">: {form.aadhar_no}</p>
-              </div>
-            )}
-            {form.phone_no && (
-              <div className="grid col-span-2 grid-cols-2 font-semibold">
-                <p>Phone No</p>
-                <p className="text-sm/4">: {form.phone_no}</p>
-              </div>
-            )}
+                  <div className="grid col-span-4 grid-cols-4 font-semibold p-0">
+                    <p>ID Mark:</p>
+                    <p className="text-sm/4 col-span-3">: {form.identification_marks.join(", ")}</p>
+                  </div>
+                )}
             {form.residence && (
               <div className="col-span-4 font-semibold">
                 <div className="grid grid-cols-4">
@@ -632,7 +643,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 const diastolic =  form.physical_parameters?.blood_pressure?.diastolic;
                 
                   return (
-                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${systolic & diastolic ? (""): "no-print"}`}>
+                    <div key={key} className={`grid col-span-2 grid-cols-2 gap-x-1 mb-[1px] ${systolic && diastolic ? (""): "no-print"}`}>
                       <div className="flex justify-between items-center">
                         <div><p>{label}</p></div>
                         <div>:</div>
@@ -1120,8 +1131,20 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             ))}
           </select>
 
+            {/* ===== PAGE BREAK ===== */}
+<div className="page-break"></div>
+
+{/* ===== INSTRUCTION PAGE ===== */}
+<div className="instruction-page">
+  <img
+    src={image}
+    alt="Health Instructions"
+    className="instruction-image"
+  />
+</div>
 
         </div>
+        
       </div>
     </div>
   );
