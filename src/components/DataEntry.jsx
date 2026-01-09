@@ -2,27 +2,11 @@ import { useState, useRef } from "react";
 import api from "../api/axios";
 import { FaFloppyDisk } from "react-icons/fa6";
 
-function DataEntry() {
+function DataEntry({form, setForm}) {
   const dobRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [dobFocus, setDobFocus] = useState(false);
   const [dojFocus, setDojFocus] = useState(false);
-
-
-  const [form, setForm] = useState({
-    name: "",
-    employee_id: "",
-    fathers_name: "",
-    aadhar_no: "",
-    gender: "MALE",
-    dob: "",
-    phone_no: "",
-    designation: "",
-    contractor_name: "",
-    date_of_joining: "",
-    identification_marks: "",
-    residence: ""
-  });
 
   const handleChange = (e) => {
     let { name, value } = e.target;

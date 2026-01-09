@@ -5,6 +5,21 @@ import { useState } from "react";
 function PreEmployment() {
   const [tab, setTab] = useState("entry");
 
+  const [form, setForm] = useState({
+    name: "",
+    employee_id: "",
+    fathers_name: "",
+    aadhar_no: "",
+    gender: "MALE",
+    dob: "",
+    phone_no: "",
+    designation: "",
+    contractor_name: "",
+    date_of_joining: "",
+    identification_marks: "",
+    residence: ""
+  });
+
   return (
     <div className="w-full">
       <div className="flex gap-2 mb-4 bg-gray-800 p-2 rounded">
@@ -23,7 +38,7 @@ function PreEmployment() {
         ))}
       </div>
 
-      {tab === "entry" && <DataEntry />}
+      {tab === "entry" && <DataEntry form={form} setForm={setForm}/>}
       {tab === "exam" && <ExaminationParameters />}
       {tab === "reports" && <PreEmploymentReports />}
     </div>
