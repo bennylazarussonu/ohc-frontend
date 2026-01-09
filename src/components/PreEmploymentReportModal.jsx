@@ -3,7 +3,8 @@ import api from "../api/axios";
 import { FaX, FaPrint, FaXmark } from "react-icons/fa6";
 import { useAuth } from '../context/AuthContext';
 import letterhead from "../assets/preemp_banner.png"
-import image from "../assets/image.png";
+import malaria_top from "../assets/malaria_top.png";
+import malaria_bottom from "../assets/malaria_bottom.png";
 
 function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   // const [form, setForm] = useState({
@@ -165,6 +166,85 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     return (form.weight / (h * h)).toFixed(2);
   };
 
+  function printViaIframe(element) {
+    const iframe = document.createElement("iframe");
+
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow.document;
+
+    // Collect all styles
+    const styles = Array.from(document.querySelectorAll("link[rel='stylesheet'], style"))
+      .map(node => node.outerHTML)
+      .join("\n");
+
+    iframeDoc.open();
+    iframeDoc.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        ${styles}
+        <style>
+          @page {
+            /*size: A4;*/
+            margin: 10mm;
+          }
+          body {
+            zoom: 0.65;
+            margin: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          /* 🔥 THIS IS THE MAGIC */
+  .print-wrapper {
+    width: 100%;
+    height: 100%;
+    /*margin: 0 auto;*/
+    transform: scale(0.98);    /* ← tweak this */
+    transform-origin: top center;
+  }
+
+  /* Neutralize screen styles */
+  .print-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Prevent accidental page breaks */
+  .print-area,
+  .print-area * {
+    page-break-inside: avoid;
+  }
+        </style>
+      </head>
+      <body class="print-wrapper">
+        ${element.outerHTML}
+      </body>
+    </html>
+  `);
+    iframeDoc.close();
+
+    iframe.onload = () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+
+      iframe.contentWindow.onafterprint = () => {
+        document.body.removeChild(iframe);
+      };
+    };
+  }
+
+
 
   useEffect(() => {
     setForm(prev => ({
@@ -191,8 +271,8 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   }, [data]);
 
   useEffect(() => {
-  setIdMarksText(form.identification_marks?.join(", ") || "");
-}, [form.identification_marks]);
+    setIdMarksText(form.identification_marks?.join(", ") || "");
+  }, [form.identification_marks]);
 
 
 
@@ -387,222 +467,10 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
       onSuccess();
       onClose();
       setTimeout(() => {
-        window.print();
+        const printArea = document.querySelector(".print-area");
+        printViaIframe(printArea);
+
       }, 0);
-
-
-      // const printArea = document.querySelector('.print-area');
-      // const scale = 0.95; // Your perfect scale
-
-      // // Apply 75% scale before print
-      // printArea.style.transform = `scale(${scale})`;
-      // printArea.style.transformOrigin = 'center';
-      // printArea.style.width = `${100 / scale}%`;
-
-      // Clone the entire print area
-      // const printArea = document.querySelector('.print-area');
-      // const clonedArea = printArea.cloneNode(true);
-
-      // // Remove all no-print elements from clone
-      // const noPrintElements = clonedArea.querySelectorAll('.no-print');
-      // noPrintElements.forEach(el => el.remove());
-
-      // // Get ALL CSS from the current document
-      // const allStyles = [];
-
-      // // Get all style tags
-      // document.querySelectorAll('style').forEach(style => {
-      //   allStyles.push(`<style>${style.innerHTML}</style>`);
-      // });
-
-      // // Get all stylesheet links
-      // document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-      //   allStyles.push(`<link rel="stylesheet" href="${link.href}">`);
-      // });
-
-      // // Create a new window
-      // const printWindow = window.open('', '_blank');
-
-      // // Build the HTML with exact same styles
-      // printWindow.document.write(`
-      //   <!DOCTYPE html>
-      //   <html>
-      //     <head>
-      //       <title>Medical Report - ${data.name}</title>
-      //       <meta charset="UTF-8">
-      //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      //       ${allStyles.join('\n')}
-      //       <style>
-      //         /* Print-specific overrides */
-      //         @media print {
-      //           body {
-      //             margin: 0 !important;
-      //             padding: 0 !important;
-      //             background: white !important;
-      //             -webkit-print-color-adjust: exact;
-      //             print-color-adjust: exact;
-      //           }
-
-      //           .print-area {
-      //             width: 100% !important;
-      //             max-width: 100% !important;
-      //             margin: 0 auto !important;
-      //             padding: 0 !important;
-      //             transform: none !important;
-      //             box-shadow: none !important;
-      //             border: none !important;
-      //           }
-
-      //           /* Ensure grid layout works in print */
-      //           .grid {
-      //             display: grid !important;
-      //           }
-
-      //           .grid-cols-4 {
-      //             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-      //           }
-
-      //           .grid-cols-2 {
-      //             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      //           }
-
-      //           .grid-cols-5 {
-      //             grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-      //           }
-
-      //           .col-span-1 { grid-column: span 1 / span 1 !important; }
-      //           .col-span-2 { grid-column: span 2 / span 2 !important; }
-      //           .col-span-3 { grid-column: span 3 / span 3 !important; }
-      //           .col-span-4 { grid-column: span 4 / span 4 !important; }
-
-      //           /* Remove borders from form elements */
-      //           textarea, input, select {
-      //             border: none !important;
-      //             background: transparent !important;
-      //             outline: none !important;
-      //             box-shadow: none !important;
-      //           }
-
-      //           select {
-      //             appearance: none !important;
-      //             -webkit-appearance: none !important;
-      //             -moz-appearance: none !important;
-      //           }
-
-      //           /* Page setup */
-      //           @page {
-      //             margin: 15mm;
-      //             size: A4;
-      //           }
-
-      //           /* Hide instruction page if not needed */
-      //           .instruction-page {
-      //             page-break-before: always;
-      //           }
-
-      //           /* Force no page breaks inside sections */
-      //           .print-area > div,
-      //           .print-area > section {
-      //             page-break-inside: avoid;
-      //           }
-      //         }
-
-      //         /* Non-print styles to ensure layout */
-      //         body {
-      //           font-family: system-ui, -apple-system, sans-serif;
-      //           background: white;
-      //           color: black;
-      //         }
-
-      //         .print-area {
-      //           width: 210mm;
-      //           min-height: 297mm;
-      //           padding: 20px;
-      //           margin: 0 auto;
-      //           background: white;
-      //         }
-
-      //         /* Ensure all Tailwind utilities work */
-      //         .bg-white { background-color: white !important; }
-      //         .text-black { color: black !important; }
-      //         .border { border-width: 1px !important; }
-      //         .border-gray-700 { border-color: #374151 !important; }
-      //         .border-gray-900 { border-color: #111827 !important; }
-      //         .rounded { border-radius: 0.25rem !important; }
-      //         .shadow-lg { box-shadow: none !important; }
-      //         .p-6 { padding: 1.5rem !important; }
-      //         .gap-x-15 { column-gap: 3.75rem !important; }
-      //         .gap-x-1 { column-gap: 0.25rem !important; }
-      //         .gap-x-2 { column-gap: 0.5rem !important; }
-      //         .mb-1 { margin-bottom: 0.25rem !important; }
-      //         .mb-2 { margin-bottom: 0.5rem !important; }
-      //         .mb-4 { margin-bottom: 1rem !important; }
-      //         .mt-2 { margin-top: 0.5rem !important; }
-      //         .mt-3 { margin-top: 0.75rem !important; }
-      //         .mt-4 { margin-top: 1rem !important; }
-      //         .my-2 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
-      //         .my-4 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
-      //         .text-sm { font-size: 0.875rem !important; }
-      //         .text-sm\\/3 { font-size: 0.875rem !important; line-height: 1.3 !important; }
-      //         .text-sm\\/4 { font-size: 0.875rem !important; line-height: 1.4 !important; }
-      //         .text-sm\\/5 { font-size: 0.875rem !important; line-height: 1.5 !important; }
-      //         .text-xs { font-size: 0.75rem !important; }
-      //         .text-base\\/3 { font-size: 1rem !important; line-height: 1.3 !important; }
-      //         .font-semibold { font-weight: 600 !important; }
-      //         .font-bold { font-weight: 700 !important; }
-      //         .text-center { text-align: center !important; }
-      //         .text-left { text-align: left !important; }
-      //         .text-right { text-align: right !important; }
-      //         .w-full { width: 100% !important; }
-      //         .w-3\\/4 { width: 75% !important; }
-      //         .w-1\\/4 { width: 25% !important; }
-      //         .w-2\\/8 { width: 25% !important; }
-      //         .flex { display: flex !important; }
-      //         .justify-between { justify-content: space-between !important; }
-      //         .justify-center { justify-content: center !important; }
-      //         .justify-end { justify-content: flex-end !important; }
-      //         .items-center { align-items: center !important; }
-      //         .items-start { align-items: flex-start !important; }
-      //         .gap-1 { gap: 0.25rem !important; }
-      //         .gap-2 { gap: 0.5rem !important; }
-      //         .gap-4 { gap: 1rem !important; }
-      //         .gap-6 { gap: 1.5rem !important; }
-      //         .leading-tight { line-height: 1.25 !important; }
-      //         .uppercase { text-transform: uppercase !important; }
-      //         .resize-none { resize: none !important; }
-      //         .no-scrollbar::-webkit-scrollbar { display: none !important; }
-      //         .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-      //         .whitespace-nowrap { white-space: nowrap !important; }
-      //       </style>
-      //     </head>
-      //     <body class="bg-white">
-      //       ${clonedArea.outerHTML}
-      //       <script>
-      //         // Wait for all styles to load
-      //         window.addEventListener('load', function() {
-      //           // Small delay to ensure rendering
-      //           setTimeout(function() {
-      //             window.print();
-      //             // Close after printing
-      //             window.onafterprint = function() {
-      //               window.close();
-      //             };
-      //           }, 300);
-      //         });
-      //       </script>
-      //     </body>
-      //   </html>
-      // `);
-      // printWindow.document.close();
-
-      // Reset
-      // setTimeout(() => {
-      //   printArea.style.transform = '';
-      //   printArea.style.height = '';
-      //   printArea.style.transformOrigin = '';
-      // }, 1000);
-      //   onSuccess();
-      //   onClose();
     } catch (err) {
       console.error(err);
       alert("Failed to save report");
@@ -657,20 +525,20 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <p className="text-sm/3">: MAHSRC, UG-HSR TERMINAL, BKC, MUMBAI - 400051 (PROJECT NO. 3264 - PKG. C-1)
               </p>
             </div>
-              <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.contractor_name ? ("no-print"): ("")}`}>
-                <div className="flex justify-between">
-                  <p>Contractor Name</p>
-                  :
-                </div>
-                <input type="text"
-                  className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
-                  value={form.contractor_name}
-                  onChange={e => setForm(prev => ({
-                    ...prev,
-                    contractor_name: e.target.value
-                  }))}
-                  />
+            <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.contractor_name ? ("no-print") : ("")}`}>
+              <div className="flex justify-between">
+                <p>Contractor Name</p>
+                :
               </div>
+              <input type="text"
+                className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                value={form.contractor_name}
+                onChange={e => setForm(prev => ({
+                  ...prev,
+                  contractor_name: e.target.value
+                }))}
+              />
+            </div>
             <div className="grid grid-cols-2 col-span-2 font-semibold">
               <p>Date of Examination</p>
               <p className="">: {formatISTDate(form.date_of_examination)}</p>
@@ -783,26 +651,26 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 </div>
               </div>
             </div>
-              <div className={`grid col-span-4 grid-cols-4 font-semibold gap-x-1 p-0 ${(!form.identification_marks || form.identification_marks.length <= 0) ? ("no-print"): ("")}`}>
-                <div className="flex justify-between">
-                  <p>ID Marks</p>
-                  :
-                </div>
-                <input type="text"
-                  className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
-                  value={idMarksText}
-                  onChange={e => setIdMarksText(e.target.value)}
-                  onBlur={() => {
-    setForm(prev => ({
-      ...prev,
-      identification_marks: idMarksText
-        .split(",")
-        .map(s => s.trim())
-        .filter(Boolean)
-    }));
-  }}
-                />
+            <div className={`grid col-span-4 grid-cols-4 font-semibold gap-x-1 p-0 ${(!form.identification_marks || form.identification_marks.length <= 0) ? ("no-print") : ("")}`}>
+              <div className="flex justify-between">
+                <p>ID Marks</p>
+                :
               </div>
+              <input type="text"
+                className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
+                value={idMarksText}
+                onChange={e => setIdMarksText(e.target.value)}
+                onBlur={() => {
+                  setForm(prev => ({
+                    ...prev,
+                    identification_marks: idMarksText
+                      .split(",")
+                      .map(s => s.trim())
+                      .filter(Boolean)
+                  }));
+                }}
+              />
+            </div>
             <div className={`col-span-4 font-semibold gap-x-1 ${!form.residence ? ("no-print") : ("")}`}>
               <div className="grid grid-cols-4">
                 <div className="flex justify-between">
@@ -1322,7 +1190,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             </div>
             <div className="col-span-4 mb-1">
               <textarea
-                rows={form.clinical_impression.length < 100 ? (1): (Math.ceil(form.clinical_impression.length / 100))}
+                rows={form.clinical_impression.length < 100 ? (1) : (Math.ceil(form.clinical_impression.length / 100))}
                 value={form?.clinical_impression}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
@@ -1332,7 +1200,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             </div>
             <div className="col-span-4">
               <textarea
-                rows={form.final_recommendation.length < 100 ? (1): (Math.ceil(form.final_recommendation.length / 100))}
+                rows={form.final_recommendation.length < 100 ? (1) : (Math.ceil(form.final_recommendation.length / 100))}
                 value={form?.final_recommendation}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
@@ -1347,7 +1215,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               </div>
               <div className="col-span-4">
                 <textarea
-                  rows={form.physical_fitness.length < 100? (2): (Math.ceil(form.physical_fitness.length / 95))}
+                  rows={form.physical_fitness.length < 100 ? (2) : (Math.ceil(form.physical_fitness.length / 95))}
                   value={form?.physical_fitness}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
@@ -1415,7 +1283,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <b>UNFIT FOR DUTY</b>
             </label>
           </div>
-          <div className="my-16 w-1/2 flex justify-start items-center">
+          <div className="mt-16 w-1/2 flex justify-start items-center">
             <p className="font-bold text-sm text-left">Signature / Left thumb impression of Construction Worker</p>
           </div>
 
@@ -1435,20 +1303,99 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             ))}
           </select>
 
-          {/* ===== PAGE BREAK ===== */}
-          <div className="page-break" style={{
-            pageBreakAfter: 'always',
-            breakAfter: 'page',
-            display: 'block',
-            height: 0
-          }}></div>
-
           {/* ===== INSTRUCTION PAGE ===== */}
-          <div className="hidden instruction-page">
+          <div className="flex items-center flex-col instruction-page text-gray-600">
             <img
-              src={image}
+              src={malaria_top}
               alt="Health Instructions"
-              className="instruction-image"
+              className="instruction-image w-full"
+            />
+            <div className="grid grid-cols-8 w-full gap-y-10 gap-x-3 text-xl">
+
+              <div className="col-span-4 grid grid-cols-4 items-center">
+                <p className="text-lg">विभाग</p>
+                <div className="col-span-3 border-b border-gray-800 p-1">
+                  <p className="font-bold">SAFETY HEALTH ENVIRONMENT (SHE), MEIL-HCC JV</p>
+                </div>
+              </div>
+              <div className="col-span-4 grid grid-cols-4 items-center">
+                <p className="text-lg">सांकेतिक क्र.</p>
+                <div className="col-span-3 border-b border-gray-800 p-1">
+                  <p className="font-bold">{form.id ? form.id : ""}</p>
+                </div>
+              </div>
+
+              <div className="col-span-8 grid grid-cols-8 items-center">
+                <div className="col-span-3">
+                  <p className="text-lg">कंत्राटदाराचे नाव/ कार्यस्थळ पत्ता/ संपर्क क्र.</p>
+                </div>
+                <div className="col-span-5">
+                  <div className="border-b border-gray-800 p-1">
+                    <p className="font-bold">{form.contractor_name ? form.contractor_name : ""}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-8 grid grid-cols-8 items-center">
+                <div className="col-span-2">
+                  <p className="text-lg">कामगराचे नाव</p>
+                </div>
+                <div className="col-span-6">
+                  <div className="border-b border-gray-800 p-1">
+                    <p className="font-bold">{form.name ? form.name : ""}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-8 grid grid-cols-8 gap-x-5 items-center">
+                <div className="col-span-1">
+                  <p className="text-lg">वय</p>
+                </div>
+                <div className="col-span-3">
+                  <div className="border-b border-gray-900 p-1">
+                    <p className="font-bold">{form.dob ? (calculateAge(form.dob) + " YRS") : ("")}</p>
+                  </div>
+                </div>
+                <div className="col-span-1">
+                  <p className="text-lg">पुरुष /  स्त्री</p>
+                </div>
+                <div className="col-span-3">
+                  <div className="border-b border-gray-900 p-1">
+                    <p className="font-bold">{form.gender ? form.gender : ""}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-8 grid grid-cols-8 items-center">
+                <div className="col-span-3">
+                  <p className="text-lg">विकासकाचे नाव/ कार्यस्थळ पत्ता/ संपर्क क्र.</p>
+                </div>
+                <div className="col-span-5">
+                  <div className="border-b border-gray-900 p-1">
+                    <p className="font-bold">PROJECT OFFICE, BLOCK G, U.G. TERMINAL CONSTRUCTION PROJ.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-8 grid grid-cols-8 items-center">
+                <div className="col-span-8">
+                  <div className="border-b border-gray-900 p-1">
+                    <p className="font-bold">MUMBAI-AHMEDABAD HIGH-SPEED RAIL CORRIDOR, NEAR MMRDA GROUNDS, BANDRA (EAST),</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-span-8 grid grid-cols-8 items-center">
+                <div className="col-span-8">
+                  <div className="border-b border-gray-900 p-1">
+                    <p className="font-bold">BANDRA KURLA COMPLEX, MUMBAI -400071</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <br />
+            <img
+              src={malaria_bottom}
+              alt="Health Instructions"
+              className="instruction-image w-full"
             />
           </div>
         </div>
