@@ -474,6 +474,18 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     }
   };
 
+  const handlePrint = async () => {
+    try{
+      setTimeout(() => {
+        const printArea = document.querySelector(".print-area");
+        printViaIframe(printArea);
+      }, 0);
+    }catch(err){
+      console.error(err);
+      alert("Failed to print report");
+    }
+  }
+
   return (
     <div className="modal-overlay fixed inset-0 bg-black/70 z-50 flex justify-center items-start overflow-auto">
       <div className="w-[95%] max-w-6xl">
@@ -490,6 +502,15 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <FaPrint />
               Save & Print Report
             </button>
+          )}
+          {(user?.role !== "ADMIN" || !readOnly) && (
+            <button
+              onClick={handlePrint}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <FaPrint />
+              Print Report
+            </button> 
           )}
         </div>
         <div className="print-area bg-white text-black w-[95vw] max-w-6xl top-0 left-0 p-6 rounded shadow-lg text-sm/3">
@@ -1133,10 +1154,10 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     <option value="48">N48</option>
                   </select>
                   <div className="print-only text-center font-semibold">
-    {visionForm[key]
-      ? `N${visionForm[key]}`
-      : ""}
-  </div>
+                    {visionForm[key]
+                      ? `N${visionForm[key]}`
+                      : ""}
+                  </div>
                 </div>
               ))}
             </div>
