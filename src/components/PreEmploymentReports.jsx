@@ -53,6 +53,19 @@ function PreEmploymentReports() {
         Pre-Employment Examination Reports
       </h2>
 
+      <div className="w-full flex gap-2 justify-center items-center">
+        <div>
+          <input type="date" className="p-2 bg-gray-700 rounded"/>
+        </div>
+        <div>
+          <input type="date" className="p-2 bg-gray-700 rounded"/>
+        </div>
+        <div className="w-full">
+          <input type="text" className="w-full bg-gray-700 rounded p-2" placeholder="Search By Name / Aadhar / Fathers Name" />
+        </div>
+      </div>
+      <br />
+
       <div className="bg-gray-800 flex gap-2 p-2 rounded">
         {[
           ["on-going", "bg-yellow-600", "text-yellow-500"], 

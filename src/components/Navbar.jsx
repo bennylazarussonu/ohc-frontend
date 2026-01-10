@@ -19,7 +19,7 @@ function Navbar({ border, active, onChange }) {
   const renderMenus = () => {
     if (user.role === "ADMIN") return menus;
     if (user.role === "DOCTOR") return menus.slice(0, 7);
-    if (user.role === "EMPLOYEE") return menus.slice(0, 3);
+    if (user.role === "EMPLOYEE") return menus.slice(0, 4);
     return [];
   };
 
