@@ -1313,7 +1313,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 checked={form.duty_fit === true}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
-              <b>FIT FOR DUTY</b>
+              <b className={`${form.duty_fit === true ? ("no-underline"): ("line-through")}`}>FIT FOR DUTY</b>
             </label>
 
             <label className="flex items-center gap-2">
@@ -1322,7 +1322,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 checked={form.duty_fit === false}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
               />
-              <b>UNFIT FOR DUTY</b>
+              <b className={`${form.duty_fit === false ? ("no-underline"): ("line-through")}`}>UNFIT FOR DUTY</b>
             </label>
           </div>
           <div className="mt-16 w-1/2 flex justify-start items-center">
@@ -1625,7 +1625,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 checked={form.duty_fit === true}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
-              <b>FIT FOR DUTY</b>
+              <b className={`${form.duty_fit === true ? ("no-underline"):("line-through")}`}>FIT FOR DUTY</b>
             </label>
 
             <label className="flex items-center gap-2">
@@ -1634,7 +1634,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 checked={form.duty_fit === false}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
               />
-              <b>UNFIT FOR DUTY</b>
+              <b className={`${form.duty_fit === false ? ("no-underline") : ("line-through")}`}>UNFIT FOR DUTY</b>
             </label>
           </div>
           <div className="mt-16 w-1/2 flex justify-start items-center">
@@ -1757,7 +1757,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <td className="border border-2 border-gray-900 text-center p-1"></td>
                 <td className="border border-2 border-gray-900 text-center p-1"></td>
               </tr>
-              {Array.from({length: 50}, (_, index) => (
+              {Array.from({length: 25}, (_, index) => (
                   <tr className="border border-2 border-gray-900">
                 <td className="border border-2 border-gray-900 text-center p-1"></td>
                 <td className="border border-2 border-gray-900 text-center p-1"></td>
