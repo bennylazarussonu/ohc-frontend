@@ -1015,7 +1015,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               ].map((key, i) => (
                 <div key={i} className="border border-gray-700">
                   <select
-                    className="w-full border border-white text-center"
+                    className="screen-only w-full border border-white text-center"
                     value={visionForm[key]}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
@@ -1035,6 +1035,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     <option value="PL">PL</option>
                     <option value="NPL">NPL</option>
                   </select>
+                  <div className="print-only text-center font-semibold">
+    {visionForm[key]
+      ? `6/${visionForm[key]}`
+      : ""}
+  </div>
                 </div>
               ))}
               {[
@@ -1043,7 +1048,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               ].map((key, i) => (
                 <div key={i} className="border border-gray-700">
                   <select
-                    className="w-full bg-transparent border border-white text-center"
+                    className=" screen-only w-full bg-transparent border border-white text-center"
                     value={visionForm[key]}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
@@ -1060,6 +1065,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     <option value="36">N36</option>
                     <option value="48">N48</option>
                   </select>
+                  <div className="print-only text-center font-semibold">
+    {visionForm[key]
+      ? `N${visionForm[key]}`
+      : ""}
+  </div>
                 </div>
               ))}
 
@@ -1072,7 +1082,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               ].map((key, i) => (
                 <div key={i} className="border border-gray-700">
                   <select
-                    className="w-full bg-transparent border border-white text-center"
+                    className="screen-only w-full bg-transparent border border-white text-center"
                     value={visionForm[key]}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
@@ -1092,6 +1102,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     <option value="PL">PL</option>
                     <option value="NPL">NPL</option>
                   </select>
+                  <div className="print-only text-center font-semibold">
+    {visionForm[key]
+      ? `6/${visionForm[key]}`
+      : ""}
+  </div>
                 </div>
               ))}
               {[
@@ -1100,7 +1115,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               ].map((key, i) => (
                 <div key={i} className="border border-gray-700">
                   <select
-                    className="w-full bg-transparent border border-white text-center"
+                    className="screen-only w-full bg-transparent border border-white text-center"
                     value={visionForm[key]}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
@@ -1117,6 +1132,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     <option value="36">N36</option>
                     <option value="48">N48</option>
                   </select>
+                  <div className="print-only text-center font-semibold">
+    {visionForm[key]
+      ? `N${visionForm[key]}`
+      : ""}
+  </div>
                 </div>
               ))}
             </div>
