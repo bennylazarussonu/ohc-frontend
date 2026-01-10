@@ -46,9 +46,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     with_glasses_diagnosis: form.opthalmic_examination?.with_glasses_diagnosis ?? ""
   });
 
-  console.log("Form: ", form);
-  console.log("Vision Form: ", visionForm);
-
 
   function formatISTDate(date) {
     return new Date(date).toLocaleDateString("en-GB", {
@@ -1303,6 +1300,302 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             ))}
           </select>
 
+          {/* Page 2 */}
+
+          <div className="w-full flex justify-center items-center flex-col">
+            <img src={letterhead} alt="Letterhead Banner" style={{ width: "100%", height: "100%" }} />
+            {/* <h1 className="text-[32px]/10 font-bold m-0 p-0">MEGHA ENGINEERING & INFRASTRUCTURES LTD.</h1> */}
+            <p className="text-base/3 font-bold mb-[2px]">FORM XXXIX (See Rule 122)</p>
+          </div>
+          <hr className="border-t border-[2px] bg-gray-900 border-gray-900" />
+          <p className="text-sm/3 font-semibold my-[1px] text-center">Medical Examination Report</p>
+          <hr className="border-t border-[2px] bg-gray-900 border-gray-900 mb-2" />
+
+          {/* Candidate Details */}
+          <section className="grid grid-cols-4 gap-x-15 text-sm">
+            {form.id && (
+              <div className="grid col-span-2 grid-cols-2 font-semibold mb-0">
+                <p>
+                  Certrificate ID
+                </p>
+                <p className="text-left text-sm/4">: {form.id}</p>
+              </div>
+            )}
+            <div className="grid col-span-2 row-span-2 grid-cols-2 font-semibold">
+              <p>Project</p>
+              <p className="text-sm/3">: MAHSRC, UG-HSR TERMINAL, BKC, MUMBAI - 400051 (PROJECT NO. 3264 - PKG. C-1)
+              </p>
+            </div>
+            <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.contractor_name ? ("no-print") : ("")}`}>
+              <div className="flex justify-between">
+                <p>Contractor Name</p>
+                :
+              </div>
+              <input type="text"
+                className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                value={form.contractor_name}
+                onChange={e => setForm(prev => ({
+                  ...prev,
+                  contractor_name: e.target.value
+                }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 col-span-2 font-semibold">
+              <p>Date of Examination</p>
+              <p className="">: {formatISTDate(form.date_of_examination)}</p>
+            </div>
+            <div className="col-span-2"></div>
+            <div className="col-span-4 border-b border-gray-900"></div>
+            {form.name && (
+              <div className="grid col-span-4 grid-cols-4 gap-x-1 font-semibold p-0">
+                <div className="flex justify-between">
+                  <p>Name</p>
+                  :
+                </div>
+                {/* <p className="text-sm/4 col-span-3">: {form.name}</p> */}
+                <input type="text"
+                  className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
+                  value={form.name}
+                  onChange={e => setForm(prev => ({
+                    ...prev,
+                    name: e.target.value
+                  }))}
+                />
+              </div>
+            )}
+            <div className="col-span-4 grid grid-cols-2">
+              <div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold p-0 ${!form.fathers_name ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Father's Name</p>
+                    :
+                  </div>
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.fathers_name}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      fathers_name: e.target.value
+                    }))}
+                  />
+                </div>
+                {form.gender && (
+                  <div className="grid col-span-2 grid-cols-2 gap-x-1 font-semibold">
+                    <div className="flex justify-between">
+                      <p>Gender</p>
+                      :
+                    </div>
+                    <select
+                      style={{ appearance: "none", "-webkit-appearance": "none", "-moz-appearance": "none" }}
+                      className="bg-transparent text-sm/4e focus:outline-none"
+                      value={form.gender}
+                      onChange={e =>
+                        setForm(prev => ({ ...prev, gender: e.target.value }))
+                      }
+                    >
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                )}
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Age</p>
+                    :
+                  </div>
+                  <p className="text-left text-sm/4"> {calculateAge(form.dob)} Years</p>
+                </div>
+              </div>
+              <div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Date of Birth</p>
+                    :
+                  </div>
+                  <input type="date"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.dob ? form.dob.split("T")[0] : ""}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      dob: e.target.value
+                    }))}
+                  />
+                </div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.aadhar_no ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Aadhar</p>
+                    :
+                  </div>
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.aadhar_no}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      aadhar_no: e.target.value
+                    }))}
+                  />
+                </div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.phone_no ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Phone No</p>
+                    :
+                  </div>
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.phone_no}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      phone_no: e.target.value
+                    }))}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className={`grid col-span-4 grid-cols-4 font-semibold gap-x-1 p-0 ${(!form.identification_marks || form.identification_marks.length <= 0) ? ("no-print") : ("")}`}>
+              <div className="flex justify-between">
+                <p>ID Marks</p>
+                :
+              </div>
+              <input type="text"
+                className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
+                value={idMarksText}
+                onChange={e => setIdMarksText(e.target.value)}
+                onBlur={() => {
+                  setForm(prev => ({
+                    ...prev,
+                    identification_marks: idMarksText
+                      .split(",")
+                      .map(s => s.trim())
+                      .filter(Boolean)
+                  }));
+                }}
+              />
+            </div>
+            <div className={`col-span-4 font-semibold gap-x-1 ${!form.residence ? ("no-print") : ("")}`}>
+              <div className="grid grid-cols-4">
+                <div className="flex justify-between">
+                  <p>Address</p>
+                  :
+                </div>
+                <input type="text"
+                  className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
+                  value={form.residence}
+                  onChange={e => setForm(prev => ({
+                    ...prev,
+                    residence: e.target.value
+                  }))}
+                />
+              </div>
+            </div>
+            {/* {form.date_of_examination && (
+            <div className="grid col-span-2 grid-cols-2 font-semibold p-0">
+              <p>Date of Examination</p>
+              <p className="text-sm/4">: {formatISTDate(form.date_of_examination)}</p>
+            </div>
+          )} */}
+          </section>
+          <hr className="border-t bg-gray-900 border-gray-900 mb-1" />
+          <hr className="border-t bg-gray-900 border-gray-900 mb-1" />
+
+          <div className="grid grid-cols-4 mb-2">
+            <div className="col-span-4">
+              <p className="font-semibold">CLINICAL IMPRESSION: </p>
+            </div>
+            <div className="col-span-4 mb-1">
+              <textarea
+                // rows={form.clinical_impression.length < 100 ? (1) : (Math.ceil(form.clinical_impression.length / 100))}
+                value={form?.clinical_impression}
+                className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
+                onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
+            </div>
+            <div className="col-span-4">
+              <p className="font-semibold">FINAL RECOMMENDATION: </p>
+            </div>
+            <div className="col-span-4">
+              <textarea
+                // rows={form.final_recommendation.length < 100 ? (1) : (Math.ceil(form.final_recommendation.length / 100))}
+                value={form?.final_recommendation}
+                className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
+                onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
+            </div>
+          </div>
+          <div className="flex w-full mt-0">
+            <div className="w-3/4">
+              <div className="col-span-4">
+                <p className="font-semibold">PHYSICAL FITNESS: </p>
+              </div>
+              <div className="col-span-4">
+                <textarea
+                  rows={7}
+                  value={form?.physical_fitness}
+                  className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
+                  onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
+                ></textarea>
+              </div>
+            </div>
+            <div className="w-1/4">
+              {selectedDoctor && (
+                <div className="mt-4 flex justify-end">
+                  <div className="text-right leading-tight">
+                    <p className="font-semibold uppercase">
+                      {selectedDoctor.name}
+                    </p>
+                    <p className="uppercase">
+                      {selectedDoctor.qualification}
+                    </p>
+                    <p className="uppercase">
+                      REGN. NO. {selectedDoctor.regn_no}
+                    </p>
+                    {selectedDoctor.designation && (
+                      <p className="uppercase">
+                        {selectedDoctor.designation}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="text-sm/5 m-0 p-0">
+            <p className="font-semibold">Reason for:</p>
+            (i) Refusal of Certificate:
+            <input
+              value={form.reason_for_certificate_refusal}
+              className="border border-none p-0 pl-1 w-3/4"
+              onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_refusal"]: e.target.value }))} />
+            <br />
+            (ii) Certificate being revoked:
+            <input
+              value={form.reason_for_certificate_revoke}
+              className="border border-none p-0 pl-1 w-3/4"
+              onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_revoke"]: e.target.value }))}
+            />
+          </div>
+          {/* Fit / Unfit (MANDATORY) */}
+          <div className="my-4 flex gap-6">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={form.duty_fit === true}
+                onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
+              />
+              <b>FIT FOR DUTY</b>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={form.duty_fit === false}
+                onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
+              />
+              <b>UNFIT FOR DUTY</b>
+            </label>
+          </div>
+          <div className="mt-16 w-1/2 flex justify-start items-center">
+            <p className="font-bold text-sm text-left">Signature / Left thumb impression of Construction Worker</p>
+          </div>
+
           {/* ===== INSTRUCTION PAGE ===== */}
           <div className="flex items-center flex-col instruction-page text-gray-600">
             <img
@@ -1398,6 +1691,38 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               className="instruction-image w-full"
             />
           </div>
+
+<br />
+<br /><br />
+          <table className="border border-[2px] border-gray-900 w-full h-[1500px]">
+            <thead className="border border-2 border-gray-900">
+              <tr className="border border-2 border-gray-900">
+                <th className="border border-2 border-gray-900 p-3 font-bold">महिना</th>
+                <th className="border border-2 border-gray-900 p-3 font-bold">तपसाणी दिनांक</th>
+                <th className="border border-2 border-gray-900 p-3 font-bold">निदान व अभिप्राय</th>
+                <th className="border border-2 border-gray-900 p-3 font-bold">आरोग्य कर्मचारी/ वैद्यकीय अधिकारी सही</th>
+                <th className="border border-2 border-gray-900 p-3 font-bold">शेरा</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border border-2 border-gray-900">
+                <td className="border border-2 border-gray-900 text-center p-1">{new Date().toLocaleString(undefined, {month: "long"})}</td>
+                <td className="border border-2 border-gray-900 text-center p-1">{new Date().toDateString()}</td>
+                <td className="border border-2 border-gray-900 text-center p-1">MP SMEAR TEST IS ________________________________</td>
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+              </tr>
+              {Array.from({length: 50}, (_, index) => (
+                  <tr className="border border-2 border-gray-900">
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+                <td className="border border-2 border-gray-900 text-center p-1"></td>
+              </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
