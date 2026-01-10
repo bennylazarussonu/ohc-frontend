@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import letterhead from "../assets/preemp_banner.png"
 import malaria_top from "../assets/malaria_top.png";
 import malaria_bottom from "../assets/malaria_bottom.png";
+import malaria_table from "../assets/malaria_table.png";
 
 function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   // const [form, setForm] = useState({
@@ -1739,7 +1740,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
 <br />
 <br /><br />
-          <table className="border border-[2px] border-gray-900 w-full h-[1500px]">
+          {/* <table className="border border-[2px] border-gray-900 w-full h-[1500px]">
             <thead className="border border-2 border-gray-900">
               <tr className="border border-2 border-gray-900">
                 <th className="border border-2 border-gray-900 p-3 font-bold">महिना</th>
@@ -1767,7 +1768,35 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               </tr>
               ))}
             </tbody>
-          </table>
+          </table> */}
+          <div className="relative w-full">
+            <img
+              src={malaria_table}
+              alt="Health Instructions"
+              className="instruction-image w-full h-full"
+            />
+            <div
+              className="absolute text-sm font-semibold"
+              style={{ top: "16%", left: "8.5%" }}
+            >
+              <p className="text-lg">{new Date().toLocaleString("en-IN", { month: "long" })}</p>
+            </div>
+
+            {/* Test Date */}
+            <div
+              className="absolute text-sm font-semibold"
+              style={{ top: "16%", left: "20%" }}
+            >
+              <p className="text-lg">{new Date().toDateString("en-GB")}</p>
+            </div>
+
+            <div
+              className="absolute text-sm font-semibold"
+              style={{ top: "16%", left: "32.35%" }}
+            >
+              <p className="text-lg">MP SMEAR TEST IS _____________________________</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
