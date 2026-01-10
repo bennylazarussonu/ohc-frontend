@@ -286,8 +286,12 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           d.name.toLowerCase().includes(user.userId.toLowerCase())
         );
 
-        if (matchedDoctor) {
-          setSelectedDoctorId(matchedDoctor.id);
+        if(readOnly){
+          setSelectedDoctorId(form.medical_examiner_id);
+        }else{
+          if (matchedDoctor) {
+            setSelectedDoctorId(matchedDoctor.id);
+          }
         }
       }
     });
@@ -1330,7 +1334,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <select
             className="w-2/8 rounded text-[12.5px] border no-print"
             value={selectedDoctorId || ""}
-            disabled={user?.role === "DOCTOR" || readOnly}
+            disabled={user?.role !== "ADMIN" || readOnly}
             onChange={e => setSelectedDoctorId(Number(e.target.value))}
           >
             <option value="">Select Treating Doctor</option>
