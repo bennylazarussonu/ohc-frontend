@@ -8,38 +8,80 @@ function PreEmploymentReports() {
   const [loading, setLoading] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState({});
   const [reportModal, setReportModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [tab, setTab] = useState("on-going");
 
-  const fetchRecords = async (currentTab) => {
-  setLoading(true);
+  const getLocalDateOnly = (d) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-  let url = "/api/pre-employment/completed";
-  if (currentTab === "fit") url = "/api/pre-employment/fit";
-  if (currentTab === "unfit") url = "/api/pre-employment/unfit";
-
-  const res = await api.get(url);
-  setRecords(res.data);
-
-  setLoading(false);
+  const getTodayLocalDateString = () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD (what <input type="date" /> expects)
 };
 
 
-  // const fetchCompleted = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const res = await api.get("/api/pre-employment/completed");
-  //     setRecords(res.data);
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Failed to load completed examinations");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+
+  const fetchRecords = async (currentTab) => {
+    setLoading(true);
+
+    let url = "/api/pre-employment/completed";
+    if (currentTab === "fit") url = "/api/pre-employment/fit";
+    if (currentTab === "unfit") url = "/api/pre-employment/unfit";
+
+    const res = await api.get(url);
+    setRecords(res.data);
+
+    setLoading(false);
+  };
+
+  const filteredRecords = records.filter(r => {
+  const q = searchTerm.toLowerCase();
+
+  // ---------- TEXT FILTER ----------
+  const matchesText =
+    !q ||
+    String(r.name || "").toLowerCase().includes(q) ||
+    String(r.aadhar_no || "").toLowerCase().includes(q) ||
+    String(r.fathers_name || "").toLowerCase().includes(q) ||
+    String(r.id || "").toLowerCase().includes(q);
+
+  // ---------- DATE FILTER (LOCAL DAY SAFE) ----------
+  const recordDate = getLocalDateOnly(new Date(r.date_of_examination));
+
+  const fromOk = fromDate
+  ? recordDate >= getLocalDateOnly(new Date(fromDate))
+  : true;
+
+const toOk = toDate
+  ? recordDate <= getLocalDateOnly(new Date(toDate))
+  : true;
+
+
+  return matchesText && fromOk && toOk;
+});
+
+
+
 
   useEffect(() => {
-    fetchRecords(tab);
-  }, [tab]);
+  fetchRecords(tab);
+
+  // Apply default "today" filter ONLY for fit/unfit
+  if ((tab === "fit" || tab === "unfit") && !fromDate && !toDate) {
+    const today = getTodayLocalDateString();
+    setFromDate(today);
+    setToDate(today);
+  }else if(tab === "on-going"){
+    setFromDate("");
+    setToDate("");
+  }
+}, [tab]);
+
 
   const generateReport = (record) => {
     // 🔜 placeholder: later we’ll generate PDF
@@ -55,15 +97,32 @@ function PreEmploymentReports() {
 
       <div className="w-full flex gap-2 justify-center items-center">
         <div>
-          <input type="date" className="p-2 bg-gray-700 rounded"/>
+          <input 
+            type="date" 
+            className="p-2 bg-gray-700 rounded"
+            value={fromDate}
+            onChange={e => setFromDate(e.target.value)}
+          />
         </div>
         <div>
-          <input type="date" className="p-2 bg-gray-700 rounded"/>
+          <input 
+            type="date" 
+            className="p-2 bg-gray-700 rounded"
+            value={toDate}
+  onChange={e => setToDate(e.target.value)}
+          />
         </div>
         <div className="w-full">
-          <input type="text" className="w-full bg-gray-700 rounded p-2" placeholder="Search By Name / Aadhar / Fathers Name" />
+          <input 
+            type="text" 
+            className="w-full bg-gray-700 rounded p-2" 
+            placeholder="Search By Name / Aadhar / Fathers Name" 
+            value={searchTerm}
+  onChange={e => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
+      {tab !== "on-going" ? (<p className="text-sm text-gray-400">* Default date set to show only todays Pre-Employment Examinations</p>): ("")}
       <br />
 
       <div className="bg-gray-800 flex gap-2 p-2 rounded">
@@ -88,10 +147,14 @@ function PreEmploymentReports() {
 
       {loading ? (
         <p className="text-gray-400">Loading reports...</p>
-      ) : records.length === 0 ? (
-        <p className="text-gray-400">No completed examinations yet.</p>
+      ) : filteredRecords.length === 0 ? (
+        <p className="text-gray-400">{tab === "on-going" ? ("No Records."): ("No Records for today")}</p>
       ) : (
-        <div className="overflow-auto border border-gray-700 rounded">
+        <div className="overflow-auto rounded">
+          <div className="w-full flex justify-between">
+            <p className="font-bold text-sm text-gray-400">Showing {filteredRecords.length} Records</p>
+            <p className="font-bold text-sm text-gray-400">Total Records: {records.length}</p>
+          </div>
           <table className="w-full text-sm table-fixed">
             <thead className="bg-gray-900 sticky top-0">
               <tr>
@@ -105,7 +168,7 @@ function PreEmploymentReports() {
             </thead>
 
             <tbody>
-              {records.map((r) => (
+              {filteredRecords.map((r) => (
                 <tr key={r._id} className="odd:bg-gray-700 even:bg-gray-800">
                   <td className="p-2 border">{r.id}</td>
                   <td className="p-2 border">{r.name}</td>
