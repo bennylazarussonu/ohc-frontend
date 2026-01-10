@@ -125,7 +125,7 @@ const toOk = toDate
       
         {tab !== "on-going" ? (
           <div className="flex justify-between">
-          <p className="text-sm text-gray-400">* Default date set to show only todays Pre-Employment Examinations</p>
+          <p className="text-sm text-gray-400">* Default date filter set to show only todays Pre-Employment Examinations</p>
           <button className="text-sm text-blue-500" onClick={() => {
             setFromDate("")
             setToDate("")
