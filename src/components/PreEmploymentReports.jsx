@@ -122,10 +122,20 @@ const toOk = toDate
           />
         </div>
       </div>
-      {tab !== "on-going" ? (<p className="text-sm text-gray-400">* Default date set to show only todays Pre-Employment Examinations</p>): ("")}
+      
+        {tab !== "on-going" ? (
+          <div className="flex justify-between">
+          <p className="text-sm text-gray-400">* Default date set to show only todays Pre-Employment Examinations</p>
+          <button className="text-sm text-blue-500" onClick={() => {
+            setFromDate("")
+            setToDate("")
+          }}>Clear Date Filter</button>
+          </div>
+        ): ("")}
+      
       <br />
 
-      <div className="bg-gray-800 flex gap-2 p-2 rounded">
+      <div className="bg-gray-800 flex gap-2 rounded mb-2">
         {[
           ["on-going", "bg-yellow-600", "text-yellow-500"], 
           ["fit", "bg-green-700", "text-green-300"], 
