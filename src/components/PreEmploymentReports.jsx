@@ -147,8 +147,8 @@ const toOk = toDate
 
       {loading ? (
         <p className="text-gray-400">Loading reports...</p>
-      ) : filteredRecords.length === 0 ? (
-        <p className="text-gray-400">{tab === "on-going" ? ("No Records."): ("No Records for today")}</p>
+      ) : records.length === 0 ? (
+        <p className="text-gray-400">No Records</p>
       ) : (
         <div className="overflow-auto rounded">
           <div className="w-full flex justify-between">
