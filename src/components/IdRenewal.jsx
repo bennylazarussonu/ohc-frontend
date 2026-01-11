@@ -609,9 +609,7 @@ function IdRenewal() {
                             disabled={saveLoading}
                             onClick={async () => {
                                 try {
-                                    const payload = {
-                                        ...renewalForm,
-                                    };
+                                    
                                     if (!selectedWorker && !isNewWorker) {
                                         alert("Please Select a Worker or Add New Worker for Renewal");
                                         return;
@@ -632,10 +630,14 @@ function IdRenewal() {
                                         return;
                                     }
 
-                                    if (renewalForm.spo2 < 95) {
+                                    if (renewalForm.spo2 && renewalForm.spo2 < 95) {
                                         alert("Low Oxygen Saturation. Candidate not eligible for ID Renewal");
                                         return;
                                     }
+
+                                    const payload = {
+                                        ...renewalForm,
+                                    };
 
                                     setSaveLoading(true);
 
