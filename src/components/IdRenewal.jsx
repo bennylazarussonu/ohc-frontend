@@ -135,7 +135,7 @@ function IdRenewal() {
             text = "Mild Bradycardia";
             color = "text-orange-400";
             border = "focus:border-2 focus:border-orange-400";
-        } else if (pulse <= 100) {
+        } else if (pulse <= 104) {
             // normal
         } else if (pulse <= 120) {
             text = "Mild Tachycardia";
