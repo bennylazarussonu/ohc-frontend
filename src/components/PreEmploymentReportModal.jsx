@@ -6,6 +6,7 @@ import letterhead from "../assets/preemp_banner.png"
 import malaria_top from "../assets/malaria_top.png";
 import malaria_bottom from "../assets/malaria_bottom.png";
 import malaria_table from "../assets/malaria_table.png";
+import {formatDateDMY} from "../utils/date.js";
 
 function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   // const [form, setForm] = useState({
@@ -48,11 +49,11 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   });
 
 
-  function formatISTDate(date) {
-    return new Date(date).toLocaleDateString("en-GB", {
-      timeZone: "Asia/Kolkata"
-    });
-  }
+  // function formatISTDate(date) {
+  //   return new Date(date).toLocaleDateString("en-GB", {
+  //     timeZone: "Asia/Kolkata"
+  //   });
+  // }
 
   function calculateAge(dob) {
     const today = new Date();
@@ -201,6 +202,13 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
+            .screen-only { display: inline-block; }
+  .print-only { display: none; }
+
+  @media print {
+    .screen-only { display: none !important; }
+    .print-only { display: inline-block !important; }
+  }
           /* 🔥 THIS IS THE MAGIC */
   .print-wrapper {
     width: 100%;
@@ -564,7 +572,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             </div>
             <div className="grid grid-cols-2 col-span-2 font-semibold">
               <p>Date of Examination</p>
-              <p className="">: {formatISTDate(form.date_of_examination)}</p>
+              <p className="">: {formatDateDMY(form.date_of_examination)}</p>
             </div>
             <div className="col-span-2"></div>
             <div className="col-span-4 border-b border-gray-900"></div>
@@ -636,13 +644,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     :
                   </div>
                   <input type="date"
-                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full screen-only"
                     value={form.dob ? form.dob.split("T")[0] : ""}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       dob: e.target.value
                     }))}
                   />
+                  <p className={`print-only bg-transparent text-sm/4 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>{form.dob ? (formatDateDMY(form.dob)) : ("")}</p>
                 </div>
                 <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.aadhar_no ? ("no-print") : ("")}`}>
                   <div className="flex justify-between">
@@ -1350,7 +1359,6 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
           <div className="w-full flex justify-center items-center flex-col">
             <img src={letterhead} alt="Letterhead Banner" style={{ width: "100%", height: "100%" }} />
-            {/* <h1 className="text-[32px]/10 font-bold m-0 p-0">MEGHA ENGINEERING & INFRASTRUCTURES LTD.</h1> */}
             <p className="text-base/3 font-bold mb-[2px]">FORM XXXIX (See Rule 122)</p>
           </div>
           <hr className="border-t border-[2px] bg-gray-900 border-gray-900" />
@@ -1388,7 +1396,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             </div>
             <div className="grid grid-cols-2 col-span-2 font-semibold">
               <p>Date of Examination</p>
-              <p className="">: {formatISTDate(form.date_of_examination)}</p>
+              <p className="">: {formatDateDMY(form.date_of_examination)}</p>
             </div>
             <div className="col-span-2"></div>
             <div className="col-span-4 border-b border-gray-900"></div>
@@ -1460,13 +1468,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     :
                   </div>
                   <input type="date"
-                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    className="screen-only bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.dob ? form.dob.split("T")[0] : ""}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       dob: e.target.value
                     }))}
                   />
+                  <p className="print-only bg-transparent text-sm/4 w-full">{form.dob ? formatDateDMY(form.dob): ("")}</p>
                 </div>
                 <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.aadhar_no ? ("no-print") : ("")}`}>
                   <div className="flex justify-between">
@@ -1785,9 +1794,9 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             {/* Test Date */}
             <div
               className="absolute text-sm font-semibold"
-              style={{ top: "16%", left: "20%" }}
+              style={{ top: "16%", left: "21.25%" }}
             >
-              <p className="text-lg">{new Date().toDateString("en-GB")}</p>
+              <p className="text-lg">{formatDateDMY(new Date().toISOString().split("T")[0])}</p>
             </div>
 
             <div

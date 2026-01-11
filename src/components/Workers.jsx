@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as XLSX from "xlsx";
 import api from "../api/axios";
 import SingleWorkerForm from "./SingleWorkerForm";
+import { formatDateDMY } from "../utils/date";
 import { useEffect } from "react";
 import { FaMagnifyingGlass, FaTrash, FaRegPenToSquare, FaRegFloppyDisk, FaUserPlus } from "react-icons/fa6";
 
@@ -30,26 +31,6 @@ function BulkUpload() {
     }
     fetchWorkers();
   }, []);
-
-  function formatExcelDate(value) {
-    if (!value) return "";
-
-    if (value instanceof Date) {
-      return value.toLocaleDateString("en-GB");
-    }
-
-    if (typeof value === "number") {
-      const jsDate = new Date((value - 25569) * 86400 * 1000);
-      return jsDate.toLocaleDateString("en-GB");
-    }
-
-    return String(value);
-  }
-  function formatISTDate(date) {
-    return new Date(date).toLocaleDateString("en-GB", {
-      timeZone: "Asia/Kolkata"
-    });
-  }
 
   let filteredWorkers = [];
 
@@ -361,7 +342,7 @@ function BulkUpload() {
                             <td className="p-1 border">{worker.fathers_name ? worker.fathers_name : ""}</td>
                             <td className="p-1 border">{(worker.aadhar_no && worker.aadhar_no != "undefined") ? worker.aadhar_no : ""}</td>
                             <td className="p-1 border">{worker.gender ? worker.gender : ""}</td>
-                            <td className="p-1 border">{worker.dob ? formatISTDate(worker.dob) : ""}</td>
+                            <td className="p-1 border">{worker.dob ? formatDateDMY(worker.dob) : ""}</td>
                             <td className="p-1 border">{worker.weight ? worker.weight : ""}</td>
                             <td className="p-1 border">{(worker.phone_no && worker.phone_no != "undefined") ? worker.phone_no : ""}</td>
                             <td className="p-2 border flex justify-center gap-3">

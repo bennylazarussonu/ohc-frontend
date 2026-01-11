@@ -94,7 +94,7 @@ function ExaminationParameters() {
                     }}
                     className={`px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto
                       ${w.physical_parameters?.status === "Done"
-                        ? "bg-green-700 text-white"
+                        ? "bg-gray-400 bg-opacity-60 text-black"
                         : "bg-blue-600 hover:bg-blue-700"}
                     `}
                   >
@@ -114,7 +114,7 @@ function ExaminationParameters() {
                     }}
                     className={`px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto
                       ${w.opthalmic_examination?.status === "Done"
-                        ? "bg-green-700 text-white"
+                        ? "bg-gray-400 bg-opacity-60 text-black"
                         : "bg-purple-600 hover:bg-purple-700"}
                     `}
                   >

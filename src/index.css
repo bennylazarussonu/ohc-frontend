@@ -143,8 +143,16 @@ input[type="date"]:not(:focus):invalid::before {
   }
 }
 @media print {
-  .print-only { display: block; }
-  .screen-only { display: none; }
+  .print-only { display: block !important; }
+  .screen-only { display: none !important; }
+}
+
+.screen-only {
+  display: inline-block;
+}
+
+.print-only {
+  display: none;
 }
 
 

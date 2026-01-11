@@ -304,7 +304,7 @@ function IdRenewal() {
 
             {/* Selected Worker */}
             {selectedWorker && !isNewWorker && !isEditingWorker && (
-                <div className="mt-4 p-3 bg-gray-900 rounded-lg">
+                <div className="mt-4 p-3 border border-gray-600 rounded">
                     <div className="flex justify-between">
                         <p className="font-bold">{selectedWorker.name}</p>
                         <button
@@ -329,8 +329,8 @@ function IdRenewal() {
 
                 </div>
             )}
-
-            <div className="grid grid-cols-4 gap-3 p-3 bg-gray-900 rounded-lg mt-3">
+<br />
+            <div className="grid grid-cols-4 gap-3 rounded-lg mt-3">
                 <div className="col-start-1">
                     <p className="text-sm text-gray-400 font-bold">Last Date of Renewal:</p>
                     <input
