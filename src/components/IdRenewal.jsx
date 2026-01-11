@@ -1,6 +1,6 @@
 import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip } from "react-icons/fa6";
 import api from "../api/axios";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 function IdRenewal() {
     const [workerSearch, setWorkerSearch] = useState("");
@@ -35,6 +35,9 @@ function IdRenewal() {
         remarks: "",
         vertigo_test_passed: true,
     });
+    const [pulseDiagnosis, setPulseDiagnosis] = useState({ text: "", color: "", border: "" })
+    const [bpDiagnosis, setBpDiagnosis] = useState({ text: "", color: "", border: "" })
+    const [spo2Diagnosis, setSpo2Diagnosis] = useState({ text: "", color: "", border: "" })
 
     const mapWorkerToForm = (worker) => ({
         name: worker.name || "",
@@ -92,27 +95,152 @@ function IdRenewal() {
             setIsEditingWorker(false);
             setIsNewWorker(false);
             setRenewalForm({
-  previous_renewal_date: "",
-  blood_group: "",
-  general_condition: "",
-  pulse: "",
-  systolic: "",
-  diastolic: "",
-  spo2: "",
-  height: "",
-  weight: "",
-  remarks: "",
-  vertigo_test_passed: true,
-});
-        if(selectedWorker.last_id_renewal_date){
-            setRenewalForm({
-                ...renewalForm,
-                previous_renewal_date: selectedWorker.last_id_renewal_date
-            })
-        }
+                previous_renewal_date: "",
+                blood_group: "",
+                general_condition: "",
+                pulse: "",
+                systolic: "",
+                diastolic: "",
+                spo2: "",
+                height: "",
+                weight: "",
+                remarks: "",
+                vertigo_test_passed: true,
+            });
+            if (selectedWorker.last_id_renewal_date) {
+                setRenewalForm({
+                    ...renewalForm,
+                    previous_renewal_date: selectedWorker.last_id_renewal_date
+                })
+            }
 
         }
     };
+
+    useEffect(() => {
+        const pulse = renewalForm.pulse;
+        if (!pulse) {
+            setPulseDiagnosis({ text: "", color: "", border: "" })
+            return;
+        };
+
+        let text = "Normal Pulse";
+        let color = "text-green-400";
+        let border = "focus:border-2 focus:border-green-400";
+        if (pulse < 50) {
+            text = "Severe Bradycardia";
+            color = "text-red-500";
+            border = "focus:border-2 focus:border-red-500";
+        } else if (pulse < 60) {
+            text = "Mild Bradycardia";
+            color = "text-orange-400";
+            border = "focus:border-2 focus:border-orange-400";
+        } else if (pulse <= 100) {
+            // normal
+        } else if (pulse <= 120) {
+            text = "Mild Tachycardia";
+            color = "text-yellow-400";
+            border = "focus:border-2 focus:border-yellow-400";
+        } else if (pulse <= 150) {
+            text = "Moderate Tachycardia";
+            color = "text-orange-400";
+            border = "focus:border-2 focus:border-orange-400";
+        } else {
+            text = "Severe Tachycardia";
+            color = "text-red-500";
+            border = "focus:border-2 focus:border-red-500";
+        }
+
+        setPulseDiagnosis({ text, color, border })
+    }, [renewalForm.pulse]);
+
+    useEffect(() => {
+        const s = Number(renewalForm.systolic);
+        const d = Number(renewalForm.diastolic);
+        if (!s || !d) {
+            setBpDiagnosis({ text: "", color: "", border: "" })
+            return
+        };
+
+        let text = "Normal Blood Pressure";
+        let color = "text-green-400";
+        let border = "focus:border-2 focus:border-green-400";
+
+        // Hypotension
+        if (s < 90 || d < 60) {
+            text = "Hypotension";
+            color = "text-orange-400";
+            border = "focus:border-2 focus:border-orange-400";
+
+            // Normal
+        } else if (s < 120 && d < 80) {
+            text = "Normal Blood Pressure";
+            color = "text-green-400";
+            border = "focus:border-2 focus:border-green-400";
+
+            // Elevated BP (THIS captures 120/80 correctly)
+        } else if (s >= 120 && s < 130 && d < 80) {
+            text = "Elevated Blood Pressure";
+            color = "text-yellow-400";
+            border = "focus:border-2 focus:border-yellow-400";
+
+            // Stage 1 Hypertension
+        } else if (
+            (s >= 130 && s < 140) ||
+            (d >= 80 && d < 90 && s >= 130)
+        ) {
+            text = "Hypertension – Stage 1";
+            color = "text-orange-400";
+            border = "focus:border-2 focus:border-orange-400";
+
+            // Stage 2 Hypertension
+        } else if (
+            (s >= 140 && s < 180) ||
+            (d >= 90 && d < 120)
+        ) {
+            text = "Hypertension – Stage 2";
+            color = "text-red-400";
+            border = "focus:border-2 focus:border-red-400";
+
+            // Crisis
+        } else if (s >= 180 || d >= 120) {
+            text = "Hypertensive Crisis";
+            color = "text-red-500";
+            border = "focus:border-2 focus:border-red-500";
+        }
+
+        setBpDiagnosis({ text, color, border });
+    }, [renewalForm.systolic, renewalForm.diastolic]);
+
+    useEffect(() => {
+    const spo2 = Number(renewalForm.spo2);
+    if (!spo2) {
+        setSpo2Diagnosis({text: "", color: "", border: ""});
+        return;
+    };
+
+    let text = "Normal Oxygen Saturation";
+    let color = "text-green-400";
+    let border = "focus:border-2 focus:border-green-400";
+
+    if (spo2 >= 95) {
+      // normal
+    } else if (spo2 >= 90) {
+      text = "Mild Hypoxia";
+      color = "text-yellow-400";
+      border = "focus:border-2 focus:border-yellow-400";
+    } else if (spo2 >= 85) {
+      text = "Moderate Hypoxia";
+      color = "text-orange-400";
+      border = "focus:border-2 focus:border-orange-400";
+    } else {
+      text = "Severe Hypoxia";
+      color = "text-red-500";
+      border = "focus:border-2 focus:border-red-500";
+    }
+
+    setSpo2Diagnosis({ text, color, border });
+  }, [renewalForm.spo2]);
 
     return (
         <div className="bg-gray-800 p-6 w-full rounded-xl mt-2 overflow-auto no-scrollbar">
@@ -329,12 +457,12 @@ function IdRenewal() {
 
                 </div>
             )}
-<br />
+            <br />
             <div className="grid grid-cols-4 gap-3 rounded-lg mt-3">
                 <div className="col-start-1">
                     <p className="text-sm text-gray-400 font-bold">Last Date of Renewal:</p>
                     <input
-                    max={new Date().toISOString().split("T")[0]}
+                        max={new Date().toISOString().split("T")[0]}
                         type="date"
                         className="bg-gray-700 rounded text-sm p-2 w-full"
                         value={
@@ -387,20 +515,64 @@ function IdRenewal() {
                 />
                 {[
                     ["pulse", "Heart Rate"],
+                ].map(([key, label]) => (
+                    <div>
+                        <input
+                            type="number"
+                            key={key}
+                            placeholder={label}
+                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none ${pulseDiagnosis.border}`}
+                            value={renewalForm[key]}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                        />
+                        <p className={`text-xs ${pulseDiagnosis.color}`}>{pulseDiagnosis.text}</p>
+                    </div>
+                ))}
+                {[
                     ["systolic", "Sytolic Pressure"],
                     ["diastolic", "Diastolic Pressure"],
-                    ["spo2", "SpO2"],
+                ].map(([key, label]) => (
+                    <div>
+                        <input
+                            type="number"
+                            key={key}
+                            placeholder={label}
+                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none ${bpDiagnosis.border}`}
+                            value={renewalForm[key]}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                        />
+                        <p className={`text-xs ${bpDiagnosis.color} ${key === "diastolic"? ("hidden"): ("")}`}>{bpDiagnosis.text}</p>
+                    </div>
+                ))}
+                {[
+                    ["spo2", "SpO2"]
+                ].map(([key, label]) => (
+                    <div>
+                        <input
+                            type="number"
+                            key={key}
+                            placeholder={label}
+                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none ${spo2Diagnosis.border}`}
+                            value={renewalForm[key]}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                        />
+                        <p className={`text-xs ${spo2Diagnosis.color}`}>{spo2Diagnosis.text}</p>
+                    </div>
+                ))}
+                {[
                     ["height", "Height"],
                     ["weight", "Weight"]
                 ].map(([key, label]) => (
-                    <input
-                        type="number"
-                        key={key}
-                        placeholder={label}
-                        className="bg-gray-700 p-2 rounded text-sm"
-                        value={renewalForm[key]}
-                        onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
-                    />
+                    <div>
+                        <input
+                            type="number"
+                            key={key}
+                            placeholder={label}
+                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none`}
+                            value={renewalForm[key]}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                        />
+                    </div>
                 ))}
                 <input
                     type="text"
@@ -445,8 +617,23 @@ function IdRenewal() {
                                         return;
                                     }
 
-                                    if(!renewalForm.previous_renewal_date || renewalForm.previous_renewal_date === null){
+                                    if (!renewalForm.previous_renewal_date || renewalForm.previous_renewal_date === null) {
                                         alert("'Last Date of Renewal' cannot be empty");
+                                        return;
+                                    }
+
+                                    if (renewalForm.pulse > 104) {
+                                        alert("Elevated Heart Rate. Candidate not eligible for ID Renewal");
+                                        return;
+                                    }
+
+                                    if (renewalForm.systolic > 140 || renewalForm.diastolic > 90) {
+                                        alert("Elevated Blood Pressure. Candidate not eligible for ID Renewal");
+                                        return;
+                                    }
+
+                                    if (renewalForm.spo2 < 95) {
+                                        alert("Low Oxygen Saturation. Candidate not eligible for ID Renewal");
                                         return;
                                     }
 
@@ -469,35 +656,35 @@ function IdRenewal() {
 
                                     setSelectedWorker(null);
                                     setRenewalForm({
-        previous_renewal_date: "",
-        blood_group: "",
-        general_condition: "",
-        pulse: "",
-        systolic: "",
-        diastolic: "",
-        spo2: "",
-        height: "",
-        weight: "",
-        remarks: "",
-        vertigo_test_passed: true,
-    });
+                                        previous_renewal_date: "",
+                                        blood_group: "",
+                                        general_condition: "",
+                                        pulse: "",
+                                        systolic: "",
+                                        diastolic: "",
+                                        spo2: "",
+                                        height: "",
+                                        weight: "",
+                                        remarks: "",
+                                        vertigo_test_passed: true,
+                                    });
                                     setIsNewWorker(false);
 
                                 } catch (err) {
                                     console.error(err);
                                     console.log(err);
                                     alert("Failed to renew ID");
-                                } finally{
+                                } finally {
                                     setSaveLoading(false);
                                 }
                             }}
                         >
                             {saveLoading ? (
                                 "Loading"
-                            ): (
-                            <>
-                            <FaIdCardClip />
-                            Renew ID</>)}
+                            ) : (
+                                <>
+                                    <FaIdCardClip />
+                                    Renew ID</>)}
                         </button>
                     </div>
                 </div>
