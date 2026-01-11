@@ -107,10 +107,10 @@ function IdRenewal() {
                 remarks: "",
                 vertigo_test_passed: true,
             });
-            if (selectedWorker.last_id_renewal_date) {
+            if (worker.last_id_renewal_date) {
                 setRenewalForm({
                     ...renewalForm,
-                    previous_renewal_date: selectedWorker.last_id_renewal_date
+                    previous_renewal_date: worker.last_id_renewal_date
                 })
             }
 
