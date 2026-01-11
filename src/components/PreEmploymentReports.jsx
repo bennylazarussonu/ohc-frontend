@@ -92,14 +92,14 @@ const toOk = toDate
     <>
     <div className="w-full bg-gray-800 p-6 rounded-xl text-white">
       <h2 className="text-lg font-bold mb-4">
-        Pre-Employment Examination Reports
+        PRE-EMPLOYMENT EXAMINATION REPORTS
       </h2>
 
       <div className="w-full flex gap-2 justify-center items-center">
         <div>
           <input 
             type="date" 
-            className="p-2 bg-gray-700 rounded"
+            className="px-2 py-1 text-sm bg-gray-700 rounded"
             value={fromDate}
             onChange={e => setFromDate(e.target.value)}
           />
@@ -107,7 +107,7 @@ const toOk = toDate
         <div>
           <input 
             type="date" 
-            className="p-2 bg-gray-700 rounded"
+            className="px-2 py-1 text-sm bg-gray-700 rounded"
             value={toDate}
   onChange={e => setToDate(e.target.value)}
           />
@@ -115,7 +115,7 @@ const toOk = toDate
         <div className="w-full">
           <input 
             type="text" 
-            className="w-full bg-gray-700 rounded p-2" 
+            className="w-full bg-gray-700 rounded px-2 py-1 text-sm" 
             placeholder="Search By Name / Aadhar / Fathers Name" 
             value={searchTerm}
   onChange={e => setSearchTerm(e.target.value)}
@@ -125,7 +125,7 @@ const toOk = toDate
       
         {tab !== "on-going" ? (
           <div className="flex justify-between">
-          <p className="text-sm text-gray-400">* Default date filter set to show only todays Pre-Employment Examinations</p>
+          <p className="text-xs text-gray-400">* Default date filter set to show only todays Pre-Employment Examinations</p>
           <button className="text-sm text-blue-500" onClick={() => {
             setFromDate("")
             setToDate("")

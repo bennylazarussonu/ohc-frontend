@@ -309,7 +309,7 @@ function BulkUpload() {
         <SingleWorkerForm />
       )} */}
           <div className="p-6 bg-gray-800 text-white w-full overflow-scroll no-scrollbar rounded-xl">
-            <p className="text-lg font-bold mb-2">All Workers Data</p>
+            <p className="text-lg font-bold mb-2">ALL WORKERS</p>
             {workers.length === 0
               ? "No workers found."
               : (

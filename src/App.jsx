@@ -68,25 +68,25 @@ function App() {
 
   let timer;
   const searchWorkers = (value) => {
-  setWorkerSearch(value);
-  clearTimeout(timer);
+    setWorkerSearch(value);
+    clearTimeout(timer);
 
-  if (value.trim().length < 2) {
-    setWorkerResults([]);
-    return;
-  }
+    if (value.trim().length < 2) {
+      setWorkerResults([]);
+      return;
+    }
 
-  try {
-    timer = setTimeout(async () => {
-      const res = await api.get("/api/workers/search", {
-      params: { q: value }
-    });
-    setWorkerResults(res.data);
-    }, 300)
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      timer = setTimeout(async () => {
+        const res = await api.get("/api/workers/search", {
+          params: { q: value }
+        });
+        setWorkerResults(res.data);
+      }, 300)
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
 
@@ -126,9 +126,9 @@ function App() {
   const handleSubmit = async () => {
     try {
       if (isEditingWorker) {
-  alert("Finish editing worker before saving OPD");
-  return;
-}
+        alert("Finish editing worker before saving OPD");
+        return;
+      }
 
       // if (!selectedWorker) {
       //   alert("Please select a worker");
@@ -309,32 +309,33 @@ function App() {
                     })
                   }} /> */}
                   <WorkerSection
-  search={workerSearch}
-  results={workerResults}
-  onSearch={searchWorkers}
-  onSelect={(worker) => {
-    setSelectedWorker(worker);
-    setIsNewWorker(false);
-    setWorkerForm({
-      name: worker.name || "",
-      fathers_name: worker.fathers_name || "",
-      dob: worker.dob ? worker.dob.split("T")[0] : "",
-      phone_no: worker.phone_no || "",
-      employee_id: worker.employee_id || "",
-      aadhar_no: worker.aadhar_no || "",
-      gender: worker.gender || "Male",
-      designation: worker.designation || "",
-      contractor_name: worker.contractor_name || "",
-      date_of_joining: worker.date_of_joining
-        ? worker.date_of_joining.split("T")[0]
-        : ""
-    });
-    setWorkerSearch("");
-    setWorkerResults([]);
-  }}
-/>
+                    search={workerSearch}
+                    results={workerResults}
+                    onSearch={searchWorkers}
+                    onSelect={(worker) => {
+                      setSelectedWorker(worker);
+                      setIsNewWorker(false);
+                      setWorkerForm({
+                        name: worker.name || "",
+                        fathers_name: worker.fathers_name || "",
+                        dob: worker.dob ? worker.dob.split("T")[0] : "",
+                        phone_no: worker.phone_no || "",
+                        employee_id: worker.employee_id || "",
+                        aadhar_no: worker.aadhar_no || "",
+                        gender: worker.gender || "Male",
+                        designation: worker.designation || "",
+                        contractor_name: worker.contractor_name || "",
+                        date_of_joining: worker.date_of_joining
+                          ? worker.date_of_joining.split("T")[0]
+                          : ""
+                      });
+                      setWorkerSearch("");
+                      setWorkerResults([]);
+                    }}
+                  />
 
                   <button
+                    disabled = {isEditingWorker}
                     onClick={() => {
                       setSelectedWorker(null);
                       setIsNewWorker(true);
@@ -366,11 +367,11 @@ function App() {
                       <div className='flex items-center gap-2'>
                         <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
                       </div>
-                      <button 
+                      <button
                         className="flex items-center gap-2 text-sm text-green-400"
                         onClick={() => setIsEditingWorker(true)}
                       >
-                        <FaPenToSquare/>
+                        <FaPenToSquare />
                         <p>Edit Worker</p>
                       </button>
                     </div>
@@ -401,44 +402,44 @@ function App() {
                       ].map(([key, label]) => (
                         <div>
                           <input
-                          key={key}
-                          type={(key === "date_of_joining" ? ("date"): ("text"))}
-                          placeholder={label}
-                          className="p-2 bg-gray-700 rounded w-full"
-                          value={workerForm[key]}
-                          onChange={(e) =>
-                            setWorkerForm({ ...workerForm, [key]: e.target.value })
-                          }
-                        />
-                        {(<span className='text-xs text-gray-300'>{label}</span>)}
+                            key={key}
+                            type={(key === "date_of_joining" ? ("date") : ("text"))}
+                            placeholder={label}
+                            className="p-2 bg-gray-700 rounded w-full"
+                            value={workerForm[key]}
+                            onChange={(e) =>
+                              setWorkerForm({ ...workerForm, [key]: e.target.value })
+                            }
+                          />
+                          {(<span className='text-xs text-gray-300'>{label}</span>)}
                         </div>
                       ))}
                       <div>
                         <select
-                        className="p-2 bg-gray-700 rounded w-full"
-                        value={workerForm.gender}
-                        onChange={(e) =>
-                          setWorkerForm({ ...workerForm, gender: e.target.value })
-                        }
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <span className='text-xs text-gray-300'>Gender</span>
+                          className="p-2 bg-gray-700 rounded w-full"
+                          value={workerForm.gender}
+                          onChange={(e) =>
+                            setWorkerForm({ ...workerForm, gender: e.target.value })
+                          }
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <span className='text-xs text-gray-300'>Gender</span>
                       </div>
 
-                      
+
                       <div>
                         <input
-                        type="date"
-                        className="p-2 bg-gray-700 rounded w-full"
-                        value={workerForm.dob}
-                        onChange={(e) =>
-                          setWorkerForm({ ...workerForm, dob: e.target.value })
-                        }
-                      />
-                      <span className="text-xs text-gray-300">Date of Birth</span>
+                          type="date"
+                          className="p-2 bg-gray-700 rounded w-full"
+                          value={workerForm.dob}
+                          onChange={(e) =>
+                            setWorkerForm({ ...workerForm, dob: e.target.value })
+                          }
+                        />
+                        <span className="text-xs text-gray-300">Date of Birth</span>
                       </div>
                     </div>
 
@@ -450,52 +451,52 @@ function App() {
                   </div>
                 )}
                 {isEditingWorker && (
-  <div className="flex gap-2 mt-3">
-    <button
-      onClick={async () => {
-        try {
-          const res = await api.put(
-            `/api/workers/${selectedWorker.id}`,
-            workerForm
-          );
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await api.put(
+                            `/api/workers/${selectedWorker.id}`,
+                            workerForm
+                          );
 
-          setSelectedWorker(res.data);
-          setIsEditingWorker(false);
-          alert("Worker updated successfully");
-        } catch (err) {
-          console.error(err);
-          alert("Failed to update worker");
-        }
-      }}
-      className="bg-green-600 px-3 py-1 rounded text-sm"
-    >
-      Save Changes
-    </button>
+                          setSelectedWorker(res.data);
+                          setIsEditingWorker(false);
+                          alert("Worker updated successfully");
+                        } catch (err) {
+                          console.error(err);
+                          alert("Failed to update worker");
+                        }
+                      }}
+                      className="bg-green-600 px-3 py-1 rounded text-sm"
+                    >
+                      Save Changes
+                    </button>
 
-    <button
-      onClick={() => {
-        setIsEditingWorker(false);
-        setWorkerForm({
-          name: selectedWorker.name || "",
-          fathers_name: selectedWorker.fathers_name || "",
-          dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
-          phone_no: selectedWorker.phone_no || "",
-          employee_id: selectedWorker.employee_id || "",
-          aadhar_no: selectedWorker.aadhar_no || "",
-          gender: selectedWorker.gender || "Male",
-          designation: selectedWorker.designation || "",
-          contractor_name: selectedWorker.contractor_name || "",
-          date_of_joining: selectedWorker.date_of_joining
-            ? selectedWorker.date_of_joining.split("T")[0]
-            : ""
-        });
-      }}
-      className="bg-gray-600 px-3 py-1 rounded text-sm"
-    >
-      Cancel
-    </button>
-  </div>
-)}
+                    <button
+                      onClick={() => {
+                        setIsEditingWorker(false);
+                        setWorkerForm({
+                          name: selectedWorker.name || "",
+                          fathers_name: selectedWorker.fathers_name || "",
+                          dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
+                          phone_no: selectedWorker.phone_no || "",
+                          employee_id: selectedWorker.employee_id || "",
+                          aadhar_no: selectedWorker.aadhar_no || "",
+                          gender: selectedWorker.gender || "Male",
+                          designation: selectedWorker.designation || "",
+                          contractor_name: selectedWorker.contractor_name || "",
+                          date_of_joining: selectedWorker.date_of_joining
+                            ? selectedWorker.date_of_joining.split("T")[0]
+                            : ""
+                        });
+                      }}
+                      className="bg-gray-600 px-3 py-1 rounded text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
 
 
                 <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
@@ -551,11 +552,11 @@ function App() {
           <Staff />
         )}
         {activeMenu === "pre-emp" && (
-          <PreEmployment/>
+          <PreEmployment />
         )}
 
         {activeMenu === "id-renew" && (
-          <IdRenewal/>
+          <IdRenewal />
         )}
       </div>
     </>

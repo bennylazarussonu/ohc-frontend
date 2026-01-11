@@ -12,7 +12,7 @@ function WorkerSection({ search, results, onSearch, onSelect }) {
       <div className="flex items-center gap-2">
         <FaMagnifyingGlass className="text-[16px]" />
         <input
-          placeholder="Name, EmpID, Father, Aadhaar, Phone"
+          placeholder="Search Worker by Name, EmpID, Father Name, Aadhaar, Phone"
           className="w-full px-2 py-1 rounded bg-gray-700 text-sm"
           value={search}
           onChange={(e) => onSearch(e.target.value)}
@@ -43,6 +43,12 @@ function WorkerSection({ search, results, onSearch, onSelect }) {
                     ? formatISTDate(w.date_of_joining)
                     : "—"} | {w.designation}
                 </span>
+                <br />
+                {!w.id_status ? (""): (w.id_status === "Active" ? (
+                  <span className="text-sm text-green-400">ID Renewed</span>
+                ): (
+                  <span className="text sm text-red-400">ID Requires Renewal</span>
+                ))}
               </p>
               <p className="text-xs text-gray-400">
                 {idx + 1} / {results.length}

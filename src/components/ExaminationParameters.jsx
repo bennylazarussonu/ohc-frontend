@@ -57,7 +57,7 @@ function ExaminationParameters() {
 
   return (
     <div className="w-full bg-gray-800 p-6 rounded-xl">
-      <h2 className="text-lg font-bold mb-4">Examination Parameters</h2>
+      <h2 className="text-lg font-bold mb-4">EXAMINATION PARAMETERS</h2>
 
       {loading && <p className="text-sm text-gray-400">Loading...</p>}
 

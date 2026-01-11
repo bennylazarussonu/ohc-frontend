@@ -88,7 +88,7 @@ function SingleMedicineForm({ onSuccess }) {
 
     return (
         <div className="bg-gray-800 p-4 rounded-xl text-white">
-            <h2 className="text-lg font-semibold mb-4">Single Medicine Entry</h2>
+            <h2 className="text-lg font-bold mb-4">MEDICINE ENTRY</h2>
 
             <div className="grid grid-cols-2 gap-3 text-sm">
                 <input

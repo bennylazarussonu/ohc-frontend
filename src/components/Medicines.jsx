@@ -164,7 +164,7 @@ function BulkMedicineUpload() {
                             : "bg-gray-700 text-gray-300 hover:bg-gray-600"}
           `}
                 >
-                    Single Entry
+                    Medicine Entry
                 </button>
                 <button
                     onClick={() => setTab("list")}
@@ -179,7 +179,7 @@ function BulkMedicineUpload() {
             {tab === "bulk" && (
                 <>
                     <div className="p-6 bg-gray-800 h-min text-white rounded-xl mb-2">
-                        <p className="text-lg mb-2">Bulk Upload Medicines Data</p>
+                        <p className="text-lg mb-2 font-bold">BULK UPLOAD MEDICINE DATA</p>
                         <input
                             type="file"
                             accept=".xlsx,.xls"
@@ -230,7 +230,7 @@ function BulkMedicineUpload() {
             )}
             {tab === "list" && (
                 <div className="p-6 bg-gray-800 rounded-xl w-full text-white overflow-scroll no-scrollbar">
-                    <p className="text-lg font-bold mb-2">All Medicines Data</p>
+                    <p className="text-lg font-bold mb-2">ALL MEDICINES</p>
 
                     {medicines.length === 0
                         ? "No medicines found."

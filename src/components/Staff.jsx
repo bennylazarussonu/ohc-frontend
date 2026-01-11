@@ -56,7 +56,7 @@ function Staff() {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-bold">Staff Management</h2>
+        <h2 className="text-lg font-bold">STAFF MANAGEMENT</h2>
 
         <button
           onClick={() => setShowAdd(!showAdd)}

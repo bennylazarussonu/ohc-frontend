@@ -50,7 +50,7 @@ Password: doctor$123`);
       <div className="bg-gray-800 p-4 rounded-xl">
         <div className="flex items-center gap-2 mb-3">
           <FaPlus />
-          <h2 className="font-bold text-lg">Add New Doctor</h2>
+          <h2 className="font-bold text-lg">ADD NEW DOCTOR</h2>
         </div>
 
         <div className="grid grid-cols-4 gap-3 text-sm">

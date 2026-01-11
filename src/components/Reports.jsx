@@ -101,7 +101,7 @@ function Reports() {
 
     return (
         <div className="w-full bg-gray-800 p-4 rounded-xl">
-            <h2 className="text-lg font-bold mb-4">OPD Reports</h2>
+            <h2 className="text-lg font-bold mb-4">OPD REPORTS</h2>
 
             {/* Filters */}
             <div className="flex gap-4 mb-4 text-sm">

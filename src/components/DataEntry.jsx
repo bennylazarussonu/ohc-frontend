@@ -59,7 +59,7 @@ function DataEntry({form, setForm}) {
 
   return (
     <div className="w-full bg-gray-800 p-6 rounded-xl space-y-4">
-      <h2 className="text-lg font-bold">Candidate Data Entry</h2>
+      <h2 className="text-lg font-bold">CANDIDATE DATA ENTRY</h2>
 
       <div className="grid grid-cols-3 gap-3 text-sm">
         <input
