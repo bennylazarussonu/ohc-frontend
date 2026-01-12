@@ -180,8 +180,10 @@ const toOk = toDate
                 <th className="p-2 border w-[15%]">Aadhar</th>
                 <th className="p-2 border w-[15%]">Status</th>
                 <th className="p-2 border w-[10%]">Exam Date</th>
-                <th className="p-2 border w-[20%]">Generate Report</th>
-                <th className="p-2 border w-[10%]">Return Back</th>
+                <th className="p-2 border w-[20%]">Report</th>
+                {tab === "on-going" && (
+                  <th className="p-2 border w-[10%]">Return</th>
+                )}
               </tr>
             </thead>
 
@@ -225,17 +227,19 @@ const toOk = toDate
                     </button>
                     )}
                   </td>
+                  {tab === "on-going" && (
                   <td className="p-2 border text-center">
-                    {tab === "on-going" && (
+                    
                     <button className="bg-orange-600 hover:bg-orange-700 px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto"
                     onClick={() => {
                       handleReturn(r)
                     }}
                     >
                       <FaCircleArrowLeft/>
-                      Return Back</button>
-                  )}
+                      Return</button>
+                  
                   </td>
+                  )}
                 </tr>
               ))}
             </tbody>

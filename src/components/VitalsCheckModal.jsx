@@ -29,16 +29,16 @@ function VitalsCheckModal({ vitals, worker, onClose }) {
     border: "focus:border-2 focus:border-green-400"
   });
   const [pulseDiagnosis, setPulseDiagnosis] = useState({
-  text: "",
-  color: "text-green-400",
-  border: "focus:border-2 focus:border-green-400"
-});
+    text: "",
+    color: "text-green-400",
+    border: "focus:border-2 focus:border-green-400"
+  });
 
-const [bpDiagnosis, setBpDiagnosis] = useState({
-  text: "",
-  color: "text-green-400",
-  border: "focus:border-2 focus:border-green-400"
-});
+  const [bpDiagnosis, setBpDiagnosis] = useState({
+    text: "",
+    color: "text-green-400",
+    border: "focus:border-2 focus:border-green-400"
+  });
 
 
 
@@ -62,98 +62,98 @@ const [bpDiagnosis, setBpDiagnosis] = useState({
   }, [vitals]);
 
   useEffect(() => {
-  const pulse = Number(form.pulse);
-  if (!pulse) return;
+    const pulse = Number(form.pulse);
+    if (!pulse) return;
 
-  let text = "Normal Pulse";
-  let color = "text-green-400";
-  let border = "focus:border-2 focus:border-green-400";
+    let text = "Normal Pulse";
+    let color = "text-green-400";
+    let border = "focus:border-2 focus:border-green-400";
 
-  if (pulse < 50) {
-    text = "Severe Bradycardia";
-    color = "text-red-500";
-    border = "focus:border-2 focus:border-red-500";
-  } else if (pulse < 60) {
-    text = "Mild Bradycardia";
-    color = "text-orange-400";
-    border = "focus:border-2 focus:border-orange-400";
-  } else if (pulse <= 100) {
-    // normal
-  } else if (pulse <= 120) {
-    text = "Mild Tachycardia";
-    color = "text-yellow-400";
-    border = "focus:border-2 focus:border-yellow-400";
-  } else if (pulse <= 150) {
-    text = "Moderate Tachycardia";
-    color = "text-orange-400";
-    border = "focus:border-2 focus:border-orange-400";
-  } else {
-    text = "Severe Tachycardia";
-    color = "text-red-500";
-    border = "focus:border-2 focus:border-red-500";
-  }
+    if (pulse < 50) {
+      text = "Severe Bradycardia";
+      color = "text-red-500";
+      border = "focus:border-2 focus:border-red-500";
+    } else if (pulse < 60) {
+      text = "Mild Bradycardia";
+      color = "text-orange-400";
+      border = "focus:border-2 focus:border-orange-400";
+    } else if (pulse <= 100) {
+      // normal
+    } else if (pulse <= 120) {
+      text = "Mild Tachycardia";
+      color = "text-yellow-400";
+      border = "focus:border-2 focus:border-yellow-400";
+    } else if (pulse <= 150) {
+      text = "Moderate Tachycardia";
+      color = "text-orange-400";
+      border = "focus:border-2 focus:border-orange-400";
+    } else {
+      text = "Severe Tachycardia";
+      color = "text-red-500";
+      border = "focus:border-2 focus:border-red-500";
+    }
 
-  setPulseDiagnosis({ text, color, border });
-}, [form.pulse]);
+    setPulseDiagnosis({ text, color, border });
+  }, [form.pulse]);
 
 
-useEffect(() => {
-  const s = Number(form.blood_pressure.systolic);
-  const d = Number(form.blood_pressure.diastolic);
-  if (!s || !d) return;
+  useEffect(() => {
+    const s = Number(form.blood_pressure.systolic);
+    const d = Number(form.blood_pressure.diastolic);
+    if (!s || !d) return;
 
-  let text = "Normal Blood Pressure";
-  let color = "text-green-400";
-  let border = "focus:border-2 focus:border-green-400";
+    let text = "Normal Blood Pressure";
+    let color = "text-green-400";
+    let border = "focus:border-2 focus:border-green-400";
 
-  // Hypotension
-  if (s < 90 || d < 60) {
-    text = "Hypotension";
-    color = "text-orange-400";
-    border = "focus:border-2 focus:border-orange-400";
+    // Hypotension
+    if (s < 90 || d < 60) {
+      text = "Hypotension";
+      color = "text-orange-400";
+      border = "focus:border-2 focus:border-orange-400";
 
-  // Normal
-  } else if (s < 120 && d < 80) {
-    text = "Normal Blood Pressure";
-    color = "text-green-400";
-    border = "focus:border-2 focus:border-green-400";
+      // Normal
+    } else if (s < 120 && d < 80) {
+      text = "Normal Blood Pressure";
+      color = "text-green-400";
+      border = "focus:border-2 focus:border-green-400";
 
-  // Elevated BP (THIS captures 120/80 correctly)
-  } else if (s >= 120 && s < 130 && d < 80) {
-    text = "Elevated Blood Pressure";
-    color = "text-yellow-400";
-    border = "focus:border-2 focus:border-yellow-400";
+      // Elevated BP (THIS captures 120/80 correctly)
+    } else if (s >= 120 && s < 130 && d < 80) {
+      text = "Elevated Blood Pressure";
+      color = "text-yellow-400";
+      border = "focus:border-2 focus:border-yellow-400";
 
-  // Stage 1 Hypertension
-  } else if (
-    (s >= 130 && s < 140) ||
-    (d >= 80 && d < 90 && s >= 130)
-  ) {
-    text = "Hypertension – Stage 1";
-    color = "text-orange-400";
-    border = "focus:border-2 focus:border-orange-400";
+      // Stage 1 Hypertension
+    } else if (
+      (s >= 130 && s < 140) ||
+      (d >= 80 && d < 90 && s >= 130)
+    ) {
+      text = "Hypertension – Stage 1";
+      color = "text-orange-400";
+      border = "focus:border-2 focus:border-orange-400";
 
-  // Stage 2 Hypertension
-  } else if (
-    (s >= 140 && s < 180) ||
-    (d >= 90 && d < 120)
-  ) {
-    text = "Hypertension – Stage 2";
-    color = "text-red-400";
-    border = "focus:border-2 focus:border-red-400";
+      // Stage 2 Hypertension
+    } else if (
+      (s >= 140 && s < 180) ||
+      (d >= 90 && d < 120)
+    ) {
+      text = "Hypertension – Stage 2";
+      color = "text-red-400";
+      border = "focus:border-2 focus:border-red-400";
 
-  // Crisis
-  } else if (s >= 180 || d >= 120) {
-    text = "Hypertensive Crisis";
-    color = "text-red-500";
-    border = "focus:border-2 focus:border-red-500";
-  }
+      // Crisis
+    } else if (s >= 180 || d >= 120) {
+      text = "Hypertensive Crisis";
+      color = "text-red-500";
+      border = "focus:border-2 focus:border-red-500";
+    }
 
-  setBpDiagnosis({ text, color, border });
-}, [
-  form.blood_pressure.systolic,
-  form.blood_pressure.diastolic
-]);
+    setBpDiagnosis({ text, color, border });
+  }, [
+    form.blood_pressure.systolic,
+    form.blood_pressure.diastolic
+  ]);
 
 
 
@@ -334,7 +334,7 @@ useEffect(() => {
 
       // }
     }
-    setForm(prev => ({ ...prev, [key]: Number(value) }));
+    setForm(prev => ({ ...prev, [key]: value }));
 
   };
 
@@ -343,7 +343,7 @@ useEffect(() => {
       ...prev,
       [parent]: {
         ...prev[parent],
-        [key]: Number(value)
+        [key]: value
       }
     }));
   };
@@ -365,11 +365,66 @@ useEffect(() => {
 
   const handleSubmit = async () => {
     try {
+      if (form.temperature === "" || form.temperature === null) {
+        alert("Temperature cannot be empty.");
+        return;
+      }
+
+      if (form.height === "" || form.height === null) {
+        alert("Height cannot be empty");
+        return;
+      }
+
+      if (form.weight === "" || form.weight === null) {
+        alert("Weight cannot be empty");
+        return;
+      }
+
+      if (form.pulse === "" || form.pulse === null) {
+        alert("Heart Rate cannot be empty");
+        return;
+      }
+
+      if (form.blood_pressure.systolic === "" || form.blood_pressure.systolic === null || form.blood_pressure.diastolic === "" || form.blood_pressure.diastolic === null) {
+        alert("Blood Pressure fields cannot be empty");
+        return;
+      }
+
+      if (form.respiratory_rate === "" || form.respiratory_rate == null) {
+        alert("Respiratory Rate cannot be empty");
+        return;
+      }
+
+      if (form.spo2 === "" || form.spo2 == null) {
+        alert("Oxygen Saturation cannot be empty");
+        return;
+      }
+
+      if (form.chest_circumference.inspiration === "" || form.chest_circumference.inspiration === null || form.chest_circumference.expiration === "" || form.chest_circumference.expiration === null || form.chest_circumference.expansion === "" || form.chest_circumference.expansion === null) {
+        alert("Chest Circumference fields cannot be empty");
+        return;
+      }
+
+      if (form.body_surface_area === "" || form.body_surface_area === null) {
+        alert("Body Surface Area cannot be empty");
+        return;
+      }
       await api.put(`/api/pre-employment/${worker.id}/vitals`, {
         ...form,
+        temperature: Number(form.temperature),
+        weight: Number(form.weight),
+        height: Number(form.height),
+        pulse: Number(form.pulse),
+        respiratory_rate: Number(form.respiratory_rate),
+        spo2: Number(form.spo2),
         bmi: Number(calculateBMI()),
+        blood_pressure: {
+          systolic: Number(form.blood_pressure.systolic),
+          diastolic: Number(form.blood_pressure.diastolic)
+        },
         chest_circumference: {
-          ...form.chest_circumference,
+          inspiration: Number(form.chest_circumference.inspiration),
+          expiration: Number(form.chest_circumference.expiration),
           expansion: Number(calculateChestExpansion())
         }
       });
@@ -513,19 +568,19 @@ useEffect(() => {
           <p className="font-bold text-sm col-span-6 text-gray-400">Heart</p>
           <div className="col-span-6">
             <input
-            key={"pulse"}
-            type="number"
-            className={`p-2 bg-gray-800 w-full rounded`}
-            placeholder="Pulse"
-            value={form.pulse}
-            onChange={e => handleChange("pulse", e.target.value)}
-          />
-          <span className={`text-xs ${pulseDiagnosis.color}`}>
-  {pulseDiagnosis.text}
-</span>
+              key={"pulse"}
+              type="number"
+              className={`p-2 bg-gray-800 w-full rounded`}
+              placeholder="Pulse"
+              value={form.pulse}
+              onChange={e => handleChange("pulse", e.target.value)}
+            />
+            <span className={`text-xs ${pulseDiagnosis.color}`}>
+              {pulseDiagnosis.text}
+            </span>
           </div>
 
-              <input
+          <input
             type="number"
             placeholder="Systolic"
             className={`p-2 bg-gray-800 col-span-3 rounded ${bpDiagnosis.border}`}
@@ -545,8 +600,8 @@ useEffect(() => {
             }
           />
           <span className={`text-xs col-span-6 ${bpDiagnosis.color}`}>
-  {bpDiagnosis.text}
-</span>
+            {bpDiagnosis.text}
+          </span>
           <br />
           <input
             key={"body_surface_area"}
