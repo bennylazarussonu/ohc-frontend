@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { FaFilePdf } from "react-icons/fa6";
+import { FaArrowLeft, FaCircleArrowLeft, FaFilePdf } from "react-icons/fa6";
 import PreEmploymentReportModal from "./PreEmploymentReportModal";
 
 function PreEmploymentReports() {
@@ -81,6 +81,13 @@ const toOk = toDate
     setToDate("");
   }
 }, [tab]);
+
+  const handleReturn = async (record) => {
+    record.preemployment_id = record.id;
+    const res = await api.put("/api/pre-employment/send-back", record);
+    alert("Record Returned back to Examination Parameters");
+    fetchRecords(tab);
+  }
 
 
   const generateReport = (record) => {
@@ -172,8 +179,9 @@ const toOk = toDate
                 <th className="p-2 border w-[25%]">Name</th>
                 <th className="p-2 border w-[15%]">Aadhar</th>
                 <th className="p-2 border w-[15%]">Status</th>
-                <th className="p-2 border w-[20%]">Exam Date</th>
-                <th className="p-2 border w-[20%]">Action</th>
+                <th className="p-2 border w-[10%]">Exam Date</th>
+                <th className="p-2 border w-[20%]">Generate Report</th>
+                <th className="p-2 border w-[10%]">Return Back</th>
               </tr>
             </thead>
 
@@ -193,7 +201,8 @@ const toOk = toDate
                   </td>
                   <td className="p-2 border text-center">
                     {tab === "on-going" && (
-                      <button
+                      <div>
+                        <button
                       onClick={() => {
                         setSelectedCandidate(r)
                         setReportModal(true)}}
@@ -202,6 +211,7 @@ const toOk = toDate
                       <FaFilePdf />
                       Generate Report
                     </button>
+                      </div>
                     )}
                     {(tab == "fit" || tab === "unfit") && (
                       <button
@@ -214,6 +224,17 @@ const toOk = toDate
                       View Report
                     </button>
                     )}
+                  </td>
+                  <td className="p-2 border text-center">
+                    {tab === "on-going" && (
+                    <button className="bg-orange-600 hover:bg-orange-700 px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto"
+                    onClick={() => {
+                      handleReturn(r)
+                    }}
+                    >
+                      <FaCircleArrowLeft/>
+                      Return Back</button>
+                  )}
                   </td>
                 </tr>
               ))}
