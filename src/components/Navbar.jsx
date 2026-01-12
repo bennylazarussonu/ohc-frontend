@@ -1,4 +1,4 @@
-import { FaUsers, FaPills, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip } from "react-icons/fa6";
+import { FaUsers, FaPills, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext";
 
 function Navbar({ border, active, onChange }) {
@@ -6,6 +6,7 @@ function Navbar({ border, active, onChange }) {
 
   const menus = [
     { key: "profile", label: "Profile", icon: <FaUser /> },
+    { key: "dashboard", label: "Dashboard", icon: <FaDashcube/>},
     { key: "workers", label: "Workers", icon: <FaUsers /> },
     { key: "medicines", label: "Medicines", icon: <FaPills /> },
     { key: "pre-emp", label: "Pre-Employment", icon: <FaUserShield /> },
@@ -18,8 +19,8 @@ function Navbar({ border, active, onChange }) {
 
   const renderMenus = () => {
     if (user.role === "ADMIN") return menus;
-    if (user.role === "DOCTOR") return menus.slice(0, 7);
-    if (user.role === "EMPLOYEE") return menus.slice(0, 4);
+    if (user.role === "DOCTOR") return menus.slice(0, 8);
+    if (user.role === "EMPLOYEE") return menus.slice(0, 6);
     return [];
   };
 

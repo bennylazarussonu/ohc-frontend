@@ -16,6 +16,7 @@ import Profile from './components/Profile.jsx';
 import Staff from './components/Staff.jsx';
 import PreEmployment from './components/PreEmployment.jsx';
 import IdRenewal from './components/IdRenewal.jsx';
+import Dashboard from "./components/Dashboard.jsx";
 
 function App() {
   const { user, loading } = useAuth();
@@ -557,6 +558,9 @@ function App() {
 
         {activeMenu === "id-renew" && (
           <IdRenewal />
+        )}
+        {activeMenu === "dashboard" && (
+          <Dashboard/>
         )}
       </div>
     </>
