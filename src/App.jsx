@@ -557,7 +557,14 @@ function App() {
         )}
 
         {activeMenu === "id-renew" && (
-          <IdRenewal />
+          <div>
+            <div className="bg-gray-800 rounded p-2">
+              <div className="w-1/2 bg-gray-700 rounded p-1 font-semibold">
+                Renew ID
+              </div>
+            </div>
+            <IdRenewal />
+          </div>
         )}
         {activeMenu === "dashboard" && (
           <Dashboard/>

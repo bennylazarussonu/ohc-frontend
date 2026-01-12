@@ -19,6 +19,16 @@ function DataEntry({form, setForm}) {
       return;
     }
 
+    if(!form.designation){
+      alert("Designation is required");
+      return;
+    }
+
+    if(!form.identification_marks){
+      alert("Identification Mark is required");
+      return;
+    }
+
     try {
       setLoading(true);
 

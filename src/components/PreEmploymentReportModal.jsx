@@ -638,6 +638,20 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 </div>
               </div>
               <div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.designation ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Designation</p>
+                    :
+                  </div>
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.designation}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      designation: e.target.value
+                    }))}
+                  />
+                </div>
                 <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>
                   <div className="flex justify-between">
                     <p>Date of Birth</p>
@@ -1462,6 +1476,20 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 </div>
               </div>
               <div>
+                <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.designation ? ("no-print") : ("")}`}>
+                  <div className="flex justify-between">
+                    <p>Designation</p>
+                    :
+                  </div>
+                  <input type="text"
+                    className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
+                    value={form.designation}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      designation: e.target.value
+                    }))}
+                  />
+                </div>
                 <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.dob ? ("no-print") : ("")}`}>
                   <div className="flex justify-between">
                     <p>Date of Birth</p>
