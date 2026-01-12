@@ -557,10 +557,13 @@ function App() {
         )}
 
         {activeMenu === "id-renew" && (
-          <div>
-            <div className="bg-gray-800 rounded p-2">
-              <div className="w-1/2 bg-gray-700 rounded p-1 font-semibold">
-                Renew ID
+          <div className='w-full'>
+            <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
+              <div className="w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center">
+                ID Renewal
+              </div>
+              <div className="w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center">
+                List of Renewed IDs
               </div>
             </div>
             <IdRenewal />
