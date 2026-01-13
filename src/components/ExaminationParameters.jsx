@@ -132,7 +132,7 @@ function ExaminationParameters() {
                       : "Vision Check"}
                   </button>
                 </td>
-                <td>
+                <td className="p-2 border text-center">
                   <button className="px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto bg-red-600 text-white"
                     onClick={() => handleCancel(w)}
                   >
