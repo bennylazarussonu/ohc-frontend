@@ -17,6 +17,7 @@ import Staff from './components/Staff.jsx';
 import PreEmployment from './components/PreEmployment.jsx';
 import IdRenewal from './components/IdRenewal.jsx';
 import Dashboard from "./components/Dashboard.jsx";
+import Procurement from './components/Procurement.jsx';
 
 function App() {
   const { user, loading } = useAuth();
@@ -150,6 +151,11 @@ function App() {
         return;
       }
 
+      if(!opd.weight){
+        alert("Weight is required");
+        return;
+      }
+
       setworkerSearchLoading(true);
 
       // 1️⃣ Save OPD
@@ -157,6 +163,7 @@ function App() {
         worker_id: worker.id ? Number(worker.id) : undefined,
         presenting_complaint: opd["presenting_complaint"],
         exam_findings_and_clinical_notes: opd["exam_findings_and_clinical_notes"],
+        weight: opd["weight"],
         temperature: opd["temperature"],
         heart_rate: opd.heart_rate ? Number(opd.heart_rate) : undefined,
         blood_pressure: opd["blood_pressure"],
@@ -571,6 +578,13 @@ function App() {
         )}
         {activeMenu === "dashboard" && (
           <Dashboard/>
+        )}
+
+        {activeMenu === "dispensary" && (
+          <div className='w-full'>
+            <h2 className='text-sm font-bold'>PROCUREMENT</h2>
+            <Procurement/>
+          </div>
         )}
       </div>
     </>

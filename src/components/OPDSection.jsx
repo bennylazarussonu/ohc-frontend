@@ -86,8 +86,9 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
             <div className="flex items-center gap-1 text-[13px]">
                 <FaHeartPulse />Observations:
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-2">
                 {[
+                    "weight",
                     "temperature",
                     "heart_rate",
                     "blood_pressure",

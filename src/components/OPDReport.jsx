@@ -62,6 +62,12 @@ function OPDReport({ data }) {
                 {(opd.presenting_complaint || opd.exam_findings_and_clinical_notes) && <hr />}
 
                 <div className="grid grid-cols-2 gap-2 mt-2 mb-4">
+                    {opd.weight && (
+                        <div className="flex">
+                            <p className="w-48"><b>Weight:</b></p>
+                            <p className="text-wrap">{opd.weight} Kg</p>
+                        </div>
+                    )}
                     {opd.temperature && (
                         <div className="flex">
                             <p className="w-48"><b>Temperature:</b></p>

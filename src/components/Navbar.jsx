@@ -1,4 +1,4 @@
-import { FaUsers, FaPills, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube } from "react-icons/fa6";
+import { FaUsers, FaPills, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube, FaHouseMedical } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext";
 
 function Navbar({ border, active, onChange }) {
@@ -12,6 +12,7 @@ function Navbar({ border, active, onChange }) {
     { key: "pre-emp", label: "Pre-Employment", icon: <FaUserShield /> },
     { key: "id-renew", label: "ID Renewal", icon: <FaIdCard/>},
     { key: "opd", label: "OPD & Prescription", icon: <FaNotesMedical /> },
+    { key: "dispensary", label: "Dispensary", icon: <FaHouseMedical />},
     { key: "reports", label: "Reports", icon: <FaFile /> },
     { key: "doctors", label: "Doctors", icon: <FaUserDoctor /> },
     { key: "staff", label: "Staff", icon: <FaUserNurse /> }
@@ -34,7 +35,7 @@ function Navbar({ border, active, onChange }) {
             <button
               key={menu.key}
               onClick={() => onChange(menu.key)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded
+              className={`flex items-center gap-2 px-3 py-1 text-xs rounded
                 ${active === menu.key
                   ? "bg-blue-600 text-white"
                   : "text-gray-300 hover:bg-gray-700 hover:text-white"

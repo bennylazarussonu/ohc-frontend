@@ -497,14 +497,14 @@ function IdRenewal() {
                     onChange={(e) => setRenewalForm({ ...renewalForm, blood_group: e.target.value })}
                 >
                     <option value="">Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
+                    <option value="A+">A POSITIVE</option>
+                    <option value="A-">A NEGATIVE</option>
+                    <option value="B+">B POSITIVE</option>
+                    <option value="B-">B NEGATIVE</option>
+                    <option value="AB+">AB POSITIVE</option>
+                    <option value="AB-">AB NEGATIVE</option>
+                    <option value="O+">O POSITIVE</option>
+                    <option value="O-">O NEGATIVE</option>
                 </select>
                 <input
                     type="text"
