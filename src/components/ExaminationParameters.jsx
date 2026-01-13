@@ -25,6 +25,13 @@ function ExaminationParameters() {
     }
   }
 
+  const handleCancel = async (record) => {
+    record.preemployment_id = record.id;
+    const res = await api.put("/api/pre-employment/cancel", record);
+    alert("Record Cancelled");
+    fetchOnGoingWorkers();
+  }
+
   const fetchWorkerVision = async (worker_id) => {
     try {
       const vision = await api.get(`/api/pre-employment/vision/${worker_id}`);
@@ -76,6 +83,7 @@ function ExaminationParameters() {
               <th className="p-2 border">Aadhar</th>
               <th className="p-2 border">Vitals</th>
               <th className="p-2 border">Vision</th>
+              <th className="p-2 border">Cancel</th>
             </tr>
           </thead>
           <tbody>
@@ -122,6 +130,13 @@ function ExaminationParameters() {
                     {w.opthalmic_examination?.status === "Done"
                       ? "Completed"
                       : "Vision Check"}
+                  </button>
+                </td>
+                <td>
+                  <button className="px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto bg-red-600 text-white"
+                    onClick={() => handleCancel(w)}
+                  >
+                    <p className="font-bold">X</p> Cancel
                   </button>
                 </td>
               </tr>
