@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { FaArrowLeft, FaCircleArrowLeft, FaFilePdf } from "react-icons/fa6";
+import { FaArrowLeft, FaArrowUpFromBracket, FaCircleArrowLeft, FaFilePdf, FaX } from "react-icons/fa6";
 import PreEmploymentReportModal from "./PreEmploymentReportModal";
 
 function PreEmploymentReports() {
@@ -32,6 +32,7 @@ function PreEmploymentReports() {
     let url = "/api/pre-employment/completed";
     if (currentTab === "fit") url = "/api/pre-employment/fit";
     if (currentTab === "unfit") url = "/api/pre-employment/unfit";
+    if (currentTab === "cancelled") url = "/api/pre-employment/cancelled";
 
     const res = await api.get(url);
     setRecords(res.data);
@@ -72,7 +73,7 @@ const toOk = toDate
   fetchRecords(tab);
 
   // Apply default "today" filter ONLY for fit/unfit
-  if ((tab === "fit" || tab === "unfit") && !fromDate && !toDate) {
+  if ((tab === "fit" || tab === "unfit" || tab === "cancelled") && !fromDate && !toDate) {
     const today = getTodayLocalDateString();
     setFromDate(today);
     setToDate(today);
@@ -86,6 +87,20 @@ const toOk = toDate
     record.preemployment_id = record.id;
     const res = await api.put("/api/pre-employment/send-back", record);
     alert("Record Returned back to Examination Parameters");
+    fetchRecords(tab);
+  }
+
+  const handleCancel = async (record) => {
+    record.preemployment_id = record.id;
+    const res = await api.put("/api/pre-employment/cancel", record);
+    alert("Record Cancelled");
+    fetchRecords(tab);
+  }
+
+  const handleRevoke = async (record) => {
+    record.preemployment_id = record.id;
+    const res = await api.put("/api/pre-employment/revoke", record);
+    alert("Record Revoked");
     fetchRecords(tab);
   }
 
@@ -146,7 +161,8 @@ const toOk = toDate
         {[
           ["on-going", "bg-yellow-600", "text-yellow-500"], 
           ["fit", "bg-green-700", "text-green-300"], 
-          ["unfit", "bg-red-700", "text-red-300"]
+          ["unfit", "bg-red-700", "text-red-300"],
+          ["cancelled", "bg-gray-900", "text-black"]
         ].map(([t, bgColor, textColor]) => (
           <button
             key={t}
@@ -158,6 +174,7 @@ const toOk = toDate
             {t === "on-going" && "Pending"}
             {t === "fit" && "Declared Fit"}
             {t === "unfit" && "Declared Unfit"}
+            {t === "cancelled" && "Cancelled"}
           </button>
         ))}
       </div>
@@ -184,6 +201,12 @@ const toOk = toDate
                 {tab === "on-going" && (
                   <th className="p-2 border w-[10%]">Return</th>
                 )}
+                {tab === "on-going" && (
+                  <th className="p-2 border w-[10%]">Cancel</th>
+                )}
+                {tab === "cancelled" &&(
+                  <th className="p-2 border w-[10%]">Revoke</th>
+                )}
               </tr>
             </thead>
 
@@ -194,7 +217,7 @@ const toOk = toDate
                   <td className="p-2 border">{r.name}</td>
                   <td className="p-2 border">{r.aadhar_no || "-"}</td>
                   <td className="p-2 border">
-                    <span className={`${(r.status === "On-Going") ? ("text-yellow-400"): (r.status === "Declared Fit" ? ("text-green-400"): ("text-red-400"))} font-semibold`}>
+                    <span className={`${(r.status === "On-Going") ? ("text-yellow-400"): (r.status === "Declared Fit" ? ("text-green-400"): (r.status === "Cancelled" ?("text-black"):("text-red-400")))} font-semibold`}>
                       {r.status}
                     </span>
                   </td>
@@ -215,7 +238,7 @@ const toOk = toDate
                     </button>
                       </div>
                     )}
-                    {(tab == "fit" || tab === "unfit") && (
+                    {(tab == "fit" || tab === "unfit" || tab === "cancelled") && (
                       <button
                       onClick={() => {
                         setSelectedCandidate(r)
@@ -237,6 +260,33 @@ const toOk = toDate
                     >
                       <FaCircleArrowLeft/>
                       Return</button>
+                  
+                  </td>
+                  )}
+                  {tab === "on-going" && (
+                  <td className="p-2 border text-center">
+                    
+                    <button className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto"
+                    onClick={() => {
+                      handleCancel(r)
+                    }}
+                    >
+                      <p className="font-bold">X</p>
+                      Cancel</button>
+                  
+                  </td>
+                  )}
+                  {tab === "cancelled" && (
+                  <td className="p-2 border text-center">
+                    
+                    <button className="bg-white hover:bg-white text-black px-3 py-1 rounded text-xs flex items-center gap-2 mx-auto"
+                    onClick={() => {
+                      handleRevoke(r)
+                    }}
+                    >
+                      {/* <p className="font-bold"></p> */}
+                      <FaArrowUpFromBracket/>
+                      Revoke</button>
                   
                   </td>
                   )}

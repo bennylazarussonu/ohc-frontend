@@ -18,6 +18,8 @@ import PreEmployment from './components/PreEmployment.jsx';
 import IdRenewal from './components/IdRenewal.jsx';
 import Dashboard from "./components/Dashboard.jsx";
 import Procurement from './components/Procurement.jsx';
+import BUListUpload from './components/BUListUpload.jsx';
+import Stock from './components/Stock.jsx';
 
 function App() {
   const { user, loading } = useAuth();
@@ -32,6 +34,7 @@ function App() {
   const [opd, setOpd] = useState({});
   const [workerSearch, setWorkerSearch] = useState("");
   const [workerResults, setWorkerResults] = useState([]);
+  const [dispensaryTab, setDispensaryTab] = useState("procurement");
 
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState(1);
@@ -581,9 +584,28 @@ function App() {
         )}
 
         {activeMenu === "dispensary" && (
+          // <BUListUpload/>
           <div className='w-full'>
-            <h2 className='text-sm font-bold'>PROCUREMENT</h2>
-            <Procurement/>
+            <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
+              <div className={`bg-gray-700 w-1/2 rounded `}>
+                <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
+              </div>
+              <div className="bg-gray-700 w-1/2 rounded">
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
+              </div>
+            </div>
+            {dispensaryTab === "procurement" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
+                <Procurement/>
+              </div>
+            )}
+            {dispensaryTab === "stock" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>STOCK</h2>
+                <Stock/>
+              </div>
+            )}
           </div>
         )}
       </div>
