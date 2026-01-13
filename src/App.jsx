@@ -584,29 +584,29 @@ function App() {
         )}
 
         {activeMenu === "dispensary" && (
-          <BUListUpload/>
-          // <div className='w-full'>
-          //   <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
-          //     <div className={`bg-gray-700 w-1/2 rounded `}>
-          //       <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
-          //     </div>
-          //     <div className="bg-gray-700 w-1/2 rounded">
-          //       <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
-          //     </div>
-          //   </div>
-          //   {dispensaryTab === "procurement" && (
-          //     <div>
-          //       <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
-          //       <Procurement/>
-          //     </div>
-          //   )}
-          //   {dispensaryTab === "stock" && (
-          //     <div>
-          //       <h2 className='text-sm font-bold mt-4'>STOCK</h2>
-          //       <Stock/>
-          //     </div>
-          //   )}
-          // </div>
+          // <BUListUpload/>
+          <div className='w-full'>
+            <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
+              <div className={`bg-gray-700 w-1/2 rounded `}>
+                <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
+              </div>
+              <div className="bg-gray-700 w-1/2 rounded">
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
+              </div>
+            </div>
+            {dispensaryTab === "procurement" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
+                <Procurement/>
+              </div>
+            )}
+            {dispensaryTab === "stock" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>STOCK</h2>
+                <Stock/>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </>
