@@ -41,8 +41,12 @@ function App() {
   const [editingOpdId, setEditingOpdId] = useState(null);
   const [editingFromReports, setEditingFromReports] = useState(false);
   const [opdListVersion, setOpdListVersion] = useState(0);
+  const isEditing = !!editingOpdId;
+  const hasDoctorInRecord = !!opd?.treating_doctor_id;
 
-  const isLegacyOpd = editingOpdId && !opd?.treating_doctor_id;
+
+
+  // const isLegacyOpd = editingOpdId && !opd?.treating_doctor_id;
 
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
@@ -71,12 +75,13 @@ function App() {
           d.name.toLowerCase().includes(user.userId.toLowerCase())
         );
 
-        if (matchedDoctor) {
+        if (user.role === "DOCTOR" && !editingOpdId && matchedDoctor) {
           setSelectedDoctorId(matchedDoctor.id);
         }
+
       }
     });
-  }, [user]);
+  }, [user, editingOpdId]);
 
 
   let timer;
@@ -144,10 +149,11 @@ function App() {
     const effectiveDoctorId =
       selectedDoctorId || opd.treating_doctor_id;
 
-    if (isLegacyOpd && !selectedDoctorId) {
-  alert("Please select a treating doctor for this old record");
-  return false;
-}
+    if (!effectiveDoctorId) {
+      alert("Please select a treating doctor");
+      return false;
+    }
+
 
 
 
@@ -168,13 +174,18 @@ function App() {
     try {
       const res = await api.get(`/api/opds/${opdId}/full`);
 
-      setOpd(res.data.opd);
+      const opdData = res.data.opd;
+
+      // setIsLegacyRecord(!opdData.treating_doctor_id);
+      setOpd(opdData);
+
       setPrescription(res.data.prescriptions);
 
       const workerRes = await api.get(`/api/workers/${res.data.opd.worker_id}`);
       setSelectedWorker(workerRes.data);
 
-      setSelectedDoctorId(res.data.opd.treating_doctor_id);
+      setSelectedDoctorId(res.data.opd.treating_doctor_id || null);
+
 
       setIsNewWorker(false);
       setIsEditingWorker(false);
@@ -228,11 +239,14 @@ function App() {
 
       setworkerSearchLoading(true);
       const worker = selectedWorker || await saveWorkerIfNew();
+      const doctorId = selectedDoctorId || opd.treating_doctor_id;
+
+
 
       // 1️⃣ Save OPD
       const opdPayload = {
         worker_id: worker.id ? Number(worker.id) : undefined,
-        treating_doctor_id: selectedDoctorId || opd.treating_doctor_id,
+        treating_doctor_id: doctorId,
         presenting_complaint: opd["presenting_complaint"],
         exam_findings_and_clinical_notes: opd["exam_findings_and_clinical_notes"],
         weight: opd["weight"],
@@ -415,7 +429,16 @@ function App() {
       <select
         className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
         value={selectedDoctorId || ""}
-        disabled={user.role === "DOCTOR" || (editingOpdId && !isLegacyOpd)}
+        disabled={
+          // NEW OPD: doctor logged in
+          (!isEditing && user.role === "DOCTOR") ||
+
+          // EDIT OPD: doctor already exists
+          (isEditing && hasDoctorInRecord)
+        }
+
+
+
         onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
       >
         <option value="">Select Treating Doctor</option>
@@ -754,7 +777,16 @@ function App() {
                       <select
                         className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
                         value={selectedDoctorId || ""}
-                        disabled={user.role === "DOCTOR" || (editingOpdId && !isLegacyOpd)}
+                        disabled={
+                          // NEW OPD: doctor logged in
+                          (!isEditing && user.role === "DOCTOR") ||
+
+                          // EDIT OPD: doctor already exists
+                          (isEditing && hasDoctorInRecord)
+                        }
+
+
+
                         onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
                       >
                         <option value="">Select a Treating Doctor</option>
