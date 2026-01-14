@@ -23,7 +23,7 @@ function OPDReportList({ onEdit, refreshKey }) {
         </thead>
         <tbody className="border">
           {records.map(r => (
-            <tr key={r.id} className="text-center">
+            <tr key={r.id}>
               <td className="border p-1">{r.id}</td>
               <td className="border p-1">{r.worker_id}</td>
               <td className="border p-1">{new Date(r.created_at).toLocaleDateString()}</td>

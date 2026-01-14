@@ -13,14 +13,14 @@ function Navbar({ border, active, onChange }) {
     { key: "id-renew", label: "ID Renewal", icon: <FaIdCard/>},
     { key: "opd", label: "OPD & Prescription", icon: <FaNotesMedical /> },
     { key: "dispensary", label: "Dispensary", icon: <FaHouseMedical />},
-    { key: "reports", label: "Reports", icon: <FaFile /> },
+    // { key: "reports", label: "Reports", icon: <FaFile /> },
     { key: "doctors", label: "Doctors", icon: <FaUserDoctor /> },
     { key: "staff", label: "Staff", icon: <FaUserNurse /> }
   ];
 
   const renderMenus = () => {
     if (user.role === "ADMIN") return menus;
-    if (user.role === "DOCTOR") return menus.slice(0, 9);
+    if (user.role === "DOCTOR") return menus.slice(0, 8);
     if (user.role === "EMPLOYEE") return menus.slice(0, 6);
     return [];
   };
