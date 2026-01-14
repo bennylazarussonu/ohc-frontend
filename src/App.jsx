@@ -21,6 +21,7 @@ import Procurement from './components/Procurement.jsx';
 import BUListUpload from './components/BUListUpload.jsx';
 import Stock from './components/Stock.jsx';
 import Dispense from './components/Dispense.jsx';
+import OPDReportList from "./components/OPDReportList.jsx";
 
 function App() {
   const { user, loading } = useAuth();
@@ -36,9 +37,15 @@ function App() {
   const [workerSearch, setWorkerSearch] = useState("");
   const [workerResults, setWorkerResults] = useState([]);
   const [dispensaryTab, setDispensaryTab] = useState("dispense");
+  const [opdTab, setOpdTab] = useState("new"); // "new" | "reports"
+  const [editingOpdId, setEditingOpdId] = useState(null);
+  const [editingFromReports, setEditingFromReports] = useState(false);
+  const [opdListVersion, setOpdListVersion] = useState(0);
+
+  const isLegacyOpd = editingOpdId && !opd?.treating_doctor_id;
 
   const [doctors, setDoctors] = useState([]);
-  const [selectedDoctorId, setSelectedDoctorId] = useState(1);
+  const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [workerForm, setWorkerForm] = useState({
     name: "",
     employee_id: "",
@@ -128,9 +135,63 @@ function App() {
     );
   };
 
+  const validateOPDSubmission = () => {
+    if (!selectedWorker && !isNewWorker) {
+      alert("Please select a worker or add a new worker");
+      return false;
+    }
+
+    const effectiveDoctorId =
+      selectedDoctorId || opd.treating_doctor_id;
+
+    if (!effectiveDoctorId) {
+      alert("Please select a treating doctor");
+      return false;
+    }
+
+
+    if (!opd.presenting_complaint || opd.presenting_complaint.trim() === "") {
+      alert("Presenting complaint is required");
+      return false;
+    }
+
+    if (!opd.weight || opd.weight.trim() === "") {
+      alert("Weight is required");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleEditOpd = async (opdId) => {
+    try {
+      const res = await api.get(`/api/opds/${opdId}/full`);
+
+      setOpd(res.data.opd);
+      setPrescription(res.data.prescriptions);
+
+      const workerRes = await api.get(`/api/workers/${res.data.opd.worker_id}`);
+      setSelectedWorker(workerRes.data);
+
+      setSelectedDoctorId(res.data.opd.treating_doctor_id);
+
+      setIsNewWorker(false);
+      setIsEditingWorker(false);
+
+      setEditingOpdId(opdId);
+      setEditingFromReports(true);   // 👈 key line
+      setOpdTab("reports");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load OPD");
+    }
+  };
 
   const handleSubmit = async () => {
     try {
+      const isEditMode = !!editingOpdId;
+      if (!validateOPDSubmission()) return;
+
       if (isEditingWorker) {
         alert("Finish editing worker before saving OPD");
         return;
@@ -140,8 +201,7 @@ function App() {
       //   alert("Please select a worker");
       //   return;
       // }
-      const worker = selectedWorker || await saveWorkerIfNew();
-      console.log(selectedDoctorId)
+      // console.log(selectedDoctorId)
       // const saveWorkerIfNew = async () => {
       //   if (selectedWorker) return selectedWorker;
 
@@ -149,27 +209,29 @@ function App() {
       //   return res.data; // newly created worker
       // };
 
-      if(!selectedDoctorId){
-        alert("Please select a Doctor");
-        return;
-      }
+      // if(!selectedDoctorId){
+      //   alert("Please select a Doctor");
+      //   return;
+      // }
 
 
-      if (!opd.presenting_complaint) {
-        alert("Presenting complaint is required");
-        return;
-      }
+      // if (!opd.presenting_complaint) {
+      //   alert("Presenting complaint is required");
+      //   return;
+      // }
 
-      if(!opd.weight){
-        alert("Weight is required");
-        return;
-      }
+      // if(!opd.weight){
+      //   alert("Weight is required");
+      //   return;
+      // }
 
       setworkerSearchLoading(true);
+      const worker = selectedWorker || await saveWorkerIfNew();
 
       // 1️⃣ Save OPD
       const opdPayload = {
         worker_id: worker.id ? Number(worker.id) : undefined,
+        treating_doctor_id: selectedDoctorId || opd.treating_doctor_id,
         presenting_complaint: opd["presenting_complaint"],
         exam_findings_and_clinical_notes: opd["exam_findings_and_clinical_notes"],
         weight: opd["weight"],
@@ -183,40 +245,116 @@ function App() {
         referral_advice: opd["referral_advice"]
       };
 
-      const opdRes = await api.post("/api/opds/add", opdPayload);
-      const opdId = opdRes.data.id;
+      let opdId;
 
-      // 2️⃣ Prepare prescription rows
-      if (prescription.length > 0) {
-        const prescriptionPayload = prescription.map(row => ({
-          opd_id: opdId,
+      if (editingOpdId) {
+        // 📝 UPDATE OPD
+        await api.put(`/api/opds/${editingOpdId}`, opdPayload);
+        opdId = editingOpdId;
+
+        // 🔁 Replace prescriptions
+        await api.put(`/api/prescriptions/opd/${editingOpdId}`, prescription.map(row => ({
+          opd_id: editingOpdId,
           worker_id: worker.id,
-          medicine_id: row.medicine_id, // if you store it
+          medicine_id: row.medicine_id,
           drug_name_and_dose: row.drug_name_and_dose,
           route_of_administration: row.route_of_administration,
           frequency: row.frequency,
           brand: row.brand,
-          days: (row.days) ? Number(Math.abs(row.days)) : 0
-        }));
+          days: row.days ? Number(Math.abs(row.days)) : 0
+        })));
 
-        // 3️⃣ Save prescriptions
-        await api.post("/api/prescriptions/add", prescriptionPayload);
+        alert("OPD updated successfully");
+        setEditingOpdId(null);
+        // setOpdTab("reports");
+        setEditingFromReports(false);
+        setOpd({});
+        setPrescription([]);
+        setSelectedWorker(null);
+        setOpdTab("reports")
+        setOpdListVersion(v => v + 1);
+        setLatestReportData({
+          worker,
+          opd: {
+            ...opdPayload,
+            id: editingOpdId,
+            treating_doctor_id: selectedDoctorId || opd.treating_doctor_id
+          },
+          prescription,
+          doctor: doctors.find(d =>
+            d.id === (selectedDoctorId || opd.treating_doctor_id)
+          )
+        });
+        setOpdTab("new");
+
+      } else {
+        // ➕ CREATE OPD
+        const opdRes = await api.post("/api/opds/add", opdPayload);
+        opdId = opdRes.data.id;
+
+        if (prescription.length > 0) {
+          await api.post("/api/prescriptions/add", prescription.map(row => ({
+            opd_id: opdId,
+            worker_id: worker.id,
+            medicine_id: row.medicine_id,
+            drug_name_and_dose: row.drug_name_and_dose,
+            route_of_administration: row.route_of_administration,
+            frequency: row.frequency,
+            brand: row.brand,
+            days: row.days ? Number(Math.abs(row.days)) : 0
+          })));
+        }
+
+        alert("OPD & prescriptions saved successfully");
       }
 
-      alert("OPD & prescriptions saved successfully");
 
-      setLatestReportData({
-        worker,
-        opd: { ...opdPayload, treating_doctor_id: selectedDoctorId },
-        prescription,
-        doctor: doctors.find(d => d.id === selectedDoctorId)
-      });
+      // const opdRes = await api.post("/api/opds/add", opdPayload);
+      // const opdId = opdRes.data.id;
+
+      // 2️⃣ Prepare prescription rows
+      // if (prescription.length > 0) {
+      //   const prescriptionPayload = prescription.map(row => ({
+      //     opd_id: opdId,
+      //     worker_id: worker.id,
+      //     medicine_id: row.medicine_id, // if you store it
+      //     drug_name_and_dose: row.drug_name_and_dose,
+      //     route_of_administration: row.route_of_administration,
+      //     frequency: row.frequency,
+      //     brand: row.brand,
+      //     days: (row.days) ? Number(Math.abs(row.days)) : 0
+      //   }));
+
+      //   // 3️⃣ Save prescriptions
+      //   await api.post("/api/prescriptions/add", prescriptionPayload);
+      // }
+
+      // alert("OPD & prescriptions saved successfully");
+
+      if (!isEditMode) {
+        setLatestReportData({
+          worker,
+          opd: { ...opdPayload, treating_doctor_id: selectedDoctorId },
+          prescription,
+          doctor: doctors.find(d => d.id === selectedDoctorId)
+        });
+      }
+
+
 
       // 4️⃣ Reset page
-      setOpd({});
-      setPrescription([]);
-      setSelectedWorker(null);
-      setSelectedDoctorId(null);
+      if (!editingFromReports) {
+        setOpd({});
+        setPrescription([]);
+        setSelectedWorker(null);
+      }
+
+      // setOpd({});
+      // setPrescription([]);
+      // setSelectedWorker(null);
+      if (user?.role !== "DOCTOR") {
+        setSelectedDoctorId(null);
+      }
       setWorkerForm({
         name: "",
         employee_id: "",
@@ -271,6 +409,26 @@ function App() {
   if (loading) return <p>Loading...</p>;
   if (!user) return <Login />;
 
+  const DoctorSelect = () => (
+    <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
+      <select
+        className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
+        value={selectedDoctorId || ""}
+        disabled={user.role === "DOCTOR" || (editingOpdId && !isLegacyOpd)}
+        onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
+      >
+        <option value="">Select Treating Doctor</option>
+        {doctors.map(d => (
+          <option key={d.id} value={d.id}>
+            {d.name} – {d.qualification}
+          </option>
+        ))}
+      </select>
+      <FaUserDoctor className="text-[13.5px]" />
+    </div>
+  );
+
+
   return (
     <>
       <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"} />
@@ -285,31 +443,106 @@ function App() {
 
         {activeMenu === "opd" && (
           <>
-            {latestReportData ? (
-              <>
-                <div className="print-area">
-                  <OPDReport data={latestReportData} />
+            <div className="flex bg-gray-800 w-full  rounded p-2 gap-2 mb-3">
+              <button
+                className={`px-3 w-1/2 py-1 rounded text-sm font-semibold ${opdTab === "new" ? "bg-blue-600" : "bg-gray-700"}`}
+                onClick={() => {
+                  setOpdTab("new");
+                  setEditingOpdId(null);
+                }}
+              >
+                New OPD
+              </button>
+
+              <button
+                className={`px-3 w-1/2 rounded py-1 text-sm rounded font-semibold ${opdTab === "reports" ? "bg-blue-600" : "bg-gray-700"}`}
+                onClick={() => setOpdTab("reports")}
+              >
+                Reports
+              </button>
+            </div>
+
+            {opdTab === "reports" && !editingFromReports && (
+              <OPDReportList onEdit={handleEditOpd} refreshKey={opdListVersion} />
+            )}
+            {opdTab === "reports" && editingFromReports && (
+              <div className="w-full">
+                {/* Worker summary */}
+                {selectedWorker && (
+                  <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
+                    <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
+                      <FaUser /> WORKER DETAILS
+                    </h3>
+                    <p><b>{selectedWorker.name}</b></p>
+                    <p className="text-xs text-gray-300">
+                      Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
+                    </p>
+                  </div>
+                )}
+
+                <DoctorSelect />
+
+                {/* OPD + Prescription */}
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <OPDSection opd={opd} setOpd={setOpd} />
+                  <PrescriptionSection
+                    prescription={prescription}
+                    setPrescription={setPrescription}
+                  />
                 </div>
-                <div className="flex justify-center gap-4 mt-6">
+
+                {/* Actions */}
+                <div className="flex gap-3 mt-4">
                   <button
-                    onClick={() => window.print()}
-                    className="bg-blue-600 px-4 py-2 rounded"
+                    onClick={handleSubmit}
+                    className="bg-green-600 px-4 py-2 rounded"
                   >
-                    Print / Save PDF
+                    <FaRegFloppyDisk /> Save Changes
                   </button>
 
                   <button
-                    onClick={() => setLatestReportData(null)}
+                    onClick={() => {
+                      setEditingFromReports(false);
+                      setEditingOpdId(null);
+                      setOpd({});
+                      setPrescription([]);
+                      setSelectedWorker(null);
+                      setOpdTab("reports");
+                    }}
                     className="bg-gray-600 px-4 py-2 rounded"
                   >
-                    New OPD
+                    Cancel
                   </button>
                 </div>
-              </>
-            ) : (
-              <div className="w-full">
-                <div className="flex w-full gap-2">
-                  {/* <WorkerSection onSelect={(worker) => {
+              </div>
+            )}
+            {opdTab === "new" && (
+              <>
+                {latestReportData ? (
+                  <>
+                    <div className="print-area">
+                      <OPDReport data={latestReportData} />
+                    </div>
+                    <div className="flex justify-center gap-4 mt-6">
+                      <button
+                        onClick={() => window.print()}
+                        className="bg-blue-600 px-4 py-2 rounded"
+                      >
+                        Print / Save PDF
+                      </button>
+
+                      <button
+                        onClick={() => setLatestReportData(null)}
+                        className="bg-gray-600 px-4 py-2 rounded"
+                      >
+                        New OPD
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full">
+                    <div className="flex w-full gap-2">
+                      {/* <WorkerSection onSelect={(worker) => {
                     setSelectedWorker(worker);
                     setIsNewWorker(false);
                     setWorkerForm({
@@ -325,237 +558,241 @@ function App() {
                       date_of_joining: worker.date_of_joining ? worker.date_of_joining.split("T")[0] : "",
                     })
                   }} /> */}
-                  <WorkerSection
-                    search={workerSearch}
-                    results={workerResults}
-                    onSearch={searchWorkers}
-                    onSelect={(worker) => {
-                      setSelectedWorker(worker);
-                      setIsNewWorker(false);
-                      setWorkerForm({
-                        name: worker.name || "",
-                        fathers_name: worker.fathers_name || "",
-                        dob: worker.dob ? worker.dob.split("T")[0] : "",
-                        phone_no: worker.phone_no || "",
-                        employee_id: worker.employee_id || "",
-                        aadhar_no: worker.aadhar_no || "",
-                        gender: worker.gender || "Male",
-                        designation: worker.designation || "",
-                        contractor_name: worker.contractor_name || "",
-                        date_of_joining: worker.date_of_joining
-                          ? worker.date_of_joining.split("T")[0]
-                          : ""
-                      });
-                      setWorkerSearch("");
-                      setWorkerResults([]);
-                    }}
-                  />
+                      <WorkerSection
+                        disabled={!!editingOpdId}
+                        search={workerSearch}
+                        results={workerResults}
+                        onSearch={searchWorkers}
+                        onSelect={(worker) => {
+                          setSelectedWorker(worker);
+                          setIsNewWorker(false);
+                          setWorkerForm({
+                            name: worker.name || "",
+                            fathers_name: worker.fathers_name || "",
+                            dob: worker.dob ? worker.dob.split("T")[0] : "",
+                            phone_no: worker.phone_no || "",
+                            employee_id: worker.employee_id || "",
+                            aadhar_no: worker.aadhar_no || "",
+                            gender: worker.gender || "Male",
+                            designation: worker.designation || "",
+                            contractor_name: worker.contractor_name || "",
+                            date_of_joining: worker.date_of_joining
+                              ? worker.date_of_joining.split("T")[0]
+                              : ""
+                          });
+                          setWorkerSearch("");
+                          setWorkerResults([]);
+                        }}
+                      />
 
-                  <button
-                    disabled = {isEditingWorker}
-                    onClick={() => {
-                      setSelectedWorker(null);
-                      setIsNewWorker(true);
-                      setWorkerForm({
-                        name: "",
-                        employee_id: "",
-                        fathers_name: "",
-                        aadhar_no: "",
-                        gender: "Male",
-                        dob: "",
-                        phone_no: "",
-                        designation: "",
-                        contractor_name: "",
-                        date_of_joining: ""
-                      });
-                    }}
-                    className="w-1/5 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
-                  >
-                    <span className="flex items-center gap-2">
-                      <FaUserPlus /> Add New Worker
-                    </span>
-                  </button>
-                </div>
-
-
-                {selectedWorker && !isNewWorker && !isEditingWorker && (
-                  <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className='flex items-center gap-2'>
-                        <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
-                      </div>
                       <button
-                        className="flex items-center gap-2 text-sm text-green-400"
-                        onClick={() => setIsEditingWorker(true)}
+                        disabled={isEditingWorker || !!editingOpdId}
+                        onClick={() => {
+                          setSelectedWorker(null);
+                          setIsNewWorker(true);
+                          setWorkerForm({
+                            name: "",
+                            employee_id: "",
+                            fathers_name: "",
+                            aadhar_no: "",
+                            gender: "Male",
+                            dob: "",
+                            phone_no: "",
+                            designation: "",
+                            contractor_name: "",
+                            date_of_joining: ""
+                          });
+                        }}
+                        className="w-1/5 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
                       >
-                        <FaPenToSquare />
-                        <p>Edit Worker</p>
+                        <span className="flex items-center gap-2">
+                          <FaUserPlus /> Add New Worker
+                        </span>
                       </button>
                     </div>
-                    <div className="col-span-3">
-                      <p className='text-[14px]'><b>{selectedWorker.name}</b></p>
-                    </div>
-                    <p className='font-light text-gray-300 text-[12.5px]'>Employee ID: <b>{selectedWorker.employee_id}</b> | Father's Name: <b>{selectedWorker.fathers_name}</b> | ID: <b>{selectedWorker.id}</b> | Aadhaar: <b>{selectedWorker.aadhar_no}</b></p>
-                    <p className='font-light text-gray-300 text-[12.5px]'>Phone No: <b>{selectedWorker.phone_no}</b> | DOB: <b>{formatDate(selectedWorker.dob)}</b></p>
-                  </div>
-                )}
-                {(isNewWorker || isEditingWorker) && (
-                  <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaUser className="text-[16px]" />
-                      <h3 className="font-bold text-[16px]">WORKER DETAILS</h3>
-                    </div>
 
-                    <div className="grid grid-cols-3 gap-3 text-[12.5px]">
-                      {[
-                        ["name", "Name"],
-                        ["employee_id", "Employee ID"],
-                        ["fathers_name", "Father's Name"],
-                        ["aadhar_no", "Aadhaar No"],
-                        ["phone_no", "Phone No"],
-                        ["designation", "Designation"],
-                        ["contractor_name", "Contractor Name"],
-                        ["date_of_joining", "Date of Joining"]
-                      ].map(([key, label]) => (
-                        <div>
-                          <input
-                            key={key}
-                            type={(key === "date_of_joining" ? ("date") : ("text"))}
-                            placeholder={label}
-                            className="p-2 bg-gray-700 rounded w-full"
-                            value={workerForm[key]}
-                            onChange={(e) =>
-                              setWorkerForm({ ...workerForm, [key]: e.target.value })
-                            }
-                          />
-                          {(<span className='text-xs text-gray-300'>{label}</span>)}
+
+                    {selectedWorker && !isNewWorker && !isEditingWorker && (
+                      <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className='flex items-center gap-2'>
+                            <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
+                          </div>
+                          <button
+                            className="flex items-center gap-2 text-sm text-green-400"
+                            onClick={() => setIsEditingWorker(true)}
+                          >
+                            <FaPenToSquare />
+                            <p>Edit Worker</p>
+                          </button>
                         </div>
-                      ))}
-                      <div>
-                        <select
-                          className="p-2 bg-gray-700 rounded w-full"
-                          value={workerForm.gender}
-                          onChange={(e) =>
-                            setWorkerForm({ ...workerForm, gender: e.target.value })
-                          }
-                        >
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        <span className='text-xs text-gray-300'>Gender</span>
+                        <div className="col-span-3">
+                          <p className='text-[14px]'><b>{selectedWorker.name}</b></p>
+                        </div>
+                        <p className='font-light text-gray-300 text-[12.5px]'>Employee ID: <b>{selectedWorker.employee_id}</b> | Father's Name: <b>{selectedWorker.fathers_name}</b> | ID: <b>{selectedWorker.id}</b> | Aadhaar: <b>{selectedWorker.aadhar_no}</b></p>
+                        <p className='font-light text-gray-300 text-[12.5px]'>Phone No: <b>{selectedWorker.phone_no}</b> | DOB: <b>{formatDate(selectedWorker.dob)}</b></p>
                       </div>
-
-
-                      <div>
-                        <input
-                          type="date"
-                          className="p-2 bg-gray-700 rounded w-full"
-                          value={workerForm.dob}
-                          onChange={(e) =>
-                            setWorkerForm({ ...workerForm, dob: e.target.value })
-                          }
-                        />
-                        <span className="text-xs text-gray-300">Date of Birth</span>
-                      </div>
-                    </div>
-
-                    {!selectedWorker && (
-                      <p className="text-xs text-gray-400 mt-2">
-                        Enter details to create a new worker
-                      </p>
                     )}
-                  </div>
-                )}
-                {isEditingWorker && (
-                  <div className="flex gap-2 mt-3">
+                    {(isNewWorker || isEditingWorker) && (
+                      <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaUser className="text-[16px]" />
+                          <h3 className="font-bold text-[16px]">WORKER DETAILS</h3>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3 text-[12.5px]">
+                          {[
+                            ["name", "Name"],
+                            ["employee_id", "Employee ID"],
+                            ["fathers_name", "Father's Name"],
+                            ["aadhar_no", "Aadhaar No"],
+                            ["phone_no", "Phone No"],
+                            ["designation", "Designation"],
+                            ["contractor_name", "Contractor Name"],
+                            ["date_of_joining", "Date of Joining"]
+                          ].map(([key, label]) => (
+                            <div>
+                              <input
+                                key={key}
+                                type={(key === "date_of_joining" ? ("date") : ("text"))}
+                                placeholder={label}
+                                className="p-2 bg-gray-700 rounded w-full"
+                                value={workerForm[key]}
+                                onChange={(e) =>
+                                  setWorkerForm({ ...workerForm, [key]: e.target.value })
+                                }
+                              />
+                              {(<span className='text-xs text-gray-300'>{label}</span>)}
+                            </div>
+                          ))}
+                          <div>
+                            <select
+                              className="p-2 bg-gray-700 rounded w-full"
+                              value={workerForm.gender}
+                              onChange={(e) =>
+                                setWorkerForm({ ...workerForm, gender: e.target.value })
+                              }
+                            >
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                            <span className='text-xs text-gray-300'>Gender</span>
+                          </div>
+
+
+                          <div>
+                            <input
+                              type="date"
+                              className="p-2 bg-gray-700 rounded w-full"
+                              value={workerForm.dob}
+                              onChange={(e) =>
+                                setWorkerForm({ ...workerForm, dob: e.target.value })
+                              }
+                            />
+                            <span className="text-xs text-gray-300">Date of Birth</span>
+                          </div>
+                        </div>
+
+                        {!selectedWorker && (
+                          <p className="text-xs text-gray-400 mt-2">
+                            Enter details to create a new worker
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {isEditingWorker && (
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await api.put(
+                                `/api/workers/${selectedWorker.id}`,
+                                workerForm
+                              );
+
+                              setSelectedWorker(res.data);
+                              setIsEditingWorker(false);
+                              alert("Worker updated successfully");
+                            } catch (err) {
+                              console.error(err);
+                              alert("Failed to update worker");
+                            }
+                          }}
+                          className="bg-green-600 px-3 py-1 rounded text-sm"
+                        >
+                          Save Changes
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setIsEditingWorker(false);
+                            setWorkerForm({
+                              name: selectedWorker.name || "",
+                              fathers_name: selectedWorker.fathers_name || "",
+                              dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
+                              phone_no: selectedWorker.phone_no || "",
+                              employee_id: selectedWorker.employee_id || "",
+                              aadhar_no: selectedWorker.aadhar_no || "",
+                              gender: selectedWorker.gender || "Male",
+                              designation: selectedWorker.designation || "",
+                              contractor_name: selectedWorker.contractor_name || "",
+                              date_of_joining: selectedWorker.date_of_joining
+                                ? selectedWorker.date_of_joining.split("T")[0]
+                                : ""
+                            });
+                          }}
+                          className="bg-gray-600 px-3 py-1 rounded text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
+                      <select
+                        className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
+                        value={selectedDoctorId || ""}
+                        disabled={user.role === "DOCTOR" || (editingOpdId && !isLegacyOpd)}
+                        onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
+                      >
+                        <option value="">Select a Treating Doctor</option>
+                        {doctors.map(d => (
+                          <option key={d.id} value={d.id}>
+                            {d.name} – {d.qualification}
+                          </option>
+                        ))}
+                      </select>
+                      <FaUserDoctor className="text-[13.5px]" />
+                      {user.role === "DOCTOR" && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          You are logged in as a doctor. Treating doctor cannot be changed.
+                        </p>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <OPDSection opd={opd} setOpd={setOpd} onTemplateSelect={handleTemplateSelect} />
+                      <PrescriptionSection prescription={prescription} setPrescription={setPrescription} />
+                    </div>
                     <button
-                      onClick={async () => {
-                        try {
-                          const res = await api.put(
-                            `/api/workers/${selectedWorker.id}`,
-                            workerForm
-                          );
-
-                          setSelectedWorker(res.data);
-                          setIsEditingWorker(false);
-                          alert("Worker updated successfully");
-                        } catch (err) {
-                          console.error(err);
-                          alert("Failed to update worker");
-                        }
-                      }}
-                      className="bg-green-600 px-3 py-1 rounded text-sm"
+                      onClick={handleSubmit}
+                      disabled={workerSearchLoading}
+                      className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
                     >
-                      Save Changes
+                      {workerSearchLoading ? "Saving..." : (
+                        <span className="flex items-center gap-2">
+                          <FaRegFloppyDisk />
+                          Save OPD & Prescription
+                        </span>
+
+                      )}
                     </button>
+                  </div>)}
+              </>
+            )}
+          </>
+        )}
 
-                    <button
-                      onClick={() => {
-                        setIsEditingWorker(false);
-                        setWorkerForm({
-                          name: selectedWorker.name || "",
-                          fathers_name: selectedWorker.fathers_name || "",
-                          dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
-                          phone_no: selectedWorker.phone_no || "",
-                          employee_id: selectedWorker.employee_id || "",
-                          aadhar_no: selectedWorker.aadhar_no || "",
-                          gender: selectedWorker.gender || "Male",
-                          designation: selectedWorker.designation || "",
-                          contractor_name: selectedWorker.contractor_name || "",
-                          date_of_joining: selectedWorker.date_of_joining
-                            ? selectedWorker.date_of_joining.split("T")[0]
-                            : ""
-                        });
-                      }}
-                      className="bg-gray-600 px-3 py-1 rounded text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
-
-
-                <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
-                  <select
-                    className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
-                    value={selectedDoctorId || ""}
-                    disabled={user.role === "DOCTOR"}
-                    onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
-                  >
-                    <option value="">Select Treating Doctor</option>
-                    {doctors.map(d => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} – {d.qualification}
-                      </option>
-                    ))}
-                  </select>
-                  <FaUserDoctor className="text-[13.5px]" />
-                  {user.role === "DOCTOR" && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      You are logged in as a doctor. Treating doctor cannot be changed.
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <OPDSection opd={opd} setOpd={setOpd} onTemplateSelect={handleTemplateSelect} />
-                  <PrescriptionSection prescription={prescription} setPrescription={setPrescription} />
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={workerSearchLoading}
-                  className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
-                >
-                  {workerSearchLoading ? "Saving..." : (
-                    <span className="flex items-center gap-2">
-                      <FaRegFloppyDisk />
-                      Save OPD & Prescription
-                    </span>
-
-                  )}
-                </button>
-              </div>)}
-          </>)}
         {activeMenu === "reports" && (
           <Reports />
         )}
@@ -586,7 +823,7 @@ function App() {
           </div>
         )}
         {activeMenu === "dashboard" && (
-          <Dashboard/>
+          <Dashboard />
         )}
 
         {activeMenu === "dispensary" && (
@@ -594,31 +831,31 @@ function App() {
           <div className='w-full'>
             <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
               <div className={`bg-gray-700 w-1/3 rounded `}>
-                <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
+                <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
               </div>
               <div className="bg-gray-700 w-1/3 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense Medicine</button>
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense Medicine</button>
               </div>
               <div className="bg-gray-700 w-1/3 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600"): ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
               </div>
             </div>
             {dispensaryTab === "procurement" && (
               <div>
                 <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
-                <Procurement/>
+                <Procurement />
               </div>
             )}
             {dispensaryTab === "dispense" && (
               <div>
                 <h2 className='text-sm font-bold mt-4'>DISPENSE</h2>
-                <Dispense/>
+                <Dispense />
               </div>
             )}
             {dispensaryTab === "stock" && (
               <div>
                 <h2 className='text-sm font-bold mt-4'>STOCK</h2>
-                <Stock/>
+                <Stock />
               </div>
             )}
           </div>
