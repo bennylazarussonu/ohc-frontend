@@ -144,10 +144,11 @@ function App() {
     const effectiveDoctorId =
       selectedDoctorId || opd.treating_doctor_id;
 
-    if (!effectiveDoctorId) {
-      alert("Please select a treating doctor");
-      return false;
-    }
+    if (isLegacyOpd && !selectedDoctorId) {
+  alert("Please select a treating doctor for this old record");
+  return false;
+}
+
 
 
     if (!opd.presenting_complaint || opd.presenting_complaint.trim() === "") {
