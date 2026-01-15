@@ -89,7 +89,7 @@ function Procurement() {
                 rate_including_gst: Number(row.rate_incl_gst),
                 per_unit_cost: Number(row.cost_per_unit),
                 item_total_cost: Number(row.amount),
-                medicine_id: row.bulist_id
+                medicine_id: row.medicine_id
             }));
 
         const total_cost = items.reduce(
@@ -123,6 +123,7 @@ function Procurement() {
                 rate_incl_gst: "",
                 amount: "",
                 cost_per_unit: "",
+                medicine_id: item.medicine_id
             }));
 
             setProcurementRows(rows);

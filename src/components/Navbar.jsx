@@ -15,7 +15,8 @@ function Navbar({ border, active, onChange }) {
     { key: "dispensary", label: "Dispensary", icon: <FaHouseMedical />},
     // { key: "reports", label: "Reports", icon: <FaFile /> },
     { key: "doctors", label: "Doctors", icon: <FaUserDoctor /> },
-    { key: "staff", label: "Staff", icon: <FaUserNurse /> }
+    { key: "staff", label: "Staff", icon: <FaUserNurse /> },
+    { key: "opening-stock", label: "STK", icon: ""}
   ];
 
   const renderMenus = () => {

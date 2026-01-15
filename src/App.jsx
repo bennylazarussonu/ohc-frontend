@@ -23,6 +23,7 @@ import Stock from './components/Stock.jsx';
 import Dispense from './components/Dispense.jsx';
 import OPDReportList from "./components/OPDReportList.jsx";
 import OPDConsultation from './components/OPDConsultation.jsx';
+import OpeningStock from "./components/OpeningStock.jsx";
 
 function App() {
   const { user, loading } = useAuth();
@@ -1083,6 +1084,9 @@ const effectiveDoctorId =
         )}
         {activeMenu === "dashboard" && (
           <Dashboard />
+        )}
+        {activeMenu === "opening-stock" && (
+          <OpeningStock/>
         )}
 
         {activeMenu === "dispensary" && (
