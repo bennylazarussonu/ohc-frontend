@@ -19,7 +19,7 @@ function Dispense(){
             <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
                 <p className="font-semibold mb-2 text-xs">SELECT AN OPD TO FILL PRESCRIPTION</p>
                 <div className="w-full">
-                    <table className="border w-full">
+                    <table className="border w-full text-sm">
                         <thead className="border bg-gray-900">
                             <tr className="border">
                                 <th className="border">OPD ID</th>
@@ -42,7 +42,9 @@ function Dispense(){
                                     <td className="border">{opd.worker.contractor_name}</td>
                                     <td className="border">{opd.presenting_complaint}</td>
                                     <td className="border">{formatDateDMY(opd.created_at)}</td>
-                                    <td className="border"></td>
+                                    <td className="border">
+
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

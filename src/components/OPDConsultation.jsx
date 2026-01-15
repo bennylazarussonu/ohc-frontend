@@ -20,7 +20,7 @@ function OPDConsultation({ onEdit, refreshKey }) {
                     className="bg-gray-700 rounded p-1 text-sm w-72"
                 />
             </div>
-            <table className="w-full">
+            <table className="w-full text-sm">
                 <thead className="border bg-gray-900">
                     <tr className="border">
                         <th className="border p-2">OPD ID</th>
