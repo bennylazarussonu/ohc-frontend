@@ -35,7 +35,7 @@ function PrescriptionSection({ prescription, setPrescription }) {
   };
 
   return (
-    <div className="bg-gray-800 p-3 w-full rounded-xl mt-2 h-80 overflow-auto no-scrollbar">
+    <div className="bg-gray-900 p-3 w-full rounded-xl mt-2 h-80 overflow-auto no-scrollbar">
       <div className="flex items-center gap-2">
         <FaFilePrescription className="mb-2 text-[16px]" />
         <h2 className="font-bold mb-2 text-[16px]">PRESCRIPTION</h2>
@@ -76,7 +76,7 @@ function PrescriptionSection({ prescription, setPrescription }) {
                       : row.drug_name_and_dose || ""
                   }
                   placeholder="Search medicine"
-                  className="w-full p-1 bg-gray-700 rounded"
+                  className="w-full p-1 bg-gray-800 rounded"
                   onFocus={() => {
                     setActiveRow(i);
                     setSearchText("");
@@ -125,7 +125,7 @@ function PrescriptionSection({ prescription, setPrescription }) {
               <td className="p-2 border">
                 {row.brands && row.brands.length > 0 ? (
                   <select
-                    className="w-full p-1 bg-gray-700 rounded"
+                    className="w-full p-1 bg-gray-800 rounded"
                     value={row.brand}
                     onChange={(e) => {
                       const updated = [...prescription];
@@ -147,7 +147,7 @@ function PrescriptionSection({ prescription, setPrescription }) {
               <td className="p-2 border">
                 {row.route_of_administration ? (
                   <select
-                    className="w-full p-1 bg-gray-700 rounded"
+                    className="w-full p-1 bg-gray-800 rounded"
                     value={row.route_of_administration}
                     onChange={(e) => {
                       const updated = [...prescription];
@@ -168,7 +168,7 @@ function PrescriptionSection({ prescription, setPrescription }) {
               <td className="p-2 border">
                 {row.frequency ? (
                   <select
-                    className="w-full p-1 bg-gray-700 rounded"
+                    className="w-full p-1 bg-gray-800 rounded"
                     value={row.frequency}
                     onChange={(e) => {
                       const updated = [...prescription];
@@ -189,7 +189,8 @@ function PrescriptionSection({ prescription, setPrescription }) {
               <td className="p-2 border">
                 <input
                   type="text"
-                  className="w-full p-1 bg-gray-700 rounded"
+                  value={row.days}
+                  className="w-full p-1 bg-gray-800 rounded"
                   onChange={e => {
                     const updated = [...prescription];
                     updated[i].days = e.target.value;

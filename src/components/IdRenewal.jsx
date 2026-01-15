@@ -243,7 +243,7 @@ function IdRenewal() {
   }, [renewalForm.spo2]);
 
     return (
-        <div className="bg-gray-800 p-6 w-full rounded-xl mt-2 overflow-auto no-scrollbar">
+        <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
             <h2 className="text-lg font-bold mb-3">ID RENEWAL</h2>
 
             {/* Search box */}

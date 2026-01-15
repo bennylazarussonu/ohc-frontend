@@ -20,7 +20,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
     };
 
     return (
-        <div className="bg-gray-800 p-3 w-full rounded-xl mt-2 h-80 overflow-auto no-scrollbar">
+        <div className="bg-gray-900 p-3 w-full rounded-xl mt-2 h-80 overflow-auto no-scrollbar">
             <div className="flex items-center gap-2">
                 <FaFileMedical className="text-[16px] mb-2" />
                 <h2 className="text-[16px] font-bold mb-2">OPD</h2>
@@ -34,7 +34,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                 <textarea
                     placeholder="presenting_complaint"
                     value={opd.presenting_complaint || ""}
-                    className="w-full p-1 text-[12.5px] bg-gray-700 rounded mb-2"
+                    className="w-full p-1 text-[12.5px] bg-gray-800 rounded mb-2"
                     rows={3}
                     onFocus={() => setActiveField("complaint")}
                     onBlur={() => {
@@ -73,7 +73,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                     <textarea
                         key={field}
                         placeholder={field}
-                        className="w-full p-1 text-[12.5px] bg-gray-700 rounded mb-2"
+                        className="w-full p-1 text-[12.5px] bg-gray-800 rounded mb-2"
                         rows={3}
                         value={opd[field] || ""}
                         onChange={e =>
@@ -97,7 +97,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                     <input
                         key={field}
                         placeholder={field}
-                        className="w-full text-[12.5px] p-1 bg-gray-700 rounded mb-2"
+                        className="w-full text-[12.5px] p-1 bg-gray-800 rounded mb-2"
                         value={opd[field] || ""}
                         onChange={e =>
                             setOpd({ ...opd, [field]: e.target.value })
@@ -113,7 +113,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                 <textarea
                     placeholder="diagnosis"
                     value={opd.diagnosis || ""}
-                    className="w-full p-1 text-[12.5px] bg-gray-700 rounded mb-2"
+                    className="w-full p-1 text-[12.5px] bg-gray-800 rounded mb-2"
                     rows={3}
                     onFocus={() => setActiveField("diagnosis")}
                     onBlur={() => {
@@ -130,7 +130,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                         {diagnosisSuggestions.map((d, i) => (
                             <div
                                 key={i}
-                                className="p-1 hover:bg-gray-700 cursor-pointer"
+                                className="p-1 hover:bg-gray-800 cursor-pointer"
                                 onClick={() => {
                                     // setOpd({ ...opd, diagnosis: d });
                                     onTemplateSelect("diagnosis", d);
@@ -150,7 +150,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                     <textarea
                         key={field}
                         placeholder={field}
-                        className="w-full text-[12.5px] p-1 bg-gray-700 rounded mb-2"
+                        className="w-full text-[12.5px] p-1 bg-gray-800 rounded mb-2"
                         rows={3}
                         value={opd[field] || ""}
                         onChange={e =>
@@ -168,7 +168,7 @@ function OPDSection({ opd, setOpd, onTemplateSelect }) {
                         <textarea
                             key={field}
                             placeholder={field}
-                            className="w-full p-1 text-[12.5px] bg-gray-700 rounded mb-2"
+                            className="w-full p-1 text-[12.5px] bg-gray-800 rounded mb-2"
                             rows={3}
                             value={opd[field] || ""}
                             onChange={e =>
