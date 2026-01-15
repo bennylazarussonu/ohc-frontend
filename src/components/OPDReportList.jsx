@@ -45,7 +45,7 @@ function OPDReportList({ onEdit, refreshKey }) {
               <td className="border p-1">{opd.worker.aadhar_no}</td>
               <td className="border p-1">{formatDateDMY(opd.created_at)}</td>
               <td className="border p-1">{opd.presenting_complaint}</td>
-              <td className="border p-1">{opd.case_dealt_by.userId}</td>
+              <td className="border p-1">{opd?.case_dealt_by?.userId}</td>
               <td className="border p-1 flex justify-center h-full w-full">
                 <button
                   className=" flex items-center text-green-500 rounded p-1"
