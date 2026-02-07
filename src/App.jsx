@@ -306,8 +306,9 @@ if (!effectiveDoctorId) {
 
       if (editingOpdId) {
         // 📝 UPDATE OPD
-        await api.put(`/api/opds/${editingOpdId}`, opdPayload);
+        const editedOPD = await api.put(`/api/opds/${editingOpdId}`, opdPayload);
         opdId = editingOpdId;
+        opdPayload.created_at = editedOPD.data.created_at;
 
         // 🔁 Replace prescriptions
         await api.put(`/api/prescriptions/opd/${editingOpdId}`, prescription.map(row => ({
@@ -349,6 +350,7 @@ if (!effectiveDoctorId) {
         // ➕ CREATE OPD
         const opdRes = await api.post("/api/opds/add", opdPayload);
         opdId = opdRes.data.id;
+        opdPayload.created_at = opdRes.data.created_at;
 
         if (prescription.length > 0) {
           await api.post("/api/prescriptions/add", prescription.map(row => ({

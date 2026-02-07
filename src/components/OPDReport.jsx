@@ -1,8 +1,10 @@
 import letterhead from "../assets/letterhead_banner.png";
 import prescription_logo from "../assets/prescription_logo.png";
+import { formatDateDMY } from "../utils/date.js";
 
 function OPDReport({ data }) {
     const { worker, opd, prescription, doctor} = data;
+    console.log(opd);
     function calculateAge(dateOfBirth) {
   if (!dateOfBirth) return "";
 
@@ -33,12 +35,14 @@ function OPDReport({ data }) {
             {/* PATIENT DETAILS */}
             <div className="grid grid-cols-2 gap-2 text-sm mb-4">
                 <p><b>Name:</b> {worker.name}</p>
+                {opd.created_at && <p><b>Date:</b> {formatDateDMY(opd.created_at)}</p>}
                 {worker.employee_id && <p><b>Emp ID:</b> {worker.employee_id}</p>}
                 {worker.designation && <p><b>Designation:</b> {worker.designation}</p>}
                 {worker.dob && <p><b>Age:</b> {calculateAge(worker.dob)}</p>}
                 {worker.gender && <p><b>Gender:</b> {worker.gender}</p>}
                 {worker.fathers_name && <p><b>Father’s Name:</b> {worker.fathers_name}</p>}
                 {worker.phone_no && <p><b>Contact:</b> {worker.phone_no}</p>}
+                {worker.contractor_name && <p><b>Contractor:</b> {worker.contractor_name}</p>}
             </div>
 
             <hr />
