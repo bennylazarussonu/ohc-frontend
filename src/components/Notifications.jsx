@@ -137,6 +137,10 @@ function Notifications({user}) {
                 </div> */}
                 {showForm && (
                     <div className="bg-gray-900 p-4 rounded mb-4 space-y-3">
+                        <h1 className="text-lg font-bold flex items-center gap-2">
+                            <FaPlus className="text-sm" />
+                            New Notification
+                        </h1>
                         <input
                             type="text"
                             placeholder="Title"
@@ -152,6 +156,7 @@ function Notifications({user}) {
                             className="w-full p-2 rounded bg-gray-800"
                         />
 
+                        <p>Will become inactive at: <b>{expiresAt}</b></p>
                         <input
                             type="datetime-local"
                             value={expiresAt}
