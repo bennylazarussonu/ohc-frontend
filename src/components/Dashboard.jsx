@@ -158,8 +158,8 @@ const [to, setTo] = useState(
         </Card>
 
         <Card title="Workers">
-          <Stat label="Active" value={summary.workers.active} />
-          <Stat label="Expired" value={summary.workers.expired} />
+          <Stat label="Active IDs" value={summary.workers.active} />
+          <Stat label="Expired IDs" value={summary.workers.expired} />
         </Card>
       </div>
 

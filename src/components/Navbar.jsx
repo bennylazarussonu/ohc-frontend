@@ -1,28 +1,46 @@
-import { FaUsers, FaPills, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube, FaHouseMedical } from "react-icons/fa6";
+import { FaUsers, FaPills, FaBell, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube, FaHouseMedical } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from "react";
+import api from "../api/axios";
 
 function Navbar({ border, active, onChange }) {
   const { user, logout } = useAuth();
+  const [activeCount, setActiveCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const res = await api.get("/api/notifications/active/count");
+        setActiveCount(res.data.count);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCount();
+  }, []);
+
 
   const menus = [
     { key: "profile", label: "Profile", icon: <FaUser /> },
-    { key: "dashboard", label: "Dashboard", icon: <FaDashcube/>},
+    { key: "notifications", label: "Notifications", icon: <FaBell /> },
+    { key: "dashboard", label: "Dashboard", icon: <FaDashcube /> },
     { key: "workers", label: "Workers", icon: <FaUsers /> },
     { key: "medicines", label: "Medicines", icon: <FaPills /> },
     { key: "pre-emp", label: "Pre-Employment", icon: <FaUserShield /> },
-    { key: "id-renew", label: "ID Renewal", icon: <FaIdCard/>},
+    { key: "id-renew", label: "ID Renewal", icon: <FaIdCard /> },
     { key: "opd", label: "OPD & Prescription", icon: <FaNotesMedical /> },
-    { key: "dispensary", label: "Dispensary", icon: <FaHouseMedical />},
+    { key: "dispensary", label: "Dispensary", icon: <FaHouseMedical /> },
     // { key: "reports", label: "Reports", icon: <FaFile /> },
     { key: "doctors", label: "Doctors", icon: <FaUserDoctor /> },
     { key: "staff", label: "Staff", icon: <FaUserNurse /> },
-    { key: "opening-stock", label: "STK", icon: ""}
+    // { key: "opening-stock", label: "STK", icon: "" }
   ];
 
   const renderMenus = () => {
     if (user.role === "ADMIN") return menus;
-    if (user.role === "DOCTOR") return menus.slice(0, 8);
-    if (user.role === "EMPLOYEE") return menus.slice(0, 7);
+    if (user.role === "DOCTOR") return menus.slice(0, 9);
+    if (user.role === "EMPLOYEE") return menus.slice(0, 8);
     return [];
   };
 
@@ -44,8 +62,17 @@ function Navbar({ border, active, onChange }) {
                 ${border === menu.key ? "h-10 w-10 rounded-[100%] border-gray-500" : ""}
               `}
             >
-              {menu.icon}
-              {menu.key === "profile"? "" : menu.label}
+              <div className="relative">
+                {menu.icon}
+
+                {menu.key === "notifications" && activeCount > 0 && (
+                  <span className="absolute -top-3 -right-[95px] bg-red-600 text-white text-[10px] px-1.5 rounded-full">
+                    {activeCount}
+                  </span>
+                )}
+              </div>
+
+              {menu.key === "profile" ? "" : menu.label}
             </button>
           ))}
         </div>

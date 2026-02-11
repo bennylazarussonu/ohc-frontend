@@ -24,10 +24,11 @@ import Dispense from './components/Dispense.jsx';
 import OPDReportList from "./components/OPDReportList.jsx";
 import OPDConsultation from './components/OPDConsultation.jsx';
 import OpeningStock from "./components/OpeningStock.jsx";
+import Notifications from './components/Notifications.jsx';
 
 function App() {
   const { user, loading } = useAuth();
-  const [activeMenu, setActiveMenu] = useState("profile");
+  const [activeMenu, setActiveMenu] = useState("notifications");
   const [msg, setMsg] = useState("");
   const [isNewWorker, setIsNewWorker] = useState(false);
   const [isEditingWorker, setIsEditingWorker] = useState(false);
@@ -110,7 +111,7 @@ function App() {
           params: { q: value }
         });
         setWorkerResults(res.data);
-      }, 300)
+      }, 300);
     } catch (err) {
       console.error(err);
     }
@@ -1089,6 +1090,9 @@ const effectiveDoctorId =
         )}
         {activeMenu === "opening-stock" && (
           <OpeningStock/>
+        )}
+        {activeMenu === "notifications" && (
+          <Notifications user={user}/>
         )}
 
         {activeMenu === "dispensary" && (
