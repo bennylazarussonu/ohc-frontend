@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { FaBell, FaPlus, FaPenToSquare, FaTrash, FaThumbtackSlash } from "react-icons/fa6";
+import { FaBell, FaPlus, FaPenToSquare, FaTrash, FaThumbtackSlash, FaPaperPlane } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext";
 
 function Notifications({user}) {
@@ -174,9 +174,10 @@ function Notifications({user}) {
 
                             <button
                                 onClick={createNotification}
-                                className="px-4 py-2 bg-green-600 rounded"
+                                className="px-4 py-2 bg-green-600 rounded font-bold flex items-center gap-1"
                             >
-                                Create
+                                <FaPaperPlane className="text-sm" />
+                                Publish
                             </button>
                         </div>
                     </div>
