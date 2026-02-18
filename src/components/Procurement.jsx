@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { FaDownload, FaMagnifyingGlass, FaPenToSquare, FaPlus, FaX } from "react-icons/fa6";
+import { FaDownload, FaMagnifyingGlass, FaPenToSquare, FaPlus, FaX, FaTrashCan } from "react-icons/fa6";
 import * as XLSX from "xlsx-js-style";
 import { saveAs } from "file-saver";
 
@@ -372,6 +372,26 @@ function Procurement() {
         XLSX.writeFile(workbook, "Procurement_Template.xlsx");
     };
 
+    const handleClearAll = () => {
+    if (!window.confirm("Clear all entered procurement data?")) return;
+
+    set_procured_from("");
+    set_procured_date(new Date().toISOString().split("T")[0]);
+
+    setProcurementRows(prev =>
+        prev.map(row => ({
+            ...row,
+            units: "",
+            rate_excl_gst: "",
+            gst_rate: 5,
+            rate_incl_gst: "",
+            amount: "",
+            cost_per_unit: ""
+        }))
+    );
+};
+
+
 
     return (
         <div className="w-full">
@@ -438,6 +458,10 @@ function Procurement() {
                         >
                             <FaPlus className="text-xs" />
                             <p className="font-semibold">Add Item</p>
+                        </button>
+                        <button onClick={handleClearAll} className="bg-red-600 p-2 text-xs rounded mb-2 flex items-center gap-1">
+                            <FaTrashCan className="text-xs" />
+                            <p className="font-semibold">Clear All</p>
                         </button>
 
                     </div>

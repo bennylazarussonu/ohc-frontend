@@ -82,12 +82,12 @@ function App() {
         );
 
         if (
-  user.role === "DOCTOR" &&
-  matchedDoctor &&
-  (opdTab === "new" || editingFromConsultation)
-) {
-  setSelectedDoctorId(matchedDoctor.id);
-}
+          user.role === "DOCTOR" &&
+          matchedDoctor &&
+          (opdTab === "new" || editingFromConsultation)
+        ) {
+          setSelectedDoctorId(matchedDoctor.id);
+        }
 
 
       }
@@ -158,10 +158,10 @@ function App() {
     }
 
     // already computed globally
-if (!effectiveDoctorId) {
-  alert("Please select a treating doctor");
-  return false;
-}
+    if (!effectiveDoctorId) {
+      alert("Please select a treating doctor");
+      return false;
+    }
 
 
     // if (!effectiveDoctorId) {
@@ -187,50 +187,50 @@ if (!effectiveDoctorId) {
 
   const handleEditOpd = async (opdId, source = "reports") => {
     try {
-    const res = await api.get(`/api/opds/${opdId}/full`);
-    const opdData = res.data.opd;
+      const res = await api.get(`/api/opds/${opdId}/full`);
+      const opdData = res.data.opd;
 
-    setOpd(opdData);
-    setPrescription(res.data.prescriptions);
+      setOpd(opdData);
+      setPrescription(res.data.prescriptions);
 
-    const workerRes = await api.get(`/api/workers/${opdData.worker_id}`);
-    setSelectedWorker(workerRes.data);
+      const workerRes = await api.get(`/api/workers/${opdData.worker_id}`);
+      setSelectedWorker(workerRes.data);
 
-    // 🔑 Consultation logic
-    if (source === "consultation") {
-  setEditingFromConsultation(true);
-  setEditingFromReports(false);
-  setOpdTab("consultation");
+      // 🔑 Consultation logic
+      if (source === "consultation") {
+        setEditingFromConsultation(true);
+        setEditingFromReports(false);
+        setOpdTab("consultation");
 
-  if (user.role === "DOCTOR") {
-    const myDoctor = doctors.find(d =>
-      d.name.toLowerCase().includes(user.userId.toLowerCase())
-    );
-    if (!myDoctor) {
-      alert("Doctor profile not linked");
-      return;
+        if (user.role === "DOCTOR") {
+          const myDoctor = doctors.find(d =>
+            d.name.toLowerCase().includes(user.userId.toLowerCase())
+          );
+          if (!myDoctor) {
+            alert("Doctor profile not linked");
+            return;
+          }
+          setSelectedDoctorId(myDoctor.id);
+        } else {
+          setSelectedDoctorId(opdData.treating_doctor_id ?? null);
+        }
+
+      }
+      else {
+        // Reports edit
+        setEditingFromReports(true);
+        setEditingFromConsultation(false);
+        setSelectedDoctorId(opdData.treating_doctor_id || null);
+        setOpdTab("reports");
+      }
+
+      setEditingOpdId(opdId);
+      setIsNewWorker(false);
+      setIsEditingWorker(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load OPD");
     }
-    setSelectedDoctorId(myDoctor.id);
-  } else {
-  setSelectedDoctorId(opdData.treating_doctor_id ?? null);
-}
-
-}
- else {
-      // Reports edit
-      setEditingFromReports(true);
-      setEditingFromConsultation(false);
-      setSelectedDoctorId(opdData.treating_doctor_id || null);
-      setOpdTab("reports");
-    }
-
-    setEditingOpdId(opdId);
-    setIsNewWorker(false);
-    setIsEditingWorker(false);
-  } catch (err) {
-    console.error(err);
-    alert("Failed to load OPD");
-  }
   };
 
   const handleSubmit = async (forConsultation = false) => {
@@ -326,7 +326,7 @@ if (!effectiveDoctorId) {
         alert("OPD updated successfully");
         setEditingOpdId(null);
         // setOpdTab("reports");
-        setEditingFromReports(false);setEditingFromConsultation(false);
+        setEditingFromReports(false); setEditingFromConsultation(false);
 
         setOpd({});
         setPrescription([]);
@@ -366,9 +366,9 @@ if (!effectiveDoctorId) {
           })));
         }
 
-        if(forConsultation){
+        if (forConsultation) {
           alert("OPD Saved and Set for Doctor's Consultation");
-        }else{
+        } else {
           alert("OPD Saved Successfully");
         }
       }
@@ -475,95 +475,95 @@ if (!effectiveDoctorId) {
   if (!user) return <Login />;
 
   const isDoctor = user?.role === "DOCTOR";
-const isAdmin = user?.role === "ADMIN";
-const isEmployee = user?.role === "EMPLOYEE";
+  const isAdmin = user?.role === "ADMIN";
+  const isEmployee = user?.role === "EMPLOYEE";
 
-const isNew = opdTab === "new" && !editingOpdId;
-const isReportsEdit = editingFromReports;
-const isConsultation = editingFromConsultation;
+  const isNew = opdTab === "new" && !editingOpdId;
+  const isReportsEdit = editingFromReports;
+  const isConsultation = editingFromConsultation;
 
-const effectiveDoctorId =
-  isDoctor
-    ? selectedDoctorId
-    : selectedDoctorId ?? opd?.treating_doctor_id ?? null;
+  const effectiveDoctorId =
+    isDoctor
+      ? selectedDoctorId
+      : selectedDoctorId ?? opd?.treating_doctor_id ?? null;
 
 
-    const isDoctorSelectable = (() => {
-  // DOCTOR: never selectable
-  if (isDoctor){
-    if(isReportsEdit && !opd.treating_doctor_id){ return true;}
+  const isDoctorSelectable = (() => {
+    // DOCTOR: never selectable
+    if (isDoctor) {
+      if (isReportsEdit && !opd.treating_doctor_id) { return true; }
+      return false;
+    }
+
+    // ADMIN rules
+    if (isAdmin) {
+      if (isReportsEdit && (opd?.treating_doctor_id && (opd.treating_doctor_id !== null || opd.treating_doctor_id !== ""))) return false;
+      return true;
+    }
+
+    // EMPLOYEE rules
+    if (isEmployee) {
+      return isNew;
+    }
+
     return false;
-  }
-
-  // ADMIN rules
-  if (isAdmin) {
-    if (isReportsEdit && (opd?.treating_doctor_id && (opd.treating_doctor_id !== null || opd.treating_doctor_id !== ""))) return false;
-    return true;
-  }
-
-  // EMPLOYEE rules
-  if (isEmployee) {
-    return isNew;
-  }
-
-  return false;
-})();
+  })();
 
 
   const DoctorSelect = () => (
     <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
       <select
-  className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
-  value={effectiveDoctorId}
-  disabled={!isDoctorSelectable}
-  onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
->
-  <option value="">Select Treating Doctor</option>
-  {doctors.map(d => (
-    <option key={d.id} value={d.id}>
-      {d.name} – {d.qualification}
-    </option>
-  ))}
-</select>
+        className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
+        value={effectiveDoctorId}
+        disabled={!isDoctorSelectable}
+        onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
+      >
+        <option value="">Select Treating Doctor</option>
+        {doctors.map(d => (
+          <option key={d.id} value={d.id}>
+            {d.name} – {d.qualification}
+          </option>
+        ))}
+      </select>
 
       <FaUserDoctor className="text-[13.5px]" />
     </div>
   );
 
   const resetNewOpd = () => {
-  setEditingOpdId(null);
-  setEditingFromConsultation(false);
-  setEditingFromReports(false);
+    setEditingOpdId(null);
+    setEditingFromConsultation(false);
+    setEditingFromReports(false);
 
-  setOpd({});
-  setPrescription([]);
-  setSelectedWorker(null);
+    setOpd({});
+    setPrescription([]);
+    setSelectedWorker(null);
 
-  setIsNewWorker(false);
-  setIsEditingWorker(false);
+    setIsNewWorker(false);
+    setIsEditingWorker(false);
 
-  setWorkerSearch("");
-  setWorkerResults([]);
+    setWorkerSearch("");
+    setWorkerResults([]);
 
-  setLatestReportData(null);
+    setLatestReportData(null);
 
-  if (user?.role !== "DOCTOR") {
-    setSelectedDoctorId(null);
-  }
+    if (user?.role !== "DOCTOR") {
+      setSelectedDoctorId(null);
+    }
 
-  setWorkerForm({
-    name: "",
-    employee_id: "",
-    fathers_name: "",
-    aadhar_no: "",
-    gender: "Male",
-    dob: "",
-    phone_no: "",
-    designation: "",
-    contractor_name: "",
-    date_of_joining: ""
-  });
-};
+    setWorkerForm({
+      name: "",
+      employee_id: "",
+      fathers_name: "",
+      aadhar_no: "",
+      gender: "Male",
+      dob: "",
+      phone_no: "",
+      designation: "",
+      contractor_name: "",
+      date_of_joining: ""
+    });
+  };
 
 
 
@@ -587,9 +587,9 @@ const effectiveDoctorId =
                 <button
                   className={`px-3 w-1/3 py-1 rounded text-sm font-semibold ${opdTab === "new" ? "bg-blue-600" : "bg-gray-700"}`}
                   onClick={() => {
-  resetNewOpd();
-  setOpdTab("new");
-}}
+                    resetNewOpd();
+                    setOpdTab("new");
+                  }}
 
                 >
                   New OPD
@@ -598,11 +598,11 @@ const effectiveDoctorId =
                 <button
                   className={`px-3 w-1/3 py-1 rounded text-sm font-semibold ${opdTab === "consultation" ? "bg-blue-600" : "bg-gray-700"}`}
                   onClick={() => {
-  setOpdTab("consultation");
-  setEditingOpdId(null);
-  setEditingFromConsultation(false);
-  setEditingFromReports(false);
-}}
+                    setOpdTab("consultation");
+                    setEditingOpdId(null);
+                    setEditingFromConsultation(false);
+                    setEditingFromReports(false);
+                  }}
 
                 >
                   For Consultation
@@ -612,11 +612,11 @@ const effectiveDoctorId =
                 <button
                   className={`px-3 w-1/3 rounded py-1 text-sm rounded font-semibold ${opdTab === "reports" ? "bg-blue-600" : "bg-gray-700"}`}
                   onClick={() => {
-  setOpdTab("reports");
-  setEditingOpdId(null);
-  setEditingFromConsultation(false);
-  setEditingFromReports(false);
-}}
+                    setOpdTab("reports");
+                    setEditingOpdId(null);
+                    setEditingFromConsultation(false);
+                    setEditingFromReports(false);
+                  }}
 
                 >
                   Reports
@@ -660,7 +660,7 @@ const effectiveDoctorId =
                   {/* Actions */}
                   <div className="flex gap-3 mt-4">
                     <button
-                      onClick={() => {handleSubmit(false)}}
+                      onClick={() => { handleSubmit(false) }}
                       className="bg-green-600 px-4 py-2 rounded"
                     >
                       <FaRegFloppyDisk /> Save Changes
@@ -694,59 +694,59 @@ const effectiveDoctorId =
                 />
               )}
               {opdTab === "consultation" && editingFromConsultation && (
-  <div className="w-full">
-    <p className="flex items-center gap-2 text-lg font-bold">
-      <FaPenToSquare />
-      Consultation
-    </p>
+                <div className="w-full">
+                  <p className="flex items-center gap-2 text-lg font-bold">
+                    <FaPenToSquare />
+                    Consultation
+                  </p>
 
-    {selectedWorker && (
-      <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
-        <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
-          <FaUser /> WORKER DETAILS
-        </h3>
-        <p><b>{selectedWorker.name}</b></p>
-        <p className="text-xs text-gray-300">
-          Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
-        </p>
-      </div>
-    )}
+                  {selectedWorker && (
+                    <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
+                      <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
+                        <FaUser /> WORKER DETAILS
+                      </h3>
+                      <p><b>{selectedWorker.name}</b></p>
+                      <p className="text-xs text-gray-300">
+                        Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
+                      </p>
+                    </div>
+                  )}
 
-    <DoctorSelect />
+                  <DoctorSelect />
 
-    <div className="grid grid-cols-2 gap-4 mt-4">
-      <OPDSection opd={opd} setOpd={setOpd} />
-      <PrescriptionSection
-        prescription={prescription}
-        setPrescription={setPrescription}
-      />
-    </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <OPDSection opd={opd} setOpd={setOpd} />
+                    <PrescriptionSection
+                      prescription={prescription}
+                      setPrescription={setPrescription}
+                    />
+                  </div>
 
-    <div className="flex gap-3 mt-4">
-      <button
-        onClick={() => handleSubmit(false)} // doctor finishes consultation
-        className="bg-green-600 px-4 py-2 rounded"
-      >
-        <FaRegFloppyDisk /> Finish Consultation
-      </button>
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => handleSubmit(false)} // doctor finishes consultation
+                      className="bg-green-600 px-4 py-2 rounded"
+                    >
+                      <FaRegFloppyDisk /> Finish Consultation
+                    </button>
 
-      <button
-        onClick={() => {
-          setEditingFromConsultation(false);
-          setEditingOpdId(null);
-          setOpd({});
-          setPrescription([]);
-          setSelectedWorker(null);
-          setOpdTab("consultation");
-          setSelectedDoctorId(null);
-        }}
-        className="bg-gray-600 px-4 py-2 rounded"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
+                    <button
+                      onClick={() => {
+                        setEditingFromConsultation(false);
+                        setEditingOpdId(null);
+                        setOpd({});
+                        setPrescription([]);
+                        setSelectedWorker(null);
+                        setOpdTab("consultation");
+                        setSelectedDoctorId(null);
+                      }}
+                      className="bg-gray-600 px-4 py-2 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
 
 
               {opdTab === "new" && (
@@ -1012,14 +1012,14 @@ const effectiveDoctorId =
                           </p>
                         )}
                       </div> */}
-                      <DoctorSelect/>
+                      <DoctorSelect />
                       <div className="grid grid-cols-2 gap-4">
                         <OPDSection opd={opd} setOpd={setOpd} onTemplateSelect={handleTemplateSelect} />
                         <PrescriptionSection prescription={prescription} setPrescription={setPrescription} />
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => 
+                          onClick={() =>
                             handleSubmit(false)
                           }
                           disabled={workerSearchLoading}
@@ -1034,19 +1034,19 @@ const effectiveDoctorId =
                         </button>
                         {user.role === "EMPLOYEE" && (
                           <button
-                          onClick={() => {
-                            handleSubmit(true)
-                          }}
-                          disabled={workerSearchLoading}
-                          className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
-                        >
-                          {workerSearchLoading ? "Saving..." : (
-                            <span className="flex items-center gap-2">
-                              <FaRegFloppyDisk />
-                              Save OPD & Set for Doctor's Consultation
-                            </span>
-                          )}
-                        </button>
+                            onClick={() => {
+                              handleSubmit(true)
+                            }}
+                            disabled={workerSearchLoading}
+                            className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
+                          >
+                            {workerSearchLoading ? "Saving..." : (
+                              <span className="flex items-center gap-2">
+                                <FaRegFloppyDisk />
+                                Save OPD & Set for Doctor's Consultation
+                              </span>
+                            )}
+                          </button>
                         )}
                       </div>
                     </div>)}
@@ -1089,17 +1089,17 @@ const effectiveDoctorId =
           <Dashboard />
         )}
         {activeMenu === "opening-stock" && (
-          <OpeningStock/>
+          <OpeningStock />
         )}
         {activeMenu === "notifications" && (
-          <Notifications user={user}/>
+          <Notifications user={user} />
         )}
 
-        {activeMenu === "dispensary" && (
+        {/* {activeMenu === "dispensary" && (
           // <BUListUpload/>
           <div className='w-full'>
             <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
-              <div className={`bg-gray-700 w-1/4 rounded `}>
+              <div className={`bg-gray-700 w-1/4 rounded`}>
                 <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
               </div>
               <div className="bg-gray-700 w-1/4 rounded">
@@ -1137,7 +1137,48 @@ const effectiveDoctorId =
               </div>
             )}
           </div>
-        )}
+        )} */}
+        <div className={`${activeMenu === "dispensary" ? "block" : "hidden"} w-full`}>
+          <div className='w-full'>
+            <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
+              <div className={`bg-gray-700 w-1/4 rounded`}>
+                <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
+              </div>
+              <div className="bg-gray-700 w-1/4 rounded">
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense Medicine</button>
+              </div>
+              <div className="bg-gray-700 w-1/4 rounded">
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
+              </div>
+              <div className="bg-gray-700 w-1/4 rounded">
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "adjust" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("adjust")}>Adjust Stock</button>
+              </div>
+            </div>
+
+            <div className={dispensaryTab === "procurement" ? "block" : "hidden"}>
+              <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
+              <Procurement />
+            </div>
+            {dispensaryTab === "dispense" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>DISPENSE</h2>
+                <Dispense />
+              </div>
+            )}
+            {dispensaryTab === "stock" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>STOCK</h2>
+                <Stock />
+              </div>
+            )}
+            {dispensaryTab === "adjust" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>ADJUST STOCK</h2>
+                <OpeningStock />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </>
   );
