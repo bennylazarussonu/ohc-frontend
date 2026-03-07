@@ -1,6 +1,7 @@
 import DataEntry from "./DataEntry";
 import ExaminationParameters from "./ExaminationParameters";
 import PreEmploymentReports from "./PreEmploymentReports";
+import BloodGroup from "./BloodGroup";
 import { useState } from "react";
 function PreEmployment() {
   const [tab, setTab] = useState("entry");
@@ -23,7 +24,7 @@ function PreEmployment() {
   return (
     <div className="w-full">
       <div className="flex gap-2 mb-4 bg-gray-800 p-2 rounded">
-        {["entry", "exam", "reports"].map(t => (
+        {["entry", "exam", "reports", "blood_group"].map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -34,6 +35,7 @@ function PreEmployment() {
             {t === "entry" && "Candidate Data Entry"}
             {t === "exam" && "Examination Parameters"}
             {t === "reports" && "Reports"}
+            {t === "blood_group" && "Blood Group"}
           </button>
         ))}
       </div>
@@ -41,6 +43,7 @@ function PreEmployment() {
       {tab === "entry" && <DataEntry form={form} setForm={setForm}/>}
       {tab === "exam" && <ExaminationParameters />}
       {tab === "reports" && <PreEmploymentReports />}
+      {tab === "blood_group" && <BloodGroup />}
     </div>
   );
 }
