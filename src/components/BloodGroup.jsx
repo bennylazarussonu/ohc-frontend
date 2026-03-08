@@ -65,6 +65,10 @@ const [showModal, setShowModal] = useState(false);
                             ))}
                         </tbody>
                     </table>
+                    <button onClick={async () => {
+        await api.put("/api/workers/temp-blood");
+        alert("Temporary blood field update successful");
+      }}>Click</button>
                     {showModal && (
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
     
@@ -132,7 +136,7 @@ const [showModal, setShowModal] = useState(false);
         </button>
 
       </div>
-
+      
     </div>
   </div>
 )}
