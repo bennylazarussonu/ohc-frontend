@@ -25,10 +25,10 @@ function BloodGroup() {
     <div className="w-full bg-gray-800 p-6 rounded-xl space-y-4">
       <h1 className="text-lg font-bold">BLOOD GROUP</h1>
 
-<button onClick={async () => {
+{/* <button onClick={async () => {
             await api.put("/api/workers/temp-blood");
             alert("Temporary blood field update successful");
-          }}>Click</button>
+          }}>Click</button> */}
       {preEmploymentData.length === 0 ? (
         <p className="text-sm text-gray-400">No data available.</p>
       ) : (
