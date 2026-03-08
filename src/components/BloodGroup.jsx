@@ -1,12 +1,14 @@
 import api from "../api/axios";
 import { useState, useEffect } from "react";
 import { formatDateDMY } from "../utils/date";
+import { FaMagnifyingGlass } from "react-icons/fa6";
 function BloodGroup() {
   const [preEmploymentData, setPreEmploymentData] = useState([]);
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [group, setGroup] = useState("");
   const [rh, setRh] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,6 +23,18 @@ function BloodGroup() {
     fetchData();
   }, []);
 
+  const filteredData = preEmploymentData.filter((item) => {
+  const q = search.toLowerCase();
+
+  return (
+    item.name?.toLowerCase().includes(q) ||
+    item.fathers_name?.toLowerCase().includes(q) ||
+    item.aadhar_no?.includes(q) ||
+    item.contractor_name?.toLowerCase().includes(q) ||
+    String(item.id).includes(q)
+  );
+});
+
   return (
     <div className="w-full bg-gray-800 p-6 rounded-xl space-y-4">
       <h1 className="text-lg font-bold">BLOOD GROUP</h1>
@@ -33,6 +47,19 @@ function BloodGroup() {
         <p className="text-sm text-gray-400">No data available.</p>
       ) : (
         <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <FaMagnifyingGlass className="font-bold" />
+            <input
+  type="text"
+  placeholder="Search by Name, Aadhar, Contractor, ID..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="w-1/4 p-2 rounded bg-gray-700 text-white text-sm outline-none"
+/>
+          </div>
+          <div className="flex justify-end">
+            <p className="text-xs text-gray-300 font-bold">{filteredData.length} of {preEmploymentData.length} Records</p>
+          </div>
           <table className="w-full text-sm border">
             <thead className="bg-gray-900">
               <tr>
@@ -40,13 +67,13 @@ function BloodGroup() {
                 <th className="p-2 border">Name</th>
                 <th className="p-2 border">Father's Name</th>
                 <th className="p-2 border">Aadhar</th>
-                <th className="p-2 border">Pre-Employment Examination Date</th>
                 <th className="p-2 border">Contractor Name</th>
+                <th className="p-2 border">Pre-Employment Examination Date</th>
                 <th className="p-2 border">Action</th>
               </tr>
             </thead>
             <tbody>
-              {preEmploymentData.map((item) => (
+              {filteredData.map((item) => (
                 <tr key={item.id} className="bg-gray-700">
                   <td className="p-2 border">{item.id}</td>
                   <td className="p-2 border">{item.name}</td>
