@@ -25,6 +25,7 @@ import OPDReportList from "./components/OPDReportList.jsx";
 import OPDConsultation from './components/OPDConsultation.jsx';
 import OpeningStock from "./components/OpeningStock.jsx";
 import Notifications from './components/Notifications.jsx';
+import FCACC from './components/FCACC.jsx';
 
 function App() {
   const { user, loading } = useAuth();
@@ -1093,6 +1094,9 @@ function App() {
         )}
         {activeMenu === "notifications" && (
           <Notifications user={user} />
+        )}
+        {activeMenu === "fcacc" && (
+          <FCACC/>
         )}
 
         {/* {activeMenu === "dispensary" && (
