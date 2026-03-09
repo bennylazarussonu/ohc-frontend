@@ -27,7 +27,7 @@ function BloodGroup() {
     };
 
     fetchData();
-  }, []);
+  }, [tab]);
 
   const filteredData = preEmploymentData.filter((item) => {
     const q = search.toLowerCase();
@@ -248,6 +248,8 @@ function BloodGroup() {
 
                             const res = await api.get("/api/pre-employment/empty-blood-group");
                             setPreEmploymentData(res.data);
+                            setGroup("");
+                            setRh("");
                           }}
                           className="bg-green-500 px-3 py-1 rounded"
                         >

@@ -1,4 +1,4 @@
-import { FaUsers, FaPills, FaBell, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube, FaHouseMedical, FaUserTag } from "react-icons/fa6";
+import { FaUsers, FaPills, FaBell, FaNotesMedical, FaFile, FaUserDoctor, FaUser, FaRightFromBracket, FaUserNurse, FaUserShield, FaIdCard, FaIdBadge, FaIdCardClip, FaDashcube, FaHouseMedical, FaUserTag, FaMosquito } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import api from "../api/axios";
@@ -28,6 +28,7 @@ function Navbar({ border, active, onChange }) {
     { key: "workers", label: "Workers", icon: <FaUsers /> },
     { key: "medicines", label: "Medicines", icon: <FaPills /> },
     { key: "fcacc", label: "FCACC", icon: <FaUserTag /> },
+    { key: "malaria", label: "Malaria Test", icon: <FaMosquito/>},
     { key: "pre-emp", label: "Pre-Employment", icon: <FaUserShield /> },
     { key: "id-renew", label: "ID Renewal", icon: <FaIdCard /> },
     { key: "opd", label: "OPD & Prescription", icon: <FaNotesMedical /> },
@@ -40,8 +41,8 @@ function Navbar({ border, active, onChange }) {
 
   const renderMenus = () => {
     if (user.role === "ADMIN") return menus;
-    if (user.role === "DOCTOR") return menus.slice(0, 9);
-    if (user.role === "EMPLOYEE") return menus.slice(0, 8);
+    if (user.role === "DOCTOR") return menus.slice(0, 10);
+    if (user.role === "EMPLOYEE") return menus.slice(0, 10);
     return [];
   };
 

@@ -26,6 +26,7 @@ import OPDConsultation from './components/OPDConsultation.jsx';
 import OpeningStock from "./components/OpeningStock.jsx";
 import Notifications from './components/Notifications.jsx';
 import FCACC from './components/FCACC.jsx';
+import Malaria from './components/Malaria.jsx';
 
 function App() {
   const { user, loading } = useAuth();
@@ -1097,6 +1098,9 @@ function App() {
         )}
         {activeMenu === "fcacc" && (
           <FCACC/>
+        )}
+        {activeMenu === "malaria" && (
+          <Malaria />
         )}
 
         {/* {activeMenu === "dispensary" && (

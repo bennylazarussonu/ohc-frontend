@@ -214,7 +214,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     width: 100%;
     height: 100%;
     /*margin: 0 auto;*/
-    transform: scale(0.98);    /* ← tweak this */
+    transform: scale(1.25);    /* ← tweak this */
     transform-origin: top center;
   }
 
