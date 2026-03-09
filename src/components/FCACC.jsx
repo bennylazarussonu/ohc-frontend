@@ -13,14 +13,18 @@ function FCACC() {
         employee_id: "",
         fathers_name: "",
         aadhar_no: "",
-        gender: "",
+        dob: "",
+        gender: "Male",
         phone_no: "",
         designation: "",
-        contractor_name: ""
+        contractor_name: "",
+        date_of_joining: ""
     });
 
     const [fcaccForm, setFcaccForm] = useState({
+        date_of_issuance_of_certificate_for_competency_clearance: "",
         competency_assessment_by: "",
+        general_examination: "",
         pulse: "",
         systolic: "",
         diastolic: "",
@@ -29,6 +33,7 @@ function FCACC() {
         weight: "",
         vertigo_test_passed: true
     });
+    console.log(fcaccForm);
 
     useEffect(() => {
 
@@ -165,55 +170,86 @@ function FCACC() {
                         <input
                             placeholder="Name"
                             value={workerForm.name}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
                             onChange={(e) => setWorkerForm({ ...workerForm, name: e.target.value })}
                         />
 
                         <input
                             placeholder="Employee ID"
                             value={workerForm.employee_id}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
                             onChange={(e) => setWorkerForm({ ...workerForm, employee_id: e.target.value })}
                         />
 
                         <input
                             placeholder="Father Name"
                             value={workerForm.fathers_name}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
                             onChange={(e) => setWorkerForm({ ...workerForm, fathers_name: e.target.value })}
                         />
 
                         <input
                             placeholder="Phone"
                             value={workerForm.phone_no}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
                             onChange={(e) => setWorkerForm({ ...workerForm, phone_no: e.target.value })}
                         />
 
                         <input 
-                            placeholder="designation"
+                            placeholder="Designation"
+                            value={workerForm.designation}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
+                            onChange={(e) => setWorkerForm({ ...workerForm, designation: e.target.value })}
                         />
 
-                        <div>
-                            <input 
-                        type="date"
-                        value={workerForm.dob}
-                        onChange={(e) => setWorkerForm({ ...workerForm, dob: e.target.value })}
+                        <input 
+                            placeholder="Contractor Name"
+                            value={workerForm.contractor_name}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
+                            onChange={(e) => setWorkerForm({ ...workerForm, contractor_name: e.target.value })}
                         />
-                        <span className="text-xs text-gray-300">Date of Birth</span>
-                        </div>
+
+                        
 
                         <input
                             placeholder="Aadhaar No"
                             value={workerForm.aadhar_no}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
                             onChange={(e) => setWorkerForm({ ...workerForm, aadhar_no: e.target.value })}
                         />
 
                         <select 
                             placeholder="Gender"
                             value={workerForm.gender}
+                            className="w-full p-2 text-sm rounded bg-gray-800"
                             onChange={(e) => setWorkerForm({...workerForm, gender: e.target.value })}
                         >
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                         </select>
+
+                        <div></div>
+
+                        <div>
+                            <input 
+                        type="date"
+                        value={workerForm.dob}
+                        className="w-full p-2 text-sm rounded bg-gray-800"
+                        onChange={(e) => setWorkerForm({ ...workerForm, dob: e.target.value })}
+                        />
+                        <span className="text-xs text-gray-300">Date of Birth</span>
+                        </div>
+
+                        <div className="w-full">
+                            <input 
+                        type="date"
+                        value={workerForm.date_of_joining}
+                        className="w-full p-2 text-sm rounded bg-gray-800"
+                        onChange={(e) => setWorkerForm({ ...workerForm, date_of_joining: e.target.value })}
+                        />
+                        <span className="text-xs text-gray-300">Date of Joining</span>
+                        </div>
 
                     </div>
 
@@ -258,6 +294,33 @@ function FCACC() {
                 {/* <h3 className="font-semibold mb-3">FCACC Examination</h3> */}
 
                 <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2">
+                        <span className="text-xs text-gray-300">Competency Assessment By</span>
+                        <input
+                        placeholder="Competency Assessment By"
+                        value={fcaccForm.competency_assessment_by}
+                        className="p-2 text-sm rounded w-full bg-gray-800"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, competency_assessment_by: e.target.value })}
+                    />
+                    </div>
+
+                    <div>
+                    <span className="text-xs text-gray-300">Date of Issuance</span>
+                        <input type="date"
+                        value={fcaccForm.date_of_issuance_of_certificate_for_competency_clearance}
+                        className="p-2 text-sm w-full rounded bg-gray-800"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, date_of_issuance_of_certificate_for_competency_clearance: e.target.value })}
+                    />
+                    </div>
+
+                    <div className="col-span-3"></div>
+
+                    <input
+                        placeholder="General Examination"
+                        value={fcaccForm.general_examination}
+                        className="p-2 text-sm rounded bg-gray-800"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, general_examination: e.target.value })}
+                    />
 
                     <input
                         placeholder="Pulse"
@@ -300,6 +363,28 @@ function FCACC() {
                         className="p-2 text-sm rounded bg-gray-800"
                         onChange={(e) => setFcaccForm({ ...fcaccForm, weight: e.target.value })}
                     />
+
+                    <div className="col-span-2 flex items-center gap-4">
+                        <p className="text-sm text-gray-400 font-semibold">Vertigo Test: </p>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                name="vertigo_test_passed"
+                                checked = {fcaccForm.vertigo_test_passed === true}
+                                onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: true })}
+                            />
+                            <p>Passed</p>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                name="vertigo_test_passed"
+                                checked = {fcaccForm.vertigo_test_passed === false}
+                                onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: false })}
+                            />
+                            <p>Failed</p>
+                        </label>
+                    </div>
 
                 </div>
 
