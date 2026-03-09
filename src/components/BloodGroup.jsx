@@ -72,9 +72,7 @@ function BloodGroup() {
     "Father Name": item.fathers_name,
     Aadhaar: item.aadhar_no,
     Contractor: item.contractor_name,
-    "Blood Group": item.blood
-      ? `${item.blood.group}${item.blood.rh_factor === "POSITIVE" ? "+" : "-"}`
-      : "",
+    "Blood Group": ((item.blood) ? `${item.blood.group}${item.blood.rh_factor === "POSITIVE" ? "+" : "-"}` : ""),
     "Phone Number": item.phone_no || "",
     "Examination Date": formatDateDMY(item.date_of_examination)
   }));
