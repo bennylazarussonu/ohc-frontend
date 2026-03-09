@@ -1,7 +1,9 @@
 import api from "../api/axios";
 import { useState, useEffect } from "react";
 import { formatDateDMY } from "../utils/date";
-import { FaMagnifyingGlass } from "react-icons/fa6";
+import { FaDownload, FaMagnifyingGlass } from "react-icons/fa6";
+import * as XLSX from "xlsx";
+
 function BloodGroup() {
   const [preEmploymentData, setPreEmploymentData] = useState([]);
   const [selectedWorker, setSelectedWorker] = useState(null);
@@ -56,6 +58,38 @@ function BloodGroup() {
     );
   });
 
+  const exportToExcel = () => {
+  const data = tab === "pending" ? filteredData : filteredCompleted;
+
+  if (data.length === 0) {
+    alert("No records to export");
+    return;
+  }
+
+  const rows = data.map((item) => ({
+    ID: item.id,
+    Name: item.name,
+    "Father Name": item.fathers_name,
+    Aadhaar: item.aadhar_no,
+    Contractor: item.contractor_name,
+    "Blood Group": item.blood
+      ? `${item.blood.group}${item.blood.rh_factor === "POSITIVE" ? "+" : "-"}`
+      : "",
+    "Phone Number": item.phone_no || "",
+    "Examination Date": formatDateDMY(item.date_of_examination)
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "BloodGroup");
+
+  XLSX.writeFile(
+    workbook,
+    `blood_group_${tab}_${new Date().toISOString().slice(0, 10)}.xlsx`
+  );
+};
+
   return (
     <div className="w-full bg-gray-800 p-6 rounded-xl space-y-4">
       <h1 className="text-lg font-bold">BLOOD GROUP</h1>
@@ -85,6 +119,14 @@ function BloodGroup() {
           onChange={(e) => setSearch(e.target.value)}
           className="w-1/4 p-2 rounded bg-gray-700 text-white text-sm outline-none"
         />
+
+        <button
+    onClick={exportToExcel}
+    className="flex items-center gap-2 hover-right bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded"
+  >
+    <FaDownload/>
+    Export Excel
+  </button>
       </div>
       {/* <button onClick={async () => {
             await api.put("/api/workers/temp-blood");
