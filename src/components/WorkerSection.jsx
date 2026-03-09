@@ -37,7 +37,7 @@ function WorkerSection({ search, results, onSearch, onSelect }) {
                 {w.name}
                 <br />
                 <span className="font-light text-sm">
-                  {w.fathers_name} | Emp ID: {w.employee_id} | 📞 {w.phone_no} | Contractor Name: {w.contractor_name} | Blood Group: {w.blood ? `${w.blood.group} ${w.blood.rh_factor}` : ""}
+                  {w.fathers_name} | Emp ID: {w.employee_id} | 📞 {w.phone_no} | Contractor Name: {w.contractor_name} | Blood Group: {w.blood ? `${w.blood?.group} ${w.blood?.rh_factor}` : ""}
                   <br />
                   DOJ: {w.date_of_joining
                     ? formatISTDate(w.date_of_joining)
