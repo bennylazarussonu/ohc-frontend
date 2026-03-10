@@ -206,7 +206,7 @@ ${element.outerHTML}
 
             {/* PRINT AREA */}
 
-            <div className="print-area hidden">
+            <div className="print-area w-full hidden">
 
                 {/* PAGE 1 */}
 
