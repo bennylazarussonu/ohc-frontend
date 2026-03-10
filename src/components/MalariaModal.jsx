@@ -42,7 +42,10 @@ function MalariaModal({ worker, onClose }) {
                 tested_by: form.tested_by
             });
 
-            form.malaria_id = malaria_test.data.id;
+            setForm(prev => ({
+  ...prev,
+  malaria_id: malaria_test.data.id
+}));
 
             const worker_tests_list = await api.get(`/api/malaria/worker/${worker.id}`);
             const data = worker_tests_list.data.tests_list;
@@ -108,12 +111,6 @@ width:794px;
 height:1123px;
 page-break-after:always;
 position:relative;
-}
-.print-area{
-    margin: auto auto;
-    left: auto;
-    top: auto;
-    transform: scale(1.0);
 }
 
 </style>
@@ -368,7 +365,9 @@ style={{top:"380px",left:"430px"}}
                         src={malaria_table}
                         className="absolute inset-0 w-full h-full"
                     />
-                    <div className="absolute font-semibold text-[16px] " style={{top: "170px",left: "85px"}}>
+                    {preemp_data && (
+                        <>
+                            <div className="absolute font-semibold text-[16px] " style={{top: "170px",left: "85px"}}>
                         {new Date(preemp_data.date_of_examination).toLocaleString("en-IN", { month: "long" })}
                     </div>
                     <div className="absolute font-semibold text-[16px]" style={{top: "170px", left: "160px"}}>
@@ -377,6 +376,8 @@ style={{top:"380px",left:"430px"}}
                     <div className="absolute font-semibold text-[16px]" style={{top: "170px", left: "270px"}}>
                         MP SMEAR TEST IS __________________
                     </div>
+                        </>
+                    )}
                     {testsList.map((test, index) => (
   <div
     key={index}
