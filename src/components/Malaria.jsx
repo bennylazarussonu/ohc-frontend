@@ -10,6 +10,20 @@ import malaria_table from "../assets/malaria_table.png";
 function Malaria(){
     const [workers, setWorkers] = useState([]);
     const [selectedWorker, setSelectedWorker] = useState(null);
+    const [search, setSearch] = useState("");
+
+    const filteredWorkers = workers.filter(worker => {
+  const term = search.toLowerCase();
+
+  return (
+    worker.name?.toLowerCase().includes(term) ||
+    worker.fathers_name?.toLowerCase().includes(term) ||
+    worker.aadhar_no?.includes(term) ||
+    worker.phone_no?.includes(term) ||
+    worker.contractor_name?.toLowerCase().includes(term) ||
+    worker.id?.toString().includes(term)
+  );
+});
 
     useEffect(() => {
         const fetchWorkers = async () => {
@@ -29,12 +43,15 @@ function Malaria(){
 
             <div className="flex items-center gap-2 mb-4">
                 <FaMagnifyingGlass />
-                <input 
-                    type="text"
-                    placeholder="Search..."
-                    className="text-sm bg-gray-700 rounded p-2 w-full"
-                />
+                <input
+  type="text"
+  placeholder="Search..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="text-sm bg-gray-700 rounded p-2 w-full"
+/>
             </div>
+            
 
             {workers.length > 0 && (
                 <table className="w-full text-sm border">
@@ -51,7 +68,7 @@ function Malaria(){
                         </tr>
                     </thead>
                     <tbody>
-                        {workers.map((worker) => (
+                        {filteredWorkers.map((worker) => (
                             <tr key={worker.id}>
                                 <td className="p-2 border">{worker.id}</td>
                                 <td className="p-2 border">{worker.name}</td>
@@ -72,7 +89,6 @@ function Malaria(){
                         ))}
                     </tbody>
                 </table>
-                
             )}
             {selectedWorker && (
   <MalariaModal
