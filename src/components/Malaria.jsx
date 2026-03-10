@@ -166,7 +166,7 @@ function Malaria() {
                                 <tr key={t.id}>
                                     <td className="p-2 border">{t.id}</td>
                                     <td className="p-2 border">{t.worker.name}</td>
-                                    <td className="p-2 border">{t.worker.employee_id !== "undefined" ? (t.worker.employee_id) : ("-")}</td>
+                                    <td className="p-2 border">{(t.worker.employee_id !== "undefined" && t.worker.employee_id !== "") ? (t.worker.employee_id) : ("-")}</td>
                                     <td className="p-2 border">{t.worker.contractor_name}</td>
                                     <td className="p-2 border">{t.worker.phone_no}</td>
                                     <td className="p-2 border">{formatDateDMY(t.date_of_test)}</td>
