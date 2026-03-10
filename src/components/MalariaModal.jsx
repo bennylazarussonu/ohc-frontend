@@ -89,8 +89,8 @@ ${styles}
 <style>
 
 @page{
-size:A4;
-margin:0;
+/*size:A4;*/
+margin:10mm;
 }
 
 body{
@@ -108,6 +108,12 @@ width:794px;
 height:1123px;
 page-break-after:always;
 position:relative;
+}
+.print-area{
+    margin: auto auto;
+    left: auto;
+    top: auto;
+    transform: scale(1.0);
 }
 
 </style>
@@ -132,38 +138,61 @@ ${element.outerHTML}
 
         <div className="fixed inset-0 bg-black/60 flex justify-center items-center">
 
-            <div className="bg-white text-black p-6 rounded w-[800px]">
-
+            <div className="bg-gray-800 p-6 rounded w-[800px]">
                 <div className="flex justify-between mb-4">
                     <h2 className="text-lg font-bold">Malaria Test</h2>
                     <button onClick={onClose}><FaX /></button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-
+                    <div>
+                        <span className="text-xs text-gray-400">Name</span>
                     <input value={form.name}
+                        className="bg-gray-700 rounded text-sm p-2 w-full"
                         onChange={e => setForm({ ...form, name: e.target.value })} />
+                    </div>
 
-                    <input value={form.fathers_name}
-                        onChange={e => setForm({ ...form, fathers_name: e.target.value })} />
 
-                    <input value={form.aadhar_no}
-                        onChange={e => setForm({ ...form, aadhar_no: e.target.value })} />
+                    <div>
+                        <span className="text-xs text-gray-400">Father's Name</span>
+                        <input value={form.fathers_name}
+                            className="bg-gray-700 rounded text-sm p-2 w-full"
+                            onChange={e => setForm({ ...form, fathers_name: e.target.value })} />
+                    </div>
 
-                    <input value={form.phone_no}
-                        onChange={e => setForm({ ...form, phone_no: e.target.value })} />
+                    <div>
+                        <span className="text-xs text-gray-400">Aadhar No</span>
+                        <input value={form.aadhar_no}
+                            className="bg-gray-700 rounded text-sm p-2 w-full"
+                            onChange={e => setForm({ ...form, aadhar_no: e.target.value })} />
+                    </div>
 
-                    <input type="date"
-                        value={form.date_of_test}
-                        onChange={e => setForm({ ...form, date_of_test: e.target.value })} />
+                    <div>
+                        <span className="text-xs text-gray-400">Phone No</span>
+                        <input value={form.phone_no}
+                            className="bg-gray-700 rounded text-sm p-2 w-full"
+                            onChange={e => setForm({ ...form, phone_no: e.target.value })} />
+                    </div>
 
-                    <select
+                    <div>
+                        <span className="text-xs text-gray-400">Date of Test</span>
+                        <input type="date"
+                            value={form.date_of_test}
+                            className="bg-gray-700 rounded text-sm p-2 w-full"
+                            onChange={e => setForm({ ...form, date_of_test: e.target.value })} />
+                    </div>
+
+                    <div>
+                        <span className="text-xs text-gray-400">Tested By</span>
+                        <select
                         value={form.tested_by}
+                            className="bg-gray-700 rounded text-sm p-2 w-full"
                         onChange={e => setForm({ ...form, tested_by: e.target.value })}
                     >
                         <option>BMC</option>
                         <option>Diagnostic Lab</option>
                     </select>
+                    </div>
 
                 </div>
 
@@ -342,7 +371,12 @@ style={{top:"380px",left:"430px"}}
                     <div className="absolute font-semibold text-[16px] " style={{top: "170px",left: "85px"}}>
                         {new Date(preemp_data.date_of_examination).toLocaleString("en-IN", { month: "long" })}
                     </div>
-                    div.absolute.font-semibold.text-[16px].
+                    <div className="absolute font-semibold text-[16px]" style={{top: "170px", left: "160px"}}>
+                        {new Date(preemp_data.date_of_examination).toLocaleDateString("en-GB")}
+                    </div>
+                    <div className="absolute font-semibold text-[16px]" style={{top: "170px", left: "270px"}}>
+                        MP SMEAR TEST IS __________________
+                    </div>
                     {testsList.map((test, index) => (
   <div
     key={index}
