@@ -382,7 +382,7 @@ style={{top:"380px",left:"430px"}}
   <div
     key={index}
     className="absolute w-full font-semibold text-[16px]"
-    style={{ top: 205 + index * 35 }}
+    style={preemp_data ? ({ top: 205 + index * 35 }) : ({ top: 170 + index * 35 })}
   >
 
     <div className="absolute" style={{ left: "85px" }}>
