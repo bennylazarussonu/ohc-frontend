@@ -90,7 +90,7 @@ function FCACC() {
 
     return (
         <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
-            <h2 className="text-lg font-bold mb-3">Fitness Clearance against Competency Certification - FCACC</h2>
+            <h2 className="text-lg font-bold mb-3">FITNESS CLEARANCE AGAINST COMPETENCY CERTIFICATE - FCACC</h2>
 
             <div className="flex items-center gap-2">
                 <div className="w-4/5 flex items-center gap-2">

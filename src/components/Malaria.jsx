@@ -69,7 +69,7 @@ function Malaria() {
 
     return (
         <div className="bg-gray-800 p-6 w-full rounded-xl overflow-auto no-scrollbar">
-            <h2 className="text-lg font-bold mb-3">Malaria Test</h2>
+            <h2 className="text-lg font-bold mb-3">MALARIA TEST</h2>
 
             <div className="w-full rounded grid grid-cols-2 gap-2 my-4">
                 <div onClick={() => setTab("new")} className={`cursor-pointer w-full text-center p-1 font-semibold rounded text-sm ${tab === "new" ? "bg-blue-600" : "bg-gray-700"}`}>

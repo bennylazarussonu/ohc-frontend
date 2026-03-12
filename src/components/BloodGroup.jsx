@@ -165,7 +165,7 @@ function BloodGroup() {
                   </thead>
                   <tbody>
                     {filteredData.map((item) => (
-                      <tr key={item.id} className="bg-gray-700">
+                      <tr key={item.id} >
                         <td className="p-2 border">{item.id}</td>
                         <td className="p-2 border">{item.name}</td>
                         <td className="p-2 border">{item.fathers_name}</td>
@@ -302,7 +302,7 @@ function BloodGroup() {
 
                 <tbody>
                   {filteredCompleted.map((item) => (
-                    <tr key={item.id} className="bg-gray-700">
+                    <tr key={item.id}>
                       <td className="p-2 border">{item.id}</td>
                       <td className="p-2 border">{item.name}</td>
                       <td className="p-2 border">{item.fathers_name}</td>

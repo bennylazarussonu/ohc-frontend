@@ -27,6 +27,7 @@ import OpeningStock from "./components/OpeningStock.jsx";
 import Notifications from './components/Notifications.jsx';
 import FCACC from './components/FCACC.jsx';
 import Malaria from './components/Malaria.jsx';
+import FAB from './components/FAB.jsx';
 
 function App() {
   const { user, loading } = useAuth();
@@ -1101,6 +1102,9 @@ function App() {
         )}
         {activeMenu === "malaria" && (
           <Malaria />
+        )}
+        {activeMenu === "fab" && (
+          <FAB />
         )}
 
         {/* {activeMenu === "dispensary" && (
