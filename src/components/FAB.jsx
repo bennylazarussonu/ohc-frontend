@@ -1,19 +1,19 @@
-import { FaEye, FaFloppyDisk, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
+import { FaEye, FaFloppyDisk, FaHandHoldingMedical, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+    const [debouncedValue, setDebouncedValue] = useState(value);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
 
-    return () => clearTimeout(timer);
-  }, [value, delay]);
+        return () => clearTimeout(timer);
+    }, [value, delay]);
 
-  return debouncedValue;
+    return debouncedValue;
 }
 
 function FAB() {
@@ -29,6 +29,10 @@ function FAB() {
     const [medicineResults, setMedicineResults] = useState({});
     const [consumed, setConsumed] = useState({});
     const [searchText, setSearchText] = useState("");
+    const [consumptionModal, setConsumptionModal] = useState(false);
+    const [consumptionLogs, setConsumptionLogs] = useState([]);
+
+    console.log(consumptionLogs);
 
     const debouncedSearch = useDebounce(searchText, 300);
 
@@ -70,11 +74,11 @@ function FAB() {
     };
 
     const handleConsumed = (medicineId, qty) => {
-  setConsumed(prev => ({
-    ...prev,
-    [medicineId]: Number(qty)
-  }));
-};
+        setConsumed(prev => ({
+            ...prev,
+            [medicineId]: Number(qty)
+        }));
+    };
 
     const openZone = async (zone) => {
 
@@ -99,9 +103,9 @@ function FAB() {
     }
 
     const isDirty =
-  Object.keys(replace).length > 0 ||
-  Object.keys(consumed).length > 0 ||
-  newItems.length > 0;
+        Object.keys(replace).length > 0 ||
+        Object.keys(consumed).length > 0 ||
+        newItems.length > 0;
 
     const addRow = () => {
         setNewItems([
@@ -117,31 +121,39 @@ function FAB() {
 
     const searchMedicine = (index, text) => {
 
-  const updated = [...newItems];
-  updated[index].item_name = text;
-  setNewItems(updated);
+        const updated = [...newItems];
+        updated[index].item_name = text;
+        setNewItems(updated);
 
-  setSearchText(text);
-};
+        setSearchText(text);
+    };
 
-useEffect(() => {
+    useEffect(() => {
 
-  const fetch = async () => {
+        const fetch = async () => {
 
-    if (debouncedSearch.length < 2) return;
+            if (debouncedSearch.length < 2) return;
 
-    const res = await api.get(`/api/fab/zones/search-stock?query=${debouncedSearch}`);
+            const res = await api.get(`/api/fab/zones/search-stock?query=${debouncedSearch}`);
 
-    setMedicineResults(prev => ({
-      ...prev,
-      [newItems.length - 1]: res.data
-    }));
+            setMedicineResults(prev => ({
+                ...prev,
+                [newItems.length - 1]: res.data
+            }));
 
-  };
+        };
 
-  fetch();
+        fetch();
 
-}, [debouncedSearch]);
+    }, [debouncedSearch]);
+
+    const openConsumption = async (zone) => {
+        const res = await api.get(`/api/fab/zones/${zone.id}/consumption`);
+
+        setConsumptionLogs(res.data);
+        setSelectedZone(zone);
+        setConsumptionModal(true);
+    };
 
     const selectMedicine = (index, medicine) => {
 
@@ -184,57 +196,57 @@ useEffect(() => {
 
     const saveChanges = async () => {
 
-  try {
+        try {
 
-    const consumedUpdates = Object.entries(consumed).map(([medicine_id, qty]) => ({
-      medicine_id: Number(medicine_id),
-      consumed_qty: Number(qty)
-    }));
+            const consumedUpdates = Object.entries(consumed).map(([medicine_id, qty]) => ({
+                medicine_id: Number(medicine_id),
+                consumed_qty: Number(qty)
+            }));
 
-    const addUpdates = Object.entries(replace).map(([medicine_id, qty]) => ({
-      medicine_id: Number(medicine_id),
-      add_qty: Number(qty)
-    }));
+            const addUpdates = Object.entries(replace).map(([medicine_id, qty]) => ({
+                medicine_id: Number(medicine_id),
+                add_qty: Number(qty)
+            }));
 
-    if(consumedUpdates.length > 0){
-      await api.post(`/api/fab/zones/${selectedZone.id}/consume`,{
-        updates:consumedUpdates
-      });
-    }
+            if (consumedUpdates.length > 0) {
+                await api.post(`/api/fab/zones/${selectedZone.id}/consume`, {
+                    updates: consumedUpdates
+                });
+            }
 
-    if(addUpdates.length > 0){
-      await api.post(`/api/fab/zones/${selectedZone.id}/add`,{
-        updates:addUpdates
-      });
-    }
+            if (addUpdates.length > 0) {
+                await api.post(`/api/fab/zones/${selectedZone.id}/add`, {
+                    updates: addUpdates
+                });
+            }
 
-    // 🔹 THIS PART WAS MISSING
-    const newItemRequests = newItems
-      .filter(i => i.medicine_id && i.quantity > 0)
-      .map(i =>
-        api.post(`/api/fab/zones/${selectedZone.id}/add-item`, {
-          medicine_id: i.medicine_id,
-          quantity: i.quantity
-        })
-      );
+            // 🔹 THIS PART WAS MISSING
+            const newItemRequests = newItems
+                .filter(i => i.medicine_id && i.quantity > 0)
+                .map(i =>
+                    api.post(`/api/fab/zones/${selectedZone.id}/add-item`, {
+                        medicine_id: i.medicine_id,
+                        quantity: i.quantity
+                    })
+                );
 
-    if (newItemRequests.length > 0) {
-      await Promise.all(newItemRequests);
-    }
+            if (newItemRequests.length > 0) {
+                await Promise.all(newItemRequests);
+            }
 
-    const res = await api.get(`/api/fab/zones/${selectedZone.id}/items`);
-    setZoneItems(res.data);
+            const res = await api.get(`/api/fab/zones/${selectedZone.id}/items`);
+            setZoneItems(res.data);
 
-    setReplace({});
-    setConsumed({});
-    setNewItems([]);
+            setReplace({});
+            setConsumed({});
+            setNewItems([]);
 
-  } catch(err){
-    console.error(err);
-    alert("Failed to save changes");
-  }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to save changes");
+        }
 
-};
+    };
     return (
         <div className="w-full bg-gray-800 p-6 rounded-xl">
             <h3 className="text-lg font-bold">FIRST AID BOX - FAB</h3>
@@ -255,7 +267,7 @@ useEffect(() => {
                             onClick={() => setAddZoneModal(true)}
                             className="p-2 text-sm bg-blue-600 flex items-center gap-2 font-semibold text-white rounded w-full"
                         >
-                            <FaPlus/>
+                            <FaPlus />
                             Add New Zone
                         </button>
                     </div>
@@ -353,6 +365,14 @@ useEffect(() => {
                                             View
                                         </button>
 
+                                        <button
+                                            onClick={() => openConsumption(zone)}
+                                            className="p-2 text-sm bg-yellow-600 flex items-center gap-2 font-semibold text-white rounded"
+                                        >
+                                            <FaHandHoldingMedical />
+                                            Consumption
+                                        </button>
+
                                     </td>
                                 </tr>
                             ))}
@@ -360,6 +380,90 @@ useEffect(() => {
                     </table>
                 </div>
             </div>
+            {consumptionModal && (
+
+                <div className="fixed inset-0 flex justify-center items-center bg-black/60">
+
+                    <div className="bg-gray-900 p-6 rounded-lg w-[700px]">
+
+                        <div className="flex justify-between items-center mb-4">
+
+                            <div>
+                                <h2 className="text-lg font-bold">
+                                    Consumption History
+                                </h2>
+
+                                <p className="text-sm text-gray-400">
+                                    Zone: {selectedZone?.zone_name}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => setConsumptionModal(false)}
+                                className="text-xl"
+                            >
+                                x
+                            </button>
+
+                        </div>
+
+                        <div className="max-h-[400px] overflow-y-auto">
+
+                            <table className="w-full border text-sm">
+
+                                <thead className="bg-gray-800">
+
+                                    <tr>
+                                        <th className="border p-2">Item</th>
+                                        <th className="border p-2">Quantity</th>
+                                        <th className="border p-2">Reason</th>
+                                        <th className="border p-2">User</th>
+                                        <th className="border p-2">Time</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {consumptionLogs.map((log, index) => (
+
+                                        <tr key={index}>
+
+                                            <td className="border p-2">
+                                                {log.item_name}
+                                            </td>
+
+                                            <td className="border p-2 text-center">
+                                                {log.quantity}
+                                            </td>
+
+                                            <td className="border p-2 text-center">
+                                                {log.reason}
+                                            </td>
+
+                                            <td className="border p-2 text-center">
+                                                {log.user}
+                                            </td>
+
+                                            <td className="border p-2 text-center">
+                                                {new Date(log.timestamp).toLocaleString()}
+                                            </td>
+
+                                        </tr>
+
+                                    ))}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
             {viewModal && (
                 <div className="fixed inset-0 flex justify-center w-full items-center bg-black/60">
                     <div className="w-4/5 bg-gray-900 p-6 rounded-lg">
@@ -425,27 +529,27 @@ useEffect(() => {
 
                                                 <td className="border p-1 text-center">
 
-<input
-  type="number"
-  min="0"
-  value={consumed[item.medicine_id] || 0}
-  onChange={(e)=>handleConsumed(item.medicine_id,e.target.value)}
-  className="p-1 text-sm rounded bg-yellow-700"
-/>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={consumed[item.medicine_id] || 0}
+                                                        onChange={(e) => handleConsumed(item.medicine_id, e.target.value)}
+                                                        className="p-1 text-sm rounded bg-yellow-700"
+                                                    />
 
-</td>
+                                                </td>
 
-<td className="border p-1 text-center">
+                                                <td className="border p-1 text-center">
 
-<input
-  type="number"
-  min="0"
-  value={replace[item.medicine_id] || 0}
-  onChange={(e)=>handleReplace(item.medicine_id,e.target.value)}
-  className={`p-1 text-sm rounded ${getColor(replace[item.medicine_id] || 0, item.available_stock)}`}
-/>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={replace[item.medicine_id] || 0}
+                                                        onChange={(e) => handleReplace(item.medicine_id, e.target.value)}
+                                                        className={`p-1 text-sm rounded ${getColor(replace[item.medicine_id] || 0, item.available_stock)}`}
+                                                    />
 
-</td>
+                                                </td>
 
                                             </tr>
                                         );
@@ -471,16 +575,16 @@ useEffect(() => {
 
                                                     <div className="absolute bg-gray-900 border w-full max-h-40 overflow-y-auto z-10">
 
-                                                        {medicineResults[index].map((m)=>(
-  <div
-    key={m.id}
-    onClick={()=>selectMedicine(index,m)}
-    className="p-1 hover:bg-gray-700 cursor-pointer text-sm flex justify-between"
-  >
-    <span>{m.drug_name_and_dose}</span>
-    <span className="text-xs text-gray-400">Stock: {m.stock}</span>
-  </div>
-))}
+                                                        {medicineResults[index].map((m) => (
+                                                            <div
+                                                                key={m.id}
+                                                                onClick={() => selectMedicine(index, m)}
+                                                                className="p-1 hover:bg-gray-700 cursor-pointer text-sm flex justify-between"
+                                                            >
+                                                                <span>{m.drug_name_and_dose}</span>
+                                                                <span className="text-xs text-gray-400">Stock: {m.stock}</span>
+                                                            </div>
+                                                        ))}
 
                                                     </div>
 
