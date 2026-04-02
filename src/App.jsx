@@ -48,6 +48,7 @@ function App() {
   const [editingFromReports, setEditingFromReports] = useState(false);
   const [opdListVersion, setOpdListVersion] = useState(0);
   const [editingFromConsultation, setEditingFromConsultation] = useState(false);
+  const [fcaccTab, setFcaccTab] = useState("fcacc"); 
   const isEditing = !!editingOpdId;
   const hasDoctorInRecord = !!opd?.treating_doctor_id;
   // const [forConsultation, setForConsultation] = useState(false);
@@ -1098,7 +1099,18 @@ function App() {
           <Notifications user={user} />
         )}
         {activeMenu === "fcacc" && (
-          <FCACC/>
+          <div className='w-full'>
+            <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
+              <div onClick={() => setFcaccTab("fcacc")} className={fcaccTab === "fcacc" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
+              FCACCs
+              </div>
+              <div onClick={() => setFcaccTab("list")} className={fcaccTab === "list" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
+                List of FCACCs
+              </div>
+            </div>
+          <FCACC tab={fcaccTab}/>
+
+          </div>
         )}
         {activeMenu === "malaria" && (
           <Malaria />
