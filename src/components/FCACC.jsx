@@ -495,7 +495,7 @@ const updateFCACC = async () => {
                                     type="radio"
                                     name="vertigo_test_passed"
                                     checked = {fcaccForm.vertigo_test_passed === true}
-                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: true })}
+                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Passed" })}
                                 />
                                 <p>Passed</p>
                             </label>
@@ -504,9 +504,18 @@ const updateFCACC = async () => {
                                     type="radio"
                                     name="vertigo_test_passed"
                                     checked = {fcaccForm.vertigo_test_passed === false}
-                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: false })}
+                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Failed" })}
                                 />
                                 <p>Failed</p>
+                            </label>
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    name="vertigo_test_passed"
+                                    checked = {fcaccForm.vertigo_test_passed === false}
+                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Not Done" })}
+                                />
+                                <p>Not Done</p>
                             </label>
                         </div>
 
@@ -686,16 +695,23 @@ const updateFCACC = async () => {
                         <label>
                             <input
                                 type="radio"
-                                checked={editData.vertigo_test_passed === true}
-                                onChange={() => setEditData({...editData, vertigo_test_passed: true})}
+                                checked={editData.vertigo_test_passed === "Passed" ? true : false}
+                                onChange={() => setEditData({...editData, vertigo_test_passed: "Passed"})}
                             /> Passed
                         </label>
                         <label>
                             <input
                                 type="radio"
-                                checked={editData.vertigo_test_passed === false}
-                                onChange={() => setEditData({...editData, vertigo_test_passed: false})}
+                                checked={editData.vertigo_test_passed === "Failed" ? true : false}
+                                onChange={() => setEditData({...editData, vertigo_test_passed: "Failed"})}
                             /> Failed
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                checked={editData.vertigo_test_passed === "Not Done" ? true : false}
+                                onChange={() => setEditData({...editData, vertigo_test_passed: "Not Done"})}
+                            /> Not Done
                         </label>
                     </div>
                 </div>
