@@ -743,7 +743,7 @@ const [finalPayload, setFinalPayload] = useState(null);
             </div>
             {openVision && (
                 <VisionCheckModal
-                    vision={null}
+                    vision={visionForm}
                     worker={selectedWorker}
                     instance={"id-renewal"}
                     onClose={() => {
@@ -758,6 +758,7 @@ const [finalPayload, setFinalPayload] = useState(null);
   <IdRenewalReportModal
     data={{
       ...finalPayload,
+      date_of_renewal: new Date().toISOString(),
       name: selectedWorker?.name || workerForm.name
     }}
     onClose={() => setOpenReport(false)}

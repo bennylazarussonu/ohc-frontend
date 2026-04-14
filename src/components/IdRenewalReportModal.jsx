@@ -1,5 +1,6 @@
 import { FaX, FaPrint } from "react-icons/fa6";
 import letterhead from "../assets/preemp_banner.png";
+import { formatDateDMY } from "../utils/date";
 
 function IdRenewalReportModal({ data, onClose, onConfirm }) {
 
@@ -132,7 +133,7 @@ const formatNear = (val) => {
           </div>
 
           {/* PATIENT DETAILS */}
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-4 border-b border-gray-500 pb-4">
   <Show value={data?.name}>
     <p><b>Name:</b> {data.name}</p>
   </Show>
@@ -146,13 +147,13 @@ const formatNear = (val) => {
   </Show>
 
   <Show value={data?.date_of_renewal}>
-    <p><b>Date:</b> {new Date(data.date_of_renewal).toLocaleDateString()}</p>
+    <p><b>Date:</b> {formatDateDMY(data.date_of_renewal)}</p>
   </Show>
 </div>
 
           {/* VITALS */}
-          <h3 className="font-bold border-b mb-2">Vitals</h3>
-          <div className="grid grid-cols-2 mb-4">
+          <h3 className="font-bold mb-2">VITALS</h3>
+          <div className="grid grid-cols-2 mb-4 border-b border-gray-500 pb-4">
 
   <Show value={data?.pulse}>
     <p><b>Pulse:</b> {data.pulse}</p>
@@ -216,8 +217,8 @@ const formatNear = (val) => {
             </p>
           </div> */}
           <Show value={data?.opthalmic_examination}>
-  <div className="mb-4">
-    <h3 className="font-bold border-b mb-2">Vision Examination</h3>
+  <div className="mb-4 border-b border-gray-500 pb-4">
+    <h3 className="font-bold mb-2">VISION EXAMINATION</h3>
 
     <table className="w-full border text-sm text-center">
       <thead>
@@ -275,18 +276,18 @@ const formatNear = (val) => {
     <div className="mt-3 space-y-2 text-left">
 
       <Show value={data?.opthalmic_examination?.color_perception}>
-        <p><b>Color Perception:</b> {data.opthalmic_examination.color_perception}</p>
+        <p><b>Color Perception:</b> {data?.opthalmic_examination?.color_perception}</p>
       </Show>
 
       <Show value={data?.opthalmic_examination?.without_glasses_diagnosis}>
         <p><b>Diagnosis (Without Glasses):</b><br/>
-          {data.opthalmic_examination.without_glasses_diagnosis}
+          {data?.opthalmic_examination?.without_glasses_diagnosis}
         </p>
       </Show>
 
       <Show value={data?.opthalmic_examination?.with_glasses_diagnosis}>
         <p><b>Diagnosis (With Glasses):</b><br/>
-          {data.opthalmic_examination.with_glasses_diagnosis}
+          {data?.opthalmic_examination?.with_glasses_diagnosis}
         </p>
       </Show>
 
@@ -296,8 +297,10 @@ const formatNear = (val) => {
 
           {/* OTHER */}
           <div>
-            <h3 className="font-bold border-b mb-2">Remarks</h3>
-            <p>{data?.remarks || "—"}</p>
+            <Show value={data?.remarks}>
+              <h3 className="font-bold mb-2">REMARKS</h3>
+              <p>{data?.remarks || "—"}</p>
+            </Show>
 
             <p className="mt-2">
               <b>Vertigo Test:</b> {data?.vertigo_test_passed ? "Passed" : "Failed"}
