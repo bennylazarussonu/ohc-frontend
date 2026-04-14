@@ -2,6 +2,7 @@ import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip } fr
 import api from "../api/axios";
 import { useState, useRef, useEffect } from "react";
 import VisionCheckModal from "./VisionCheckModal.jsx";
+import IdRenewalReportModal from "./IdRenewalReportModal.jsx";
 
 function IdRenewal() {
     const [workerSearch, setWorkerSearch] = useState("");
@@ -13,6 +14,8 @@ function IdRenewal() {
     const [saveLoading, setSaveLoading] = useState(false);
     const [openVision, setOpenVision] = useState(false);
     const [selectedWorkersVision, setSelectedWorkerVision] = useState(null);
+    const [openReport, setOpenReport] = useState(false);
+const [finalPayload, setFinalPayload] = useState(null);
     const [visionForm, setVisionForm] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
@@ -672,43 +675,52 @@ function IdRenewal() {
                                         return;
                                     }
 
+                                    // const payload = {
+                                    //     ...renewalForm,
+                                    //     opthalmic_examination: visionForm
+                                    // };
+
+                                    // setSaveLoading(true);
+
+                                    // // Existing worker
+                                    // if (selectedWorker) {
+                                    //     payload.worker_id = selectedWorker.id;
+                                    // }
+
+                                    // // New worker
+                                    // if (isNewWorker) {
+                                    //     payload.worker_data = workerForm;
+                                    // }
+
+                                    // const res = await api.post("/api/id-renewal/renew", payload);
+
+
+                                    // alert("ID renewed successfully");
+
+                                    // setSelectedWorker(null);
+                                    // setRenewalForm({
+                                    //     previous_renewal_date: "",
+                                    //     blood_group: "",
+                                    //     general_condition: "",
+                                    //     pulse: "",
+                                    //     systolic: "",
+                                    //     diastolic: "",
+                                    //     spo2: "",
+                                    //     height: "",
+                                    //     weight: "",
+                                    //     remarks: "",
+                                    //     vertigo_test_passed: true,
+                                    // });
+                                    // setIsNewWorker(false);
                                     const payload = {
-                                        ...renewalForm,
-                                        opthalmic_examination: visionForm
-                                    };
+    ...renewalForm,
+    opthalmic_examination: visionForm,
+    worker_id: selectedWorker?.id,
+    ...(isNewWorker && { worker_data: workerForm })
+  };
 
-                                    setSaveLoading(true);
-
-                                    // Existing worker
-                                    if (selectedWorker) {
-                                        payload.worker_id = selectedWorker.id;
-                                    }
-
-                                    // New worker
-                                    if (isNewWorker) {
-                                        payload.worker_data = workerForm;
-                                    }
-
-                                    const res = await api.post("/api/id-renewal/renew", payload);
-
-
-                                    alert("ID renewed successfully");
-
-                                    setSelectedWorker(null);
-                                    setRenewalForm({
-                                        previous_renewal_date: "",
-                                        blood_group: "",
-                                        general_condition: "",
-                                        pulse: "",
-                                        systolic: "",
-                                        diastolic: "",
-                                        spo2: "",
-                                        height: "",
-                                        weight: "",
-                                        remarks: "",
-                                        vertigo_test_passed: true,
-                                    });
-                                    setIsNewWorker(false);
+  setFinalPayload(payload);   // 🔥 store it
+  setOpenReport(true);       // 🔥 open modal
 
                                 } catch (err) {
                                     console.error(err);
@@ -742,6 +754,47 @@ function IdRenewal() {
                     }}
                 />
             )}
+            {openReport && (
+  <IdRenewalReportModal
+    data={{
+      ...finalPayload,
+      name: selectedWorker?.name || workerForm.name
+    }}
+    onClose={() => setOpenReport(false)}
+    onConfirm={async () => {
+      try {
+        setSaveLoading(true);
+
+        await api.post("/api/id-renewal/renew", finalPayload);
+
+        alert("ID renewed successfully ✅");
+
+        setOpenReport(false);
+        setSelectedWorker(null);
+        setVisionForm(null);
+        setRenewalForm({
+          previous_renewal_date: "",
+          blood_group: "",
+          general_condition: "",
+          pulse: "",
+          systolic: "",
+          diastolic: "",
+          spo2: "",
+          height: "",
+          weight: "",
+          remarks: "",
+          vertigo_test_passed: true,
+        });
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to renew ID ❌");
+      } finally {
+        setSaveLoading(false);
+      }
+    }}
+  />
+)}
         </div>
     );
 }
