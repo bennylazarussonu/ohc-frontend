@@ -1,6 +1,7 @@
 import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip } from "react-icons/fa6";
 import api from "../api/axios";
 import { useState, useRef, useEffect } from "react";
+import VisionCheckModal from "./VisionCheckModal.jsx";
 
 function IdRenewal() {
     const [workerSearch, setWorkerSearch] = useState("");
@@ -10,6 +11,9 @@ function IdRenewal() {
     const [isNewWorker, setIsNewWorker] = useState(false);
     const [isEditingWorker, setIsEditingWorker] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [openVision, setOpenVision] = useState(false);
+    const [selectedWorkersVision, setSelectedWorkerVision] = useState(null);
+    const [visionForm, setVisionForm] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -33,7 +37,7 @@ function IdRenewal() {
         height: "",
         weight: "",
         remarks: "",
-        vertigo_test_passed: true,
+        vertigo_test_passed: "Passed",
     });
     const [pulseDiagnosis, setPulseDiagnosis] = useState({ text: "", color: "", border: "" })
     const [bpDiagnosis, setBpDiagnosis] = useState({ text: "", color: "", border: "" })
@@ -213,34 +217,44 @@ function IdRenewal() {
     }, [renewalForm.systolic, renewalForm.diastolic]);
 
     useEffect(() => {
-    const spo2 = Number(renewalForm.spo2);
-    if (!spo2) {
-        setSpo2Diagnosis({text: "", color: "", border: ""});
-        return;
-    };
+        const spo2 = Number(renewalForm.spo2);
+        if (!spo2) {
+            setSpo2Diagnosis({ text: "", color: "", border: "" });
+            return;
+        };
 
-    let text = "Normal Oxygen Saturation";
-    let color = "text-green-400";
-    let border = "focus:border-2 focus:border-green-400";
+        let text = "Normal Oxygen Saturation";
+        let color = "text-green-400";
+        let border = "focus:border-2 focus:border-green-400";
 
-    if (spo2 >= 95) {
-      // normal
-    } else if (spo2 >= 90) {
-      text = "Mild Hypoxia";
-      color = "text-yellow-400";
-      border = "focus:border-2 focus:border-yellow-400";
-    } else if (spo2 >= 85) {
-      text = "Moderate Hypoxia";
-      color = "text-orange-400";
-      border = "focus:border-2 focus:border-orange-400";
-    } else {
-      text = "Severe Hypoxia";
-      color = "text-red-500";
-      border = "focus:border-2 focus:border-red-500";
-    }
+        if (spo2 >= 95) {
+            // normal
+        } else if (spo2 >= 90) {
+            text = "Mild Hypoxia";
+            color = "text-yellow-400";
+            border = "focus:border-2 focus:border-yellow-400";
+        } else if (spo2 >= 85) {
+            text = "Moderate Hypoxia";
+            color = "text-orange-400";
+            border = "focus:border-2 focus:border-orange-400";
+        } else {
+            text = "Severe Hypoxia";
+            color = "text-red-500";
+            border = "focus:border-2 focus:border-red-500";
+        }
 
-    setSpo2Diagnosis({ text, color, border });
-  }, [renewalForm.spo2]);
+        setSpo2Diagnosis({ text, color, border });
+    }, [renewalForm.spo2]);
+
+    //   const fetchWorkerVision = async (worker_id) => {
+    //   try {
+    //     const vision = await api.get(`/api/pre-employment/vision/${worker_id}`);
+    //     setSelectedWorkerVision(vision.data.opthalmic_examination);
+    //   } catch (err) {
+    //     console.error(err);
+    //     alert("Failed to fetch Worker Vision");
+    //   }
+    // };
 
     return (
         <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
@@ -541,7 +555,7 @@ function IdRenewal() {
                             value={renewalForm[key]}
                             onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
                         />
-                        <p className={`text-xs ${bpDiagnosis.color} ${key === "diastolic"? ("hidden"): ("")}`}>{bpDiagnosis.text}</p>
+                        <p className={`text-xs ${bpDiagnosis.color} ${key === "diastolic" ? ("hidden") : ("")}`}>{bpDiagnosis.text}</p>
                     </div>
                 ))}
                 {[
@@ -581,14 +595,28 @@ function IdRenewal() {
                     value={renewalForm.remarks}
                     onChange={(e) => setRenewalForm({ ...renewalForm, remarks: e.target.value })}
                 />
+                <button
+                    className="border-2 border-blue-900 bg-transparent text-blue-500 p-2 rounded"
+                    onClick={() => {
+                        if (!selectedWorker) {
+                            alert("Please select a worker first");
+                            return;
+                        }
+
+                        // fetchWorkerVision(selectedWorker.id);
+                        setOpenVision(true);
+                    }}
+                >
+                    Vision Examination
+                </button>
                 <div className="col-span-3 grid grid-cols-9 flex items-center">
                     <p className="text-sm text-gray-400 font-semibold">Vertigo Test:</p>
                     <label className="flex items-center gap-2">
                         <input
                             type="radio"
                             name="vertigo_test_passed"
-                            checked={renewalForm.vertigo_test_passed === true}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: true })}
+                            checked={renewalForm.vertigo_test_passed === "Passed"}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Passed" })}
                         />
                         <p>Passed</p>
                     </label>
@@ -596,10 +624,19 @@ function IdRenewal() {
                         <input
                             name="vertigo_test_passed"
                             type="radio"
-                            checked={renewalForm.vertigo_test_passed === false}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: false })}
+                            checked={renewalForm.vertigo_test_passed === "Failed"}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Failed" })}
                         />
                         <p>Not Passed</p>
+                    </label>
+                    <label className="flex items-center gap-2">
+                        <input
+                            name="vertigo_test_passed"
+                            type="radio"
+                            checked={renewalForm.vertigo_test_passed === "Not Done"}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Not Done" })}
+                        />
+                        <p>Not Done</p>
                     </label>
                 </div>
                 <div className="col-span-4 grid grid-cols-4">
@@ -609,7 +646,7 @@ function IdRenewal() {
                             disabled={saveLoading}
                             onClick={async () => {
                                 try {
-                                    
+
                                     if (!selectedWorker && !isNewWorker) {
                                         alert("Please Select a Worker or Add New Worker for Renewal");
                                         return;
@@ -637,6 +674,7 @@ function IdRenewal() {
 
                                     const payload = {
                                         ...renewalForm,
+                                        opthalmic_examination: visionForm
                                     };
 
                                     setSaveLoading(true);
@@ -691,6 +729,19 @@ function IdRenewal() {
                     </div>
                 </div>
             </div>
+            {openVision && (
+                <VisionCheckModal
+                    vision={null}
+                    worker={selectedWorker}
+                    instance={"id-renewal"}
+                    onClose={() => {
+                        setOpenVision(false);
+                    }}
+                    onSave={(data) => {
+                        setVisionForm(data.opthalmic_examination);
+                    }}
+                />
+            )}
         </div>
     );
 }

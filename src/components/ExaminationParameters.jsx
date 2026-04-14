@@ -151,6 +151,7 @@ function ExaminationParameters() {
           <VitalsCheckModal
             vitals={selectedWorkersVitals}
             worker={selectedWorker}
+            instance="pre-employment"
             onClose={() => {
               setOpenVitals(false);
               fetchOnGoingWorkers();

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { FaXmark } from "react-icons/fa6";
 
-function VisionCheckModal({ vision, worker, onClose }) {
+function VisionCheckModal({ vision, worker, onClose, onSave, instance }) {
   const emptyForm = {
   far_left_wo: 6,
   far_right_wo: 6,
@@ -216,6 +216,7 @@ useEffect(() => {
 
   const handleSubmit = async () => {
   try {
+    if(instance === "pre-employment"){
     await api.put(`/api/pre-employment/${worker.id}/vision`, {
       far_vision: {
         without_glasses: {
@@ -241,6 +242,36 @@ useEffect(() => {
       without_glasses_diagnosis: form.without_glasses_diagnosis,
       with_glasses_diagnosis: form.with_glasses_diagnosis
     });
+  } else if(instance === "id-renewal"){
+    const payload = {
+    opthalmic_examination: {
+      far_vision: {
+        without_glasses: {
+          left: form.far_left_wo,
+          right: form.far_right_wo
+        },
+        with_glasses: {
+          left: form.far_left_w,
+          right: form.far_right_w
+        }
+      },
+      near_vision: {
+        without_glasses: {
+          left: form.near_left_wo,
+          right: form.near_right_wo
+        },
+        with_glasses: {
+          left: form.near_left_w,
+          right: form.near_right_w
+        }
+      },
+      color_perception: form.color_perception,
+      without_glasses_diagnosis: form.without_glasses_diagnosis,
+      with_glasses_diagnosis: form.with_glasses_diagnosis
+    }
+  };
+    onSave(payload);
+  }
 
     alert("Vision examination saved");
     onClose();
