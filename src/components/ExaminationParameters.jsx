@@ -163,6 +163,7 @@ function ExaminationParameters() {
           <VisionCheckModal
             vision={selectedWorkersVision}
             worker={selectedWorker}
+            instance={"pre-employment"}
             onClose={() => {
               setOpenVision(false);
               fetchOnGoingWorkers();

@@ -3,32 +3,32 @@ import letterhead from "../assets/preemp_banner.png";
 import { formatDateDMY } from "../utils/date";
 
 function IdRenewalReportModal({ data, onClose, onConfirm }) {
-
+  console.log(data);
   const printReport = () => {
-  const element = document.getElementById("print-area");
+    const element = document.getElementById("print-area");
 
-  const iframe = document.createElement("iframe");
+    const iframe = document.createElement("iframe");
 
-  iframe.style.position = "fixed";
-  iframe.style.right = "0";
-  iframe.style.bottom = "0";
-  iframe.style.width = "0";
-  iframe.style.height = "0";
-  iframe.style.border = "0";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
 
-  document.body.appendChild(iframe);
+    document.body.appendChild(iframe);
 
-  const iframeDoc = iframe.contentWindow.document;
+    const iframeDoc = iframe.contentWindow.document;
 
-  // 🔥 Copy ALL styles (Tailwind included)
-  const styles = Array.from(
-    document.querySelectorAll("link[rel='stylesheet'], style")
-  )
-    .map(node => node.outerHTML)
-    .join("\n");
+    // 🔥 Copy ALL styles (Tailwind included)
+    const styles = Array.from(
+      document.querySelectorAll("link[rel='stylesheet'], style")
+    )
+      .map(node => node.outerHTML)
+      .join("\n");
 
-  iframeDoc.open();
-  iframeDoc.write(`
+    iframeDoc.open();
+    iframeDoc.write(`
     <!DOCTYPE html>
     <html>
       <head>
@@ -75,37 +75,51 @@ function IdRenewalReportModal({ data, onClose, onConfirm }) {
     </html>
   `);
 
-  iframeDoc.close();
+    iframeDoc.close();
 
-  iframe.onload = () => {
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
+    iframe.onload = () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
 
-    iframe.contentWindow.onafterprint = () => {
-      document.body.removeChild(iframe);
+      iframe.contentWindow.onafterprint = () => {
+        document.body.removeChild(iframe);
+      };
     };
   };
-};
   const Show = ({ value, children }) => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === "" ||
-    value === "Not Done"
-  ) return null;
+    if (
+      value === null ||
+      value === undefined ||
+      value === "" ||
+      value === "Not Done"
+    ) return null;
 
-  return children;
-};
-const formatFar = (val) => {
-  if (!val) return "";
-  return `6/${val}`;
-};
+    return children;
+  };
+  const formatFar = (val) => {
+    if (!val) return "";
+    return `6/${val}`;
+  };
 
-const formatNear = (val) => {
-  if (!val) return "";
-  return `N${val}`;
-};
+  const formatNear = (val) => {
+    if (!val) return "";
+    return `N${val}`;
+  };
 
+  const formatBloodGroup = (bg) => {
+    let symbol = bg[bg.length - 1];
+    if (symbol === "+") {
+      return bg.slice(0, -1) + " Positive";
+    } else {
+      return bg.slice(0, -1) + " Negative";
+    }
+  }
+
+  const calculateExpiredDate = (prevRenewalDate) => {
+    if (!prevRenewalDate) return "—";
+    const prev_renewal_date = new Date(prevRenewalDate);
+    return prev_renewal_date.setMonth(prev_renewal_date.getMonth() + 3);
+  }
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-start overflow-auto">
       <div className="w-[95%] max-w-5xl">
@@ -120,6 +134,12 @@ const formatNear = (val) => {
             <FaPrint />
             Print
           </button>
+          <button
+            onClick={onConfirm}
+            className="bg-green-600 px-4 py-2 rounded"
+          >
+            Confirm & Save
+          </button>
         </div>
 
         {/* REPORT */}
@@ -128,54 +148,71 @@ const formatNear = (val) => {
           {/* HEADER */}
           <div className="text-center">
             <img src={letterhead} className="w-full mb-2" />
-            <h2 className="font-bold text-lg">ID RENEWAL MEDICAL REPORT</h2>
-            <hr className="border-black my-2"/>
+            <h2 className="font-bold text-lg">MEDICAL REPORT FOR ID RENEWAL</h2>
+            <hr className="border-black my-2" />
           </div>
 
           {/* PATIENT DETAILS */}
           <div className="grid grid-cols-2 gap-2 mb-4 border-b border-gray-500 pb-4">
-  <Show value={data?.name}>
-    <p><b>Name:</b> {data.name}</p>
-  </Show>
+            <Show value={data?.name}>
+              <p><b>Name:</b> {data.name}</p>
+            </Show>
 
-  <Show value={data?.worker_id}>
-    <p><b>ID:</b> {data.worker_id}</p>
-  </Show>
+            <Show value={data?.employee_id}>
+              <p><b>Employee ID:</b> {data.employee_id}</p>
+            </Show>
 
-  <Show value={data?.blood_group}>
-    <p><b>Blood Group:</b> {data.blood_group}</p>
-  </Show>
+            <Show value={data?.designation}>
+              <p><b>Designation:</b> {data?.designation}</p>
+            </Show>
 
-  <Show value={data?.date_of_renewal}>
-    <p><b>Date:</b> {formatDateDMY(data.date_of_renewal)}</p>
-  </Show>
-</div>
+            <Show value={data?.contractor_name}>
+              <p><b>Contractor Name:</b> {data?.contractor_name}</p>
+            </Show>
+
+            <Show value={data?.blood_group}>
+              <p><b>Blood Group:</b> {formatBloodGroup(data.blood_group)}</p>
+            </Show>
+
+            <Show value={data?.date_of_renewal}>
+              <p><b>Date:</b> {formatDateDMY(data.date_of_renewal)}</p>
+            </Show>
+          </div>
 
           {/* VITALS */}
-          <h3 className="font-bold mb-2">VITALS</h3>
+          <h3 className="font-bold mb-2">EXAMINATION PARAMETERS</h3>
           <div className="grid grid-cols-2 mb-4 border-b border-gray-500 pb-4">
+            <Show value={data?.general_condition}>
+              <p className="col-span-2"><b>General Condition:</b> {data.general_condition}</p>
+            </Show>
 
-  <Show value={data?.pulse}>
-    <p><b>Pulse:</b> {data.pulse}</p>
-  </Show>
+            <Show value={data?.pulse}>
+              <p><b>Pulse:</b> {data.pulse} beats per minute</p>
+            </Show>
 
-  <Show value={data?.blood_pressure?.systolic && data?.blood_pressure?.diastolic}>
-    <p><b>BP:</b> {data.blood_pressure?.systolic}/{data.blood_pressure?.diastolic}</p>
-  </Show>
+            <Show value={data?.systolic && data?.diastolic}>
+              <p><b>BP:</b> {data.systolic} / {data.diastolic} mmHg</p>
+            </Show>
 
-  <Show value={data?.spo2}>
-    <p><b>SpO2:</b> {data.spo2}</p>
-  </Show>
+            <Show value={data?.spo2}>
+              <p><b>SpO2:</b> {data.spo2} %</p>
+            </Show>
 
-  <Show value={data?.height}>
-    <p><b>Height:</b> {data.height} cm</p>
-  </Show>
+            <Show value={data?.height}>
+              <p><b>Height:</b> {data.height} cm</p>
+            </Show>
 
-  <Show value={data?.weight}>
-    <p><b>Weight:</b> {data.weight} kg</p>
-  </Show>
-</div>
+            <Show value={data?.weight}>
+              <p><b>Weight:</b> {data.weight} kg</p>
+            </Show>
+          </div>
 
+          <div className="border-b border-gray-500 pb-4">
+            <p className="mt-2">
+              <b>VERTIGO TEST:</b>
+            </p>
+            <p>{data?.vertigo_test_passed}</p>
+          </div>
           {/* VISION */}
           {/* <div className="mb-4">
             <h3 className="font-bold border-b mb-2">Vision Examination</h3>
@@ -217,103 +254,114 @@ const formatNear = (val) => {
             </p>
           </div> */}
           <Show value={data?.opthalmic_examination}>
-  <div className="mb-4 border-b border-gray-500 pb-4">
-    <h3 className="font-bold mb-2">VISION EXAMINATION</h3>
+            <div className="mt-4 mb-4 border-b border-gray-500 pb-4">
+              <h3 className="font-bold mb-2">ASSESSMENT OF VISION</h3>
 
-    <table className="w-full border text-sm text-center">
-      <thead>
-        <tr className="bg-gray-200">
-          <th className="border p-1"></th>
-          <th className="border p-1">Far (Without)</th>
-          <th className="border p-1">Far (With)</th>
-          <th className="border p-1">Near (Without)</th>
-          <th className="border p-1">Near (With)</th>
-        </tr>
-      </thead>
+              <table className="w-full border text-sm text-center">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="border p-1"></th>
+                    <th className="border p-1">Far Vision (Without Glasses)</th>
+                    <th className="border p-1">Far Vision (With Glasses)</th>
+                    <th className="border p-1">Near Vision (Without Glasses)</th>
+                    <th className="border p-1">Near Vision (With Glasses)</th>
+                  </tr>
+                </thead>
 
-      <tbody>
-        <tr>
-          <td className="border p-1 font-semibold">Left</td>
-          <td className="border p-1">
-  {formatFar(data?.opthalmic_examination?.far_vision?.without_glasses?.left)}
-</td>
+                <tbody>
+                  <tr>
+                    <td className="border p-1 font-semibold">Left</td>
+                    <td className="border p-1">
+                      {formatFar(data?.opthalmic_examination?.far_vision?.without_glasses?.left)}
+                    </td>
 
-<td className="border p-1">
-  {formatFar(data?.opthalmic_examination?.far_vision?.with_glasses?.left)}
-</td>
+                    <td className="border p-1">
+                      {formatFar(data?.opthalmic_examination?.far_vision?.with_glasses?.left)}
+                    </td>
 
-<td className="border p-1">
-  {formatNear(data?.opthalmic_examination?.near_vision?.without_glasses?.left)}
-</td>
+                    <td className="border p-1">
+                      {formatNear(data?.opthalmic_examination?.near_vision?.without_glasses?.left)}
+                    </td>
 
-<td className="border p-1">
-  {formatNear(data?.opthalmic_examination?.near_vision?.with_glasses?.left)}
-</td>
-        </tr>
+                    <td className="border p-1">
+                      {formatNear(data?.opthalmic_examination?.near_vision?.with_glasses?.left)}
+                    </td>
+                  </tr>
 
-        <tr>
-          <td className="border p-1 font-semibold">Right</td>
-          <td className="border p-1">
-  {formatFar(data?.opthalmic_examination?.far_vision?.without_glasses?.right)}
-</td>
+                  <tr>
+                    <td className="border p-1 font-semibold">Right</td>
+                    <td className="border p-1">
+                      {formatFar(data?.opthalmic_examination?.far_vision?.without_glasses?.right)}
+                    </td>
 
-<td className="border p-1">
-  {formatFar(data?.opthalmic_examination?.far_vision?.with_glasses?.right)}
-</td>
+                    <td className="border p-1">
+                      {formatFar(data?.opthalmic_examination?.far_vision?.with_glasses?.right)}
+                    </td>
 
-<td className="border p-1">
-  {formatNear(data?.opthalmic_examination?.near_vision?.without_glasses?.right)}
-</td>
+                    <td className="border p-1">
+                      {formatNear(data?.opthalmic_examination?.near_vision?.without_glasses?.right)}
+                    </td>
 
-<td className="border p-1">
-  {formatNear(data?.opthalmic_examination?.near_vision?.with_glasses?.right)}
-</td>
-        </tr>
-      </tbody>
-    </table>
+                    <td className="border p-1">
+                      {formatNear(data?.opthalmic_examination?.near_vision?.with_glasses?.right)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-    {/* Extra fields */}
-    <div className="mt-3 space-y-2 text-left">
+              {/* Extra fields */}
+              <div className="mt-3 space-y-2 text-left">
 
-      <Show value={data?.opthalmic_examination?.color_perception}>
-        <p><b>Color Perception:</b> {data?.opthalmic_examination?.color_perception}</p>
-      </Show>
+                <Show value={data?.opthalmic_examination?.color_perception}>
+                  <p><b>Color Perception:</b> {data?.opthalmic_examination?.color_perception}</p>
+                </Show>
 
-      <Show value={data?.opthalmic_examination?.without_glasses_diagnosis}>
-        <p><b>Diagnosis (Without Glasses):</b><br/>
-          {data?.opthalmic_examination?.without_glasses_diagnosis}
-        </p>
-      </Show>
+                <Show value={data?.opthalmic_examination?.without_glasses_diagnosis}>
+                  <p><b>Diagnosis (Without Glasses):</b><br />
+                    {data?.opthalmic_examination?.without_glasses_diagnosis}
+                  </p>
+                </Show>
 
-      <Show value={data?.opthalmic_examination?.with_glasses_diagnosis}>
-        <p><b>Diagnosis (With Glasses):</b><br/>
-          {data?.opthalmic_examination?.with_glasses_diagnosis}
-        </p>
-      </Show>
+                <Show value={data?.opthalmic_examination?.with_glasses_diagnosis}>
+                  <p><b>Diagnosis (With Glasses):</b><br />
+                    {data?.opthalmic_examination?.with_glasses_diagnosis}
+                  </p>
+                </Show>
 
-    </div>
-  </div>
-</Show>
+              </div>
+            </div>
+          </Show>
 
           {/* OTHER */}
-          <div>
+          <div className="border-b border-gray-500 pb-4">
             <Show value={data?.remarks}>
-              <h3 className="font-bold mb-2">REMARKS</h3>
+              <h3 className="font-bold">REMARKS</h3>
               <p>{data?.remarks || "—"}</p>
             </Show>
-
-            <p className="mt-2">
-              <b>Vertigo Test:</b> {data?.vertigo_test_passed ? "Passed" : "Failed"}
+            <p className="mt-3">
+              <b>Previous ID Expiry Date:</b> {formatDateDMY(calculateExpiredDate(data?.previous_renewal_date))}
             </p>
           </div>
 
+          <div className="mt-3 mb-4">
+            <h3 className="font-bold">CERTIFICATION</h3>
+            <textarea className="no-scrollbar w-full p-1 border-none">
+              {`This is to certify that ${data?.name} ${data.employee_id ? `(Employee ID: ${data.employee_id})` : ""} ${data.designation ? `working as ${data.designation}` : ""} who has undergone Medical Examination on ${formatDateDMY(data?.date_of_renewal)}, is declared Physically and Mentally Fit to continue the existing job / work. Consequently, He/She is herewith eligible for taking up renewal of his/her ID Card.`}
+            </textarea>
+          </div>
+
+          <div className="flex mt-20 w-full justify-end">
+            <div className="w-1/5 text-center font-semibold">
+            <p>
+              DR P S SUNDAR RAJ
+            </p>
+            <p>CHIEF MEDICAL OFFICER</p>
+            <p>M.B.B.S, A.F.I.H, M.B.A</p>
+            <p>Regn No: 36928</p>
+            </div>
+          </div>
+
         </div>
-        <button
-  onClick={onConfirm}
-  className="bg-green-700 px-4 py-2 rounded"
->
-  Confirm & Save
-</button>
       </div>
     </div>
   );

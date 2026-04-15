@@ -759,7 +759,10 @@ const [finalPayload, setFinalPayload] = useState(null);
     data={{
       ...finalPayload,
       date_of_renewal: new Date().toISOString(),
-      name: selectedWorker?.name || workerForm.name
+      name: selectedWorker?.name || workerForm.name,
+      designation: selectedWorker?.designation || workerForm.designation,
+      employee_id: selectedWorker?.employee_id || workerForm.employee_id,
+      contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
     }}
     onClose={() => setOpenReport(false)}
     onConfirm={async () => {
