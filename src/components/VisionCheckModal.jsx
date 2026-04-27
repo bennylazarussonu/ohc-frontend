@@ -4,208 +4,208 @@ import { FaXmark } from "react-icons/fa6";
 
 function VisionCheckModal({ vision, worker, onClose, onSave, instance }) {
   const emptyForm = {
-  far_left_wo: 6,
-  far_right_wo: 6,
-  far_left_w: "",
-  far_right_w: "",
+    far_left_wo: 6,
+    far_right_wo: 6,
+    far_left_w: "",
+    far_right_w: "",
 
-  near_left_wo: 6,
-  near_right_wo: 6,
-  near_left_w: "",
-  near_right_w: "",
+    near_left_wo: 6,
+    near_right_wo: 6,
+    near_left_w: "",
+    near_right_w: "",
 
-  color_perception: "",
-  without_glasses_diagnosis: "",
-  with_glasses_diagnosis: ""
-};
+    color_perception: "",
+    without_glasses_diagnosis: "",
+    with_glasses_diagnosis: ""
+  };
 
 
   const [form, setForm] = useState(emptyForm);
 
   const diagnoseVision = (acuity) => {
-  if (!acuity) return ["missing value", 6];
+    if (!acuity) return ["missing value", 6];
 
-  const val = acuity.toString().trim().toUpperCase();
+    const val = acuity.toString().trim().toUpperCase();
 
-  switch (val) {
-    case "6":
-      return ["normal vision", 1];
-    case "8":
-    case "9":
-    case "10":
-    case "12":
-      return ["mild visual impairment", 2];
-    case "14":
-    case "18":
-    case "24":
-      return ["moderate visual impairment", 3];
-    case "36":
-    case "60":
-      return ["severe visual impairment", 4];
-    case "PL":
-    case "NPL":
-    case "CF":
-    case "HM":
-      return ["profound vision loss or blindness", 5];
-    default:
-      return ["unrecognized or missing score", 6];
-  }
-};
-
-
-const getFinalDiagnosis = (leftScore, rightScore) => {
-  if (leftScore === 6 && rightScore === 6)
-    return "values missing for both eyes";
-
-  if (leftScore === 6)
-    return "diagnosis based on right eye only";
-
-  if (rightScore === 6)
-    return "diagnosis based on left eye only";
-
-  if (leftScore === 1 && rightScore === 1)
-    return "normal visual acuity";
-
-  if (leftScore === 2 && rightScore === 2)
-    return "mild refractive error in both eyes";
-
-  if (leftScore === 3 && rightScore === 3)
-    return "moderate refractive error in both eyes";
-
-  if (leftScore >= 4 && rightScore >= 4)
-    return "significant refractive error in both eyes";
-
-  return "asymmetrical refractive error between eyes";
-};
-
-
-
-//   useEffect(() => {
-//   if (!vision) return;
-
-//   setForm({
-//     far_left_wo: vision.far_vision?.without_glasses?.left || "",
-//     far_right_wo: vision.far_vision?.without_glasses?.right || "",
-//     far_left_w: vision.far_vision?.with_glasses?.left || "",
-//     far_right_w: vision.far_vision?.with_glasses?.right || "",
-
-//     near_left_wo: vision.near_vision?.without_glasses?.left || "",
-//     near_right_wo: vision.near_vision?.without_glasses?.right || "",
-//     near_left_w: vision.near_vision?.with_glasses?.left || "",
-//     near_right_w: vision.near_vision?.with_glasses?.right || "",
-
-//     color_perception: vision.color_perception || "",
-//     without_glasses_diagnosis: vision.without_glasses_diagnosis || "",
-//     with_glasses_diagnosis: vision.with_glasses_diagnosis || ""
-//   });
-// }, [vision]);
-
-useEffect(() => {
-  const inputs = {
-    "Distant Right": {
-      without: form.far_right_wo,
-      with: form.far_right_w
-    },
-    "Distant Left": {
-      without: form.far_left_wo,
-      with: form.far_left_w
-    },
-    "Near Right": {
-      without: form.near_right_wo,
-      with: form.near_right_w
-    },
-    "Near Left": {
-      without: form.near_left_wo,
-      with: form.near_left_w
+    switch (val) {
+      case "6":
+        return ["normal vision", 1];
+      case "8":
+      case "9":
+      case "10":
+      case "12":
+        return ["mild visual impairment", 2];
+      case "14":
+      case "18":
+      case "24":
+        return ["moderate visual impairment", 3];
+      case "36":
+      case "60":
+        return ["severe visual impairment", 4];
+      case "PL":
+      case "NPL":
+      case "CF":
+      case "HM":
+        return ["profound vision loss or blindness", 5];
+      default:
+        return ["unrecognized or missing score", 6];
     }
   };
 
-  const withoutResults = {};
-  const withResults = {};
-  const withoutScores = {};
-  const withScores = {};
 
-  Object.entries(inputs).forEach(([eye, values]) => {
-    const [woDiag, woScore] = diagnoseVision(values.without);
-    const [wDiag, wScore] = diagnoseVision(values.with);
+  const getFinalDiagnosis = (leftScore, rightScore) => {
+    if (leftScore === 6 && rightScore === 6)
+      return "values missing for both eyes";
 
-    withoutResults[eye] = woDiag;
-    withResults[eye] = wDiag;
+    if (leftScore === 6)
+      return "diagnosis based on right eye only";
 
-    withoutScores[eye] = woScore;
-    withScores[eye] = wScore;
-  });
+    if (rightScore === 6)
+      return "diagnosis based on left eye only";
 
-  const hasWithoutGlassesValues = Object.values(inputs).some(v => v.without);
-  const hasWithGlassesValues = Object.values(inputs).some(v => v.with);
+    if (leftScore === 1 && rightScore === 1)
+      return "normal visual acuity";
 
-  const withoutDistantFinal = getFinalDiagnosis(
-    withoutScores["Distant Left"],
-    withoutScores["Distant Right"]
-  );
+    if (leftScore === 2 && rightScore === 2)
+      return "mild refractive error in both eyes";
 
-  const withoutNearFinal = getFinalDiagnosis(
-    withoutScores["Near Left"],
-    withoutScores["Near Right"]
-  );
+    if (leftScore === 3 && rightScore === 3)
+      return "moderate refractive error in both eyes";
 
-  const withDistantFinal = getFinalDiagnosis(
-    withScores["Distant Left"],
-    withScores["Distant Right"]
-  );
+    if (leftScore >= 4 && rightScore >= 4)
+      return "significant refractive error in both eyes";
 
-  const withNearFinal = getFinalDiagnosis(
-    withScores["Near Left"],
-    withScores["Near Right"]
-  );
+    return "asymmetrical refractive error between eyes";
+  };
 
-  let without_glasses_diagnosis = "";
-  let with_glasses_diagnosis = "";
 
-  // --- WITHOUT GLASSES ---
-  if (!hasWithoutGlassesValues) {
-    without_glasses_diagnosis =
-      "Not Applicable- Not checked: for distant vision without glasses, and not checked: for near vision without glasses.";
-  } else {
-    without_glasses_diagnosis = "Without glasses, ";
-    without_glasses_diagnosis +=
-      `the right eye shows ${withoutResults["Distant Right"]} for distant vision and shows ${withoutResults["Near Right"]} for near vision.\n`;
-    without_glasses_diagnosis +=
-      `The left eye shows ${withoutResults["Distant Left"]} for distant vision and shows ${withoutResults["Near Left"]} for near vision.\n`;
-    without_glasses_diagnosis +=
-      `Overall, distant vision has ${withoutDistantFinal}, and near vision has ${withoutNearFinal}.`;
-  }
 
-  // --- WITH GLASSES ---
-  if (!hasWithGlassesValues) {
-    with_glasses_diagnosis =
-      "Not Applicable- Not checked: for distant vision with glasses, and not checked: for near vision with glasses.";
-  } else {
-    with_glasses_diagnosis = "With glasses, ";
-    with_glasses_diagnosis +=
-      `the right eye shows ${withResults["Distant Right"]} for distant vision and shows ${withResults["Near Right"]} for near vision.\n`;
-    with_glasses_diagnosis +=
-      `The left eye shows ${withResults["Distant Left"]} for distant vision and shows ${withResults["Near Left"]} for near vision.\n`;
-    with_glasses_diagnosis +=
-      `Overall, distant vision has ${withDistantFinal}, and near vision has ${withNearFinal}.`;
-  }
+  //   useEffect(() => {
+  //   if (!vision) return;
 
-  setForm(prev => ({
-    ...prev,
-    without_glasses_diagnosis,
-    with_glasses_diagnosis
-  }));
+  //   setForm({
+  //     far_left_wo: vision.far_vision?.without_glasses?.left || "",
+  //     far_right_wo: vision.far_vision?.without_glasses?.right || "",
+  //     far_left_w: vision.far_vision?.with_glasses?.left || "",
+  //     far_right_w: vision.far_vision?.with_glasses?.right || "",
 
-}, [
-  form.far_left_wo,
-  form.far_right_wo,
-  form.near_left_wo,
-  form.near_right_wo,
-  form.far_left_w,
-  form.far_right_w,
-  form.near_left_w,
-  form.near_right_w
-]);
+  //     near_left_wo: vision.near_vision?.without_glasses?.left || "",
+  //     near_right_wo: vision.near_vision?.without_glasses?.right || "",
+  //     near_left_w: vision.near_vision?.with_glasses?.left || "",
+  //     near_right_w: vision.near_vision?.with_glasses?.right || "",
+
+  //     color_perception: vision.color_perception || "",
+  //     without_glasses_diagnosis: vision.without_glasses_diagnosis || "",
+  //     with_glasses_diagnosis: vision.with_glasses_diagnosis || ""
+  //   });
+  // }, [vision]);
+
+  useEffect(() => {
+    const inputs = {
+      "Distant Right": {
+        without: form.far_right_wo,
+        with: form.far_right_w
+      },
+      "Distant Left": {
+        without: form.far_left_wo,
+        with: form.far_left_w
+      },
+      "Near Right": {
+        without: form.near_right_wo,
+        with: form.near_right_w
+      },
+      "Near Left": {
+        without: form.near_left_wo,
+        with: form.near_left_w
+      }
+    };
+
+    const withoutResults = {};
+    const withResults = {};
+    const withoutScores = {};
+    const withScores = {};
+
+    Object.entries(inputs).forEach(([eye, values]) => {
+      const [woDiag, woScore] = diagnoseVision(values.without);
+      const [wDiag, wScore] = diagnoseVision(values.with);
+
+      withoutResults[eye] = woDiag;
+      withResults[eye] = wDiag;
+
+      withoutScores[eye] = woScore;
+      withScores[eye] = wScore;
+    });
+
+    const hasWithoutGlassesValues = Object.values(inputs).some(v => v.without);
+    const hasWithGlassesValues = Object.values(inputs).some(v => v.with);
+
+    const withoutDistantFinal = getFinalDiagnosis(
+      withoutScores["Distant Left"],
+      withoutScores["Distant Right"]
+    );
+
+    const withoutNearFinal = getFinalDiagnosis(
+      withoutScores["Near Left"],
+      withoutScores["Near Right"]
+    );
+
+    const withDistantFinal = getFinalDiagnosis(
+      withScores["Distant Left"],
+      withScores["Distant Right"]
+    );
+
+    const withNearFinal = getFinalDiagnosis(
+      withScores["Near Left"],
+      withScores["Near Right"]
+    );
+
+    let without_glasses_diagnosis = "";
+    let with_glasses_diagnosis = "";
+
+    // --- WITHOUT GLASSES ---
+    if (!hasWithoutGlassesValues) {
+      without_glasses_diagnosis =
+        "Not Applicable- Not checked: for distant vision without glasses, and not checked: for near vision without glasses.";
+    } else {
+      without_glasses_diagnosis = "Without glasses, ";
+      without_glasses_diagnosis +=
+        `the right eye shows ${withoutResults["Distant Right"]} for distant vision and shows ${withoutResults["Near Right"]} for near vision.\n`;
+      without_glasses_diagnosis +=
+        `The left eye shows ${withoutResults["Distant Left"]} for distant vision and shows ${withoutResults["Near Left"]} for near vision.\n`;
+      without_glasses_diagnosis +=
+        `Overall, distant vision has ${withoutDistantFinal}, and near vision has ${withoutNearFinal}.`;
+    }
+
+    // --- WITH GLASSES ---
+    if (!hasWithGlassesValues) {
+      with_glasses_diagnosis =
+        "Not Applicable- Not checked: for distant vision with glasses, and not checked: for near vision with glasses.";
+    } else {
+      with_glasses_diagnosis = "With glasses, ";
+      with_glasses_diagnosis +=
+        `the right eye shows ${withResults["Distant Right"]} for distant vision and shows ${withResults["Near Right"]} for near vision.\n`;
+      with_glasses_diagnosis +=
+        `The left eye shows ${withResults["Distant Left"]} for distant vision and shows ${withResults["Near Left"]} for near vision.\n`;
+      with_glasses_diagnosis +=
+        `Overall, distant vision has ${withDistantFinal}, and near vision has ${withNearFinal}.`;
+    }
+
+    setForm(prev => ({
+      ...prev,
+      without_glasses_diagnosis,
+      with_glasses_diagnosis
+    }));
+
+  }, [
+    form.far_left_wo,
+    form.far_right_wo,
+    form.near_left_wo,
+    form.near_right_wo,
+    form.far_left_w,
+    form.far_right_w,
+    form.near_left_w,
+    form.near_right_w
+  ]);
 
 
 
@@ -215,71 +215,100 @@ useEffect(() => {
   };
 
   const handleSubmit = async () => {
-  try {
-    if(instance === "pre-employment"){
-    await api.put(`/api/pre-employment/${worker.id}/vision`, {
-      far_vision: {
-        without_glasses: {
-          left: form.far_left_wo,
-          right: form.far_right_wo
-        },
-        with_glasses: {
-          left: form.far_left_w,
-          right: form.far_right_w
-        }
-      },
-      near_vision: {
-        without_glasses: {
-          left: form.near_left_wo,
-          right: form.near_right_wo
-        },
-        with_glasses: {
-          left: form.near_left_w,
-          right: form.near_right_w
-        }
-      },
-      color_perception: form.color_perception,
-      without_glasses_diagnosis: form.without_glasses_diagnosis,
-      with_glasses_diagnosis: form.with_glasses_diagnosis
-    });
-  } else if(instance === "id-renewal"){
-    const payload = {
-    opthalmic_examination: {
-      far_vision: {
-        without_glasses: {
-          left: form.far_left_wo,
-          right: form.far_right_wo
-        },
-        with_glasses: {
-          left: form.far_left_w,
-          right: form.far_right_w
-        }
-      },
-      near_vision: {
-        without_glasses: {
-          left: form.near_left_wo,
-          right: form.near_right_wo
-        },
-        with_glasses: {
-          left: form.near_left_w,
-          right: form.near_right_w
-        }
-      },
-      color_perception: form.color_perception,
-      without_glasses_diagnosis: form.without_glasses_diagnosis,
-      with_glasses_diagnosis: form.with_glasses_diagnosis
+    try {
+      if (instance === "pre-employment") {
+        await api.put(`/api/pre-employment/${worker.id}/vision`, {
+          far_vision: {
+            without_glasses: {
+              left: form.far_left_wo,
+              right: form.far_right_wo
+            },
+            with_glasses: {
+              left: form.far_left_w,
+              right: form.far_right_w
+            }
+          },
+          near_vision: {
+            without_glasses: {
+              left: form.near_left_wo,
+              right: form.near_right_wo
+            },
+            with_glasses: {
+              left: form.near_left_w,
+              right: form.near_right_w
+            }
+          },
+          color_perception: form.color_perception,
+          without_glasses_diagnosis: form.without_glasses_diagnosis,
+          with_glasses_diagnosis: form.with_glasses_diagnosis
+        });
+      } else if (instance === "id-renewal") {
+        const payload = {
+          opthalmic_examination: {
+            far_vision: {
+              without_glasses: {
+                left: form.far_left_wo,
+                right: form.far_right_wo
+              },
+              with_glasses: {
+                left: form.far_left_w,
+                right: form.far_right_w
+              }
+            },
+            near_vision: {
+              without_glasses: {
+                left: form.near_left_wo,
+                right: form.near_right_wo
+              },
+              with_glasses: {
+                left: form.near_left_w,
+                right: form.near_right_w
+              }
+            },
+            color_perception: form.color_perception,
+            without_glasses_diagnosis: form.without_glasses_diagnosis,
+            with_glasses_diagnosis: form.with_glasses_diagnosis
+          }
+        };
+        onSave(payload);
+      } else if(instance === "fcacc"){
+        const payload = {
+          opthalmic_examination: {
+            far_vision: {
+              without_glasses: {
+                left: form.far_left_wo,
+                right: form.far_right_wo
+              },
+              with_glasses: {
+                left: form.far_left_w,
+                right: form.far_right_w
+              }
+            },
+            near_vision: {
+              without_glasses: {
+                left: form.near_left_wo,
+                right: form.near_right_wo
+              },
+              with_glasses: {
+                left: form.near_left_w,
+                right: form.near_right_w
+              }
+            },
+            color_perception: form.color_perception,
+            without_glasses_diagnosis: form.without_glasses_diagnosis,
+            with_glasses_diagnosis: form.with_glasses_diagnosis
+          }
+        };
+        onSave(payload);
+      }
+
+      alert("Vision examination saved");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save vision exam");
     }
   };
-    onSave(payload);
-  }
-
-    alert("Vision examination saved");
-    onClose();
-  } catch (err) {
-    console.error(err);
-    alert("Failed to save vision exam");
-  }
-};
 
 
   return (
@@ -323,27 +352,27 @@ useEffect(() => {
           ].map(([key, label]) => (
             <div className="border border-gray-500 p-2">
               <select
-              key={key}
-              placeholder={label}
-              className="p-2 bg-gray-700 rounded w-full"
-              value={form[key]}
-              onChange={e => handleChange(key, e.target.value)}
-            >
-              {(key == "far_left_w") && (
-                <option value=""></option>
-              )}
-              <option value="6">6/6</option>
-              <option value="9">6/9</option>
-              <option value="12">6/12</option>
-              <option value="18">6/18</option>
-              <option value="24">6/24</option>
-              <option value="36">6/36</option>
-              <option value="60">6/60</option>
-              <option value="CF">Counting Fingers(CF)</option>
-              <option value="HM">Hand Movements(HM)</option>
-              <option value="PL">Perception of Light(PL)</option>
-              <option value="NPL">No Perception of Light(NPL)</option>
-            </select>
+                key={key}
+                placeholder={label}
+                className="p-2 bg-gray-700 rounded w-full"
+                value={form[key]}
+                onChange={e => handleChange(key, e.target.value)}
+              >
+                {(key == "far_left_w") && (
+                  <option value=""></option>
+                )}
+                <option value="6">6/6</option>
+                <option value="9">6/9</option>
+                <option value="12">6/12</option>
+                <option value="18">6/18</option>
+                <option value="24">6/24</option>
+                <option value="36">6/36</option>
+                <option value="60">6/60</option>
+                <option value="CF">Counting Fingers(CF)</option>
+                <option value="HM">Hand Movements(HM)</option>
+                <option value="PL">Perception of Light(PL)</option>
+                <option value="NPL">No Perception of Light(NPL)</option>
+              </select>
             </div>
           ))}
           {[
@@ -352,24 +381,24 @@ useEffect(() => {
           ].map(([key, label]) => (
             <div className="border border-gray-500 p-2">
               <select
-              key={key}
-              placeholder={label}
-              className="p-2 bg-gray-700 rounded w-full"
-              value={form[key]}
-              onChange={e => handleChange(key, e.target.value)}
-            >
-              {(key == "near_left_w") && (
-                <option value=""></option>
-              )}
-              <option value="6">N6</option>
-              <option value="8">N8</option>
-              <option value="10">N10</option>
-              <option value="12">N12</option>
-              <option value="18">N18</option>
-              <option value="24">N24</option>
-              <option value="36">N36</option>
-              <option value="48">N48</option>
-            </select>
+                key={key}
+                placeholder={label}
+                className="p-2 bg-gray-700 rounded w-full"
+                value={form[key]}
+                onChange={e => handleChange(key, e.target.value)}
+              >
+                {(key == "near_left_w") && (
+                  <option value=""></option>
+                )}
+                <option value="6">N6</option>
+                <option value="8">N8</option>
+                <option value="10">N10</option>
+                <option value="12">N12</option>
+                <option value="18">N18</option>
+                <option value="24">N24</option>
+                <option value="36">N36</option>
+                <option value="48">N48</option>
+              </select>
             </div>
           ))}
           <div className="border border-gray-500 p-2 font-bold">
@@ -381,27 +410,27 @@ useEffect(() => {
           ].map(([key, label]) => (
             <div className="border border-gray-500 p-2">
               <select
-              key={key}
-              placeholder={label}
-              className="p-2 bg-gray-700 rounded w-full"
-              value={form[key]}
-              onChange={e => handleChange(key, e.target.value)}
-            >
-              {(key == "far_right_w") && (
-                <option value=""></option>
-              )}
-              <option value="6">6/6</option>
-              <option value="9">6/9</option>
-              <option value="12">6/12</option>
-              <option value="18">6/18</option>
-              <option value="24">6/24</option>
-              <option value="36">6/36</option>
-              <option value="60">6/60</option>
-              <option value="CF">Counting Fingers(CF)</option>
-              <option value="HM">Hand Movements(HM)</option>
-              <option value="PL">Perception of Light(PL)</option>
-              <option value="NPL">No Perception of Light(NPL)</option>
-            </select>
+                key={key}
+                placeholder={label}
+                className="p-2 bg-gray-700 rounded w-full"
+                value={form[key]}
+                onChange={e => handleChange(key, e.target.value)}
+              >
+                {(key == "far_right_w") && (
+                  <option value=""></option>
+                )}
+                <option value="6">6/6</option>
+                <option value="9">6/9</option>
+                <option value="12">6/12</option>
+                <option value="18">6/18</option>
+                <option value="24">6/24</option>
+                <option value="36">6/36</option>
+                <option value="60">6/60</option>
+                <option value="CF">Counting Fingers(CF)</option>
+                <option value="HM">Hand Movements(HM)</option>
+                <option value="PL">Perception of Light(PL)</option>
+                <option value="NPL">No Perception of Light(NPL)</option>
+              </select>
             </div>
           ))}
           {[
@@ -410,24 +439,24 @@ useEffect(() => {
           ].map(([key, label]) => (
             <div className="border border-gray-500 p-2">
               <select
-              key={key}
-              placeholder={label}
-              className="p-2 bg-gray-700 rounded w-full"
-              value={form[key]}
-              onChange={e => handleChange(key, e.target.value)}
-            >
-              {(key == "near_right_w") && (
-                <option value=""></option>
-              )}
-              <option value="6">N6</option>
-              <option value="8">N8</option>
-              <option value="10">N10</option>
-              <option value="12">N12</option>
-              <option value="18">N18</option>
-              <option value="24">N24</option>
-              <option value="36">N36</option>
-              <option value="48">N48</option>
-            </select>
+                key={key}
+                placeholder={label}
+                className="p-2 bg-gray-700 rounded w-full"
+                value={form[key]}
+                onChange={e => handleChange(key, e.target.value)}
+              >
+                {(key == "near_right_w") && (
+                  <option value=""></option>
+                )}
+                <option value="6">N6</option>
+                <option value="8">N8</option>
+                <option value="10">N10</option>
+                <option value="12">N12</option>
+                <option value="18">N18</option>
+                <option value="24">N24</option>
+                <option value="36">N36</option>
+                <option value="48">N48</option>
+              </select>
             </div>
           ))}
         </div>

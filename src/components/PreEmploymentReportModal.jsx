@@ -25,7 +25,43 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   const selectedDoctor = doctors.find(
     d => Number(d.id) === Number(selectedDoctorId)
   );
-  const readOnly = data.status === "Declared Fit" || data.status === "Declared Unfit";
+  const isAdmin = user?.role === "ADMIN";
+const isDoctor = user?.role === "DOCTOR";
+const isEmployee = user?.role === "EMPLOYEE";
+
+const isExistingReport =
+  data.status === "Declared Fit" ||
+  data.status === "Declared Unfit";
+
+const reportDoctor = doctors.find(
+  d => Number(d.id) === Number(data?.medical_examiner_id)
+);
+
+const normalize = (txt = "") =>
+  txt.toLowerCase().trim();
+
+const isOwnReport =
+  isDoctor &&
+  reportDoctor &&
+  normalize(reportDoctor.name).includes(
+    normalize(user?.userId)
+  );
+
+const canEdit =
+  isAdmin ||
+  (isDoctor && !isExistingReport) ||
+  isOwnReport;
+
+const canSave =
+  isAdmin ||
+  (isDoctor &&
+    (!isExistingReport || isOwnReport));
+
+const canPrint = true;
+
+const canChangeDoctor = isAdmin;
+
+const readOnly = !canEdit;
 
   const [form, setForm] = useState({
     ...data,
@@ -284,27 +320,42 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
 
   useEffect(() => {
-    if (!user) return;
+  if (!user) return;
 
-    api.get("/api/doctors").then(res => {
-      setDoctors(res.data);
+  api.get("/api/doctors").then(res => {
+    const list = res.data || [];
+    setDoctors(list);
 
-      // 🔒 If logged-in user is DOCTOR, auto-select themselves
-      if (user.role === "DOCTOR") {
-        const matchedDoctor = res.data.find(d =>
-          d.name.toLowerCase().includes(user.userId.toLowerCase())
+    /* Existing report = saved doctor */
+    if (data?.medical_examiner_id) {
+      setSelectedDoctorId(
+        Number(data.medical_examiner_id)
+      );
+      return;
+    }
+
+    /* Doctor creating new report */
+    if (isDoctor) {
+      const me = list.find(doc =>
+        normalize(doc.name).includes(
+          normalize(user?.userId)
+        )
+      );
+
+      if (me) {
+        setSelectedDoctorId(
+          Number(me.id)
         );
-
-        if(readOnly){
-          setSelectedDoctorId(form.medical_examiner_id);
-        }else{
-          if (matchedDoctor) {
-            setSelectedDoctorId(matchedDoctor.id);
-          }
-        }
       }
-    });
-  }, [user]);
+      return;
+    }
+
+    /* Admin creating new */
+    if (isAdmin) {
+      setSelectedDoctorId("");
+    }
+  });
+}, [user, data]);
 
   // 1) useEffect to compute diagnoses from visionForm
   useEffect(() => {
@@ -451,6 +502,10 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
 
   const handleSave = async () => {
+    if (!canSave) {
+  alert("No permission to save");
+  return;
+}
     if (form.duty_fit == null) {
       alert("Please select FIT or UNFIT for duty");
       return;
@@ -467,6 +522,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     }
 
     try {
+      console.log(selectedDoctorId);
       await api.post("/api/pre-employment/finalize", {
         preemployment_id: data.id,  // string ID like "PRE001"
         medical_examiner_id: selectedDoctorId,
@@ -507,7 +563,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <button onClick={onClose}>
             <FaX />
           </button>
-          {(user?.role === "ADMIN" || !readOnly) && (
+          {canSave && (
             <button
               onClick={handleSave}
               className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
@@ -516,7 +572,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               Save & Print Report
             </button>
           )}
-          {(user?.role !== "ADMIN" || !readOnly) && (
+          {canPrint && (
             <button
               onClick={handlePrint}
               className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
@@ -546,7 +602,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             {form.id && (
               <div className="grid col-span-2 grid-cols-2 font-semibold mb-0">
                 <p>
-                  Certrificate ID
+                  Certificate ID
                 </p>
                 <p className="text-left text-sm/4">: {form.id}</p>
               </div>
@@ -564,6 +620,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input type="text"
                 className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                 value={form.contractor_name}
+                readOnly={readOnly}
                 onChange={e => setForm(prev => ({
                   ...prev,
                   contractor_name: e.target.value
@@ -586,6 +643,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <input type="text"
                   className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                   value={form.name}
+                  readOnly={readOnly}
                   onChange={e => setForm(prev => ({
                     ...prev,
                     name: e.target.value
@@ -603,6 +661,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.fathers_name}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       fathers_name: e.target.value
@@ -619,6 +678,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                       style={{ appearance: "none", "-webkit-appearance": "none", "-moz-appearance": "none" }}
                       className="bg-transparent text-sm/4e focus:outline-none"
                       value={form.gender}
+                      disabled={readOnly}
                       onChange={e =>
                         setForm(prev => ({ ...prev, gender: e.target.value }))
                       }
@@ -646,6 +706,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.designation}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       designation: e.target.value
@@ -660,6 +721,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="date"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full screen-only"
                     value={form.dob ? form.dob.split("T")[0] : ""}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       dob: e.target.value
@@ -675,6 +737,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.aadhar_no}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       aadhar_no: e.target.value
@@ -689,6 +752,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.phone_no}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       phone_no: e.target.value
@@ -705,6 +769,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input type="text"
                 className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                 value={idMarksText}
+                readOnly={readOnly}
                 onChange={e => setIdMarksText(e.target.value)}
                 onBlur={() => {
                   setForm(prev => ({
@@ -726,6 +791,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <input type="text"
                   className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                   value={form.residence}
+                  readOnly={readOnly}
                   onChange={e => setForm(prev => ({
                     ...prev,
                     residence: e.target.value
@@ -753,6 +819,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 </div>
                 <textarea
                   value={form[key]}
+                  readOnly={readOnly}
                   rows={3}
                   className="w-full text-sm/4 rounded p-0 col-span-3 resize-none no-scrollbar"
                   onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
@@ -774,6 +841,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               </div>
               <textarea
                 value={form[key]}
+                readOnly={readOnly}
                 rows={(Math.ceil(form[key].length / 100))}
                 className="w-full text-sm/4 rounded pb-[0.5px] col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
@@ -809,6 +877,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                         type="text"
                         className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                         value={value}
+                        readOnly={readOnly}
                         onChange={e => {
                           const v = e.target.value;
                           setForm(prev => {
@@ -861,6 +930,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                         type="text"
                         className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                         value={systolic}
+                        readOnly={readOnly}
                         onChange={e => {
                           setForm(prev => ({
                             ...prev,
@@ -878,6 +948,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                         type="text"
                         className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                         value={diastolic}
+                        readOnly={readOnly}
                         onChange={e => {
                           setForm(prev => ({
                             ...prev,
@@ -920,6 +991,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                         type="text"
                         className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 min-w-[15px] max-w-[26px]"
                         value={value}
+                        readOnly={readOnly}
                         onChange={e => {
                           const v = e.target.value;
                           setForm(prev => {
@@ -1020,6 +1092,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
 
               <textarea
                 value={form.systemic_examination[key] || ""}
+                readOnly={readOnly}
                 rows={(form.systemic_examination[key].length < 100) ? (1) : (Math.ceil(form.systemic_examination[key].length / 100))}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({
@@ -1065,6 +1138,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <div key={i} className="border border-gray-700">
                   <select
                     className="screen-only w-full border border-white text-center"
+                    disabled={readOnly}
                     value={visionForm[key]}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
@@ -1099,6 +1173,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <select
                     className=" screen-only w-full bg-transparent border border-white text-center"
                     value={visionForm[key]}
+                    disabled={readOnly}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
                       [key]: e.target.value
@@ -1133,6 +1208,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <select
                     className="screen-only w-full bg-transparent border border-white text-center"
                     value={visionForm[key]}
+                    disabled={readOnly}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
                       [key]: e.target.value
@@ -1166,6 +1242,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <select
                     className="screen-only w-full bg-transparent border border-white text-center"
                     value={visionForm[key]}
+                    disabled={readOnly}
                     onChange={e => setVisionForm(prev => ({
                       ...prev,
                       [key]: e.target.value
@@ -1200,9 +1277,9 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <textarea
               rows={(visionForm.without_glasses_diagnosis.length < 100) ? (1) : (Math.ceil(visionForm.without_glasses_diagnosis.length / 100))}
               className="bg-transparent col-span-3 resize-none no-scrollbar"
+              readOnly={readOnly}
               placeholder="Diagnosis (Without Glasses)"
               value={visionForm.without_glasses_diagnosis || ""}
-              readOnly
             />
             <div className="flex justify-between">
               <p>With Glasses</p>
@@ -1211,9 +1288,9 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <textarea
               rows={(visionForm.with_glasses_diagnosis.length < 100) ? (1) : (Math.ceil(visionForm.with_glasses_diagnosis.length / 100))}
               className="bg-transparent col-span-3 resize-none"
+              readOnly={readOnly}
               placeholder="Diagnosis (With Glasses)"
               value={visionForm.with_glasses_diagnosis || ""}
-              readOnly
             />
             <div className="flex justify-between">
               <p>Color Perception</p>
@@ -1223,6 +1300,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               id="col-perc"
               className="col-span-3 bg-transparent border border-white "
               value={visionForm.color_perception || ""}
+              disabled={readOnly}
               onChange={e => {
                 const value = e.target.value;
                 // 1) update local visionForm
@@ -1258,6 +1336,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <textarea
                 rows={form.clinical_impression.length < 100 ? (1) : (Math.ceil(form.clinical_impression.length / 100))}
                 value={form?.clinical_impression}
+                readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
             </div>
@@ -1268,6 +1347,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <textarea
                 rows={form.final_recommendation.length < 100 ? (1) : (Math.ceil(form.final_recommendation.length / 100))}
                 value={form?.final_recommendation}
+                readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
             </div>
@@ -1283,6 +1363,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <textarea
                   rows={form.physical_fitness.length < 100 ? (2) : (Math.ceil(form.physical_fitness.length / 95))}
                   value={form?.physical_fitness}
+                  readOnly={readOnly}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
                 ></textarea>
@@ -1317,11 +1398,13 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <input
               value={form.reason_for_certificate_refusal}
               className="border border-none p-0 pl-1 w-3/4"
+              readOnly={readOnly}
               onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_refusal"]: e.target.value }))} />
             <br />
             (ii) Certificate being revoked:
             <input
               value={form.reason_for_certificate_revoke}
+              readOnly={readOnly}
               className="border border-none p-0 pl-1 w-3/4"
               onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_revoke"]: e.target.value }))}
             />
@@ -1335,6 +1418,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input
                 type="radio"
                 checked={form.duty_fit === true}
+                disabled={readOnly}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
               <b className={`${form.duty_fit === true ? ("no-underline"): ("line-through")}`}>FIT FOR DUTY</b>
@@ -1343,6 +1427,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <label className="flex items-center gap-2">
               <input
                 type="radio"
+                disabled={readOnly}
                 checked={form.duty_fit === false}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
               />
@@ -1358,7 +1443,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
           <select
             className="w-2/8 rounded text-[12.5px] border no-print"
             value={selectedDoctorId || ""}
-            disabled={user?.role !== "ADMIN" || readOnly}
+            disabled={!canChangeDoctor}
             onChange={e => setSelectedDoctorId(Number(e.target.value))}
           >
             <option value="">Select Treating Doctor</option>
@@ -1402,6 +1487,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input type="text"
                 className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                 value={form.contractor_name}
+                readOnly={readOnly}
                 onChange={e => setForm(prev => ({
                   ...prev,
                   contractor_name: e.target.value
@@ -1424,6 +1510,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <input type="text"
                   className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                   value={form.name}
+                  readOnly={readOnly}
                   onChange={e => setForm(prev => ({
                     ...prev,
                     name: e.target.value
@@ -1441,6 +1528,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.fathers_name}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       fathers_name: e.target.value
@@ -1456,6 +1544,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                     <select
                       style={{ appearance: "none", "-webkit-appearance": "none", "-moz-appearance": "none" }}
                       className="bg-transparent text-sm/4e focus:outline-none"
+                      disabled={readOnly}
                       value={form.gender}
                       onChange={e =>
                         setForm(prev => ({ ...prev, gender: e.target.value }))
@@ -1484,6 +1573,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.designation}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       designation: e.target.value
@@ -1498,6 +1588,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="date"
                     className="screen-only bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.dob ? form.dob.split("T")[0] : ""}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       dob: e.target.value
@@ -1517,6 +1608,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                       ...prev,
                       aadhar_no: e.target.value
                     }))}
+                    readOnly={readOnly}
                   />
                 </div>
                 <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.phone_no ? ("no-print") : ("")}`}>
@@ -1527,6 +1619,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   <input type="text"
                     className="bg-transparent text-sm/4 focus:outline-none p-0 m-0 w-full"
                     value={form.phone_no}
+                    readOnly={readOnly}
                     onChange={e => setForm(prev => ({
                       ...prev,
                       phone_no: e.target.value
@@ -1543,6 +1636,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <input type="text"
                 className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                 value={idMarksText}
+                readOnly={readOnly}
                 onChange={e => setIdMarksText(e.target.value)}
                 onBlur={() => {
                   setForm(prev => ({
@@ -1564,6 +1658,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                 <input type="text"
                   className="bg-transparent text-sm/4 col-span-3 focus:outline-none p-0 m-0 w-full"
                   value={form.residence}
+                  readOnly={readOnly}
                   onChange={e => setForm(prev => ({
                     ...prev,
                     residence: e.target.value
@@ -1589,6 +1684,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <textarea
                 // rows={form.clinical_impression.length < 100 ? (1) : (Math.ceil(form.clinical_impression.length / 100))}
                 value={form?.clinical_impression}
+                readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
             </div>
@@ -1599,6 +1695,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <textarea
                 // rows={form.final_recommendation.length < 100 ? (1) : (Math.ceil(form.final_recommendation.length / 100))}
                 value={form?.final_recommendation}
+                readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
             </div>
@@ -1613,6 +1710,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
                   rows={7}
                   value={form?.physical_fitness}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
+                  readOnly={readOnly}
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
                 ></textarea>
               </div>
@@ -1646,12 +1744,14 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <input
               value={form.reason_for_certificate_refusal}
               className="border border-none p-0 pl-1 w-3/4"
+              readOnly={readOnly}
               onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_refusal"]: e.target.value }))} />
             <br />
             (ii) Certificate being revoked:
             <input
               value={form.reason_for_certificate_revoke}
               className="border border-none p-0 pl-1 w-3/4"
+              readOnly={readOnly}
               onChange={e => setForm(prev => ({ ...prev, ["reason_for_certificate_revoke"]: e.target.value }))}
             />
           </div>
@@ -1660,6 +1760,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <label className="flex items-center gap-2">
               <input
                 type="radio"
+                disabled={readOnly}
                 checked={form.duty_fit === true}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
@@ -1669,6 +1770,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <label className="flex items-center gap-2">
               <input
                 type="radio"
+                disabled={readOnly}
                 checked={form.duty_fit === false}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
               />
