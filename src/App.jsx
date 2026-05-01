@@ -574,10 +574,8 @@ function App() {
   return (
     <>
     <div className="flex">
-
-    
-      <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"} />
-      <div className="p-6 min-h-screen flex flex-col items-center bg-gray-900 w-4/5 text-white">
+      <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"}/>
+      <div className="p-6 h-screen overflow-y-scroll no-scrollbar flex flex-col items-center bg-gray-900 w-4/5 text-white">
         {activeMenu === "workers" && (
           <BulkUpload />
         )}
