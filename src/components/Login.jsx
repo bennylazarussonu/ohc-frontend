@@ -1,46 +1,65 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { FaUser, FaKey, FaLock, FaLockOpen } from "react-icons/fa6"
 
 function Login() {
   const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
-      await login(userId, password);
+      const res = await login(userId, password);
     } catch (err) {
       console.log(err);
-      alert("Invalid credentials");
+      alert(err.response.data.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-900">
-      <div className="bg-gray-800 p-6 rounded w-80">
-        <h2 className="text-lg mb-4 text-center text-white font-bold">OHC BKC</h2>
+    <>
+      {/* Outer container */}
+      <div className="flex items-center justify-center h-screen bg-gray-900">
+        {/* Login box */}
+        <div className="bg-gray-800 px-12 py-0 rounded-2xl w-[28%] h-[35%] flex flex-col justify-center gap-4">
+          <h2 className="text-4xl mb-4 text-center text-white font-bold">OHC BKC</h2>
 
-        <input
-          className="w-full p-2 mb-2 bg-gray-700 rounded text-white"
-          placeholder="Username"
-          onChange={e => setUserId(e.target.value)}
-        />
+          {/* Username and Password fields */}
+          <div className="w-full flex items-center gap-4">
+            <FaUser className="text-white text-[22px]" />
+            <input
+              className="w-full p-2 bg-gray-700 outline-none focus:ring-1 focus:ring-blue-400 rounded text-white"
+              placeholder="Username"
+              onChange={e => setUserId(e.target.value)}
+            />
+          </div>
+          <div className="w-full mb-3 flex items-center gap-4">
+            <FaKey className="text-white text-[22px]" />
+            <input
+              type="password"
+              className="w-full p-2 bg-gray-700 outline-none focus:ring-1 focus:ring-blue-400 rounded text-white"
+              placeholder="Password"
+              onChange={e => setPassword(e.target.value)}
+            />
+          </div>
 
-        <input
-          type="password"
-          className="w-full p-2 mb-4 bg-gray-700 rounded text-white"
-          placeholder="Password"
-          onChange={e => setPassword(e.target.value)}
-        />
-
-        <button
-          onClick={handleLogin}
-          className="w-full bg-blue-600 p-2 rounded text-white"
-        >
-          Login
-        </button>
+          <div className="w-full flex items-center justify-center gap-4">
+            <button
+              onClick={handleLogin}
+              className="bg-blue-600 flex hover:bg-blue-800 items-center p-3 gap-2 rounded text-white"
+              disabled={loading}
+            >
+              {loading ? (<FaLockOpen />) : (<FaLock />)}
+              {loading ? ("Logging in...") : ("Login")}
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
