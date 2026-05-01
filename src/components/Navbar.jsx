@@ -48,48 +48,52 @@ function Navbar({ border, active, onChange }) {
   };
 
   return (
-    <div className="w-full bg-gray-800 border-b border-gray-700">
-      <div className="flex items-center justify-between px-2 py-2 text-[14px]">
+    <div className="w-1/5 flex flex-col h-screen bg-gray-800 border border-gray-700">
+      <div className="w-full p-3 flex items-center justify-center border-b border-gray-700">
+        <h2 className="text-lg text-white font-bold">OHC BKC</h2>
+      </div>
+
+      <div className="flex flex-col items-center justify-center overflow-scroll no-scrollbar p-2 w-full">
 
         {/* LEFT: Navigation */}
-        <div className="flex items-center gap-3">
+        <div className="w-full items-center overflow-y-scroll no-scrollbar border-b border-gray-700 gap-3">
           {renderMenus().map(menu => (
             <button
               key={menu.key}
               onClick={() => onChange(menu.key)}
-              className={`flex items-center gap-2 px-3 py-1 text-xs rounded
+              className={`flex items-center gap-2 w-full px-3 py-2 my-1 text-xs rounded
                 ${active === menu.key
                   ? "bg-blue-600 text-white"
                   : "text-gray-300 hover:bg-gray-700 hover:text-white"
                 }
-                ${border === menu.key ? "h-10 w-10 rounded-[100%] border-gray-500" : ""}
+                ${border === menu.key ? "h-10 border-gray-500" : ""}
               `}
             >
               <div className="relative">
                 {menu.icon}
 
                 {menu.key === "notifications" && activeCount > 0 && (
-                  <span className="absolute -top-3 -right-[95px] bg-red-600 text-white text-[10px] px-1.5 rounded-full">
+                  <span className="absolute -top-2 -right-[10px] bg-red-600 font-bold text-white text-[7px] px-1.5 rounded-full">
                     {activeCount}
                   </span>
                 )}
               </div>
 
-              {menu.key === "profile" ? "" : menu.label}
+              {menu.label}
             </button>
           ))}
         </div>
 
         {/* RIGHT: User + Logout */}
-        <div className="flex items-center gap-3">
-          <span className="text-gray-300 text-sm">
+        <div className="flex items-center gap-3 mt-3">
+          <span className="text-gray-300 text-xs">
             {user.userId} ({user.role})
           </span>
 
           <button
             onClick={logout}
             className="flex items-center gap-2 px-3 py-1.5 rounded
-              bg-red-600 hover:bg-red-700 text-white"
+              bg-red-600 hover:bg-red-700 text-white text-sm"
           >
             <FaRightFromBracket />
             Logout
