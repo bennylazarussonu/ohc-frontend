@@ -15,7 +15,7 @@ function IdRenewal() {
     const [openVision, setOpenVision] = useState(false);
     const [selectedWorkersVision, setSelectedWorkerVision] = useState(null);
     const [openReport, setOpenReport] = useState(false);
-const [finalPayload, setFinalPayload] = useState(null);
+    const [finalPayload, setFinalPayload] = useState(null);
     const [visionForm, setVisionForm] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
@@ -713,14 +713,14 @@ const [finalPayload, setFinalPayload] = useState(null);
                                     // });
                                     // setIsNewWorker(false);
                                     const payload = {
-    ...renewalForm,
-    opthalmic_examination: visionForm,
-    worker_id: selectedWorker?.id,
-    ...(isNewWorker && { worker_data: workerForm })
-  };
+                                        ...renewalForm,
+                                        opthalmic_examination: visionForm,
+                                        worker_id: selectedWorker?.id,
+                                        ...(isNewWorker && { worker_data: workerForm })
+                                    };
 
-  setFinalPayload(payload);   // 🔥 store it
-  setOpenReport(true);       // 🔥 open modal
+                                    setFinalPayload(payload);   // 🔥 store it
+                                    setOpenReport(true);       // 🔥 open modal
 
                                 } catch (err) {
                                     console.error(err);
@@ -755,50 +755,50 @@ const [finalPayload, setFinalPayload] = useState(null);
                 />
             )}
             {openReport && (
-  <IdRenewalReportModal
-    data={{
-      ...finalPayload,
-      date_of_renewal: new Date().toISOString(),
-      name: selectedWorker?.name || workerForm.name,
-      designation: selectedWorker?.designation || workerForm.designation,
-      employee_id: selectedWorker?.employee_id || workerForm.employee_id,
-      contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
-    }}
-    onClose={() => setOpenReport(false)}
-    onConfirm={async () => {
-      try {
-        setSaveLoading(true);
+                <IdRenewalReportModal
+                    data={{
+                        ...finalPayload,
+                        date_of_renewal: new Date().toISOString(),
+                        name: selectedWorker?.name || workerForm.name,
+                        designation: selectedWorker?.designation || workerForm.designation,
+                        employee_id: selectedWorker?.employee_id || workerForm.employee_id,
+                        contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
+                    }}
+                    onClose={() => setOpenReport(false)}
+                    onConfirm={async () => {
+                        try {
+                            setSaveLoading(true);
 
-        await api.post("/api/id-renewal/renew", finalPayload);
+                            await api.post("/api/id-renewal/renew", finalPayload);
 
-        alert("ID renewed successfully ✅");
+                            alert("ID renewed successfully ✅");
 
-        setOpenReport(false);
-        setSelectedWorker(null);
-        setVisionForm(null);
-        setRenewalForm({
-          previous_renewal_date: "",
-          blood_group: "",
-          general_condition: "",
-          pulse: "",
-          systolic: "",
-          diastolic: "",
-          spo2: "",
-          height: "",
-          weight: "",
-          remarks: "",
-          vertigo_test_passed: true,
-        });
+                            setOpenReport(false);
+                            setSelectedWorker(null);
+                            setVisionForm(null);
+                            setRenewalForm({
+                                previous_renewal_date: "",
+                                blood_group: "",
+                                general_condition: "",
+                                pulse: "",
+                                systolic: "",
+                                diastolic: "",
+                                spo2: "",
+                                height: "",
+                                weight: "",
+                                remarks: "",
+                                vertigo_test_passed: true,
+                            });
 
-      } catch (err) {
-        console.error(err);
-        alert("Failed to renew ID ❌");
-      } finally {
-        setSaveLoading(false);
-      }
-    }}
-  />
-)}
+                        } catch (err) {
+                            console.error(err);
+                            alert("Failed to renew ID ❌");
+                        } finally {
+                            setSaveLoading(false);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

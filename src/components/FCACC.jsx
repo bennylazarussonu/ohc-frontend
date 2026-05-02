@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { formatDateDMY } from "../utils/date";
 import VisionCheckModal from "./VisionCheckModal";
+import FCACCReportModal from "./FCACCReportModal";
 
 function FCACC({ tab }) {
     const [query, setQuery] = useState("");
@@ -19,6 +20,7 @@ function FCACC({ tab }) {
     const [filteredResults, setFilteredResults] = useState([]);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [openVision, setOpenVision] = useState(false);
+    const [openReport, setOpenReport] = useState(false);
     const [editData, setEditData] = useState(null);
     const [editId, setEditId] = useState(null);
     const [visionForm, setVisionForm] = useState(null);
@@ -184,29 +186,29 @@ function FCACC({ tab }) {
             alert("FCACC Saved");
             // Refresh list
             setWorkerForm({
-        name: "",
-        employee_id: "",
-        fathers_name: "",
-        aadhar_no: "",
-        dob: "",
-        gender: "Male",
-        phone_no: "",
-        designation: "",
-        contractor_name: "",
-        date_of_joining: ""
-    });
+                name: "",
+                employee_id: "",
+                fathers_name: "",
+                aadhar_no: "",
+                dob: "",
+                gender: "Male",
+                phone_no: "",
+                designation: "",
+                contractor_name: "",
+                date_of_joining: ""
+            });
             setFcaccForm({
-        date_of_issuance_of_certificate_for_competency_clearance: "",
-        competency_assessment_by: "",
-        general_examination: "",
-        pulse: "",
-        systolic: "",
-        diastolic: "",
-        spo2: "",
-        height: "",
-        weight: "",
-        vertigo_test_passed: "Passed"
-    });
+                date_of_issuance_of_certificate_for_competency_clearance: "",
+                competency_assessment_by: "",
+                general_examination: "",
+                pulse: "",
+                systolic: "",
+                diastolic: "",
+                spo2: "",
+                height: "",
+                weight: "",
+                vertigo_test_passed: "Passed"
+            });
             setSelectedWorker(null);
             setVisionForm(null);
             setOpenVision(false);
@@ -214,7 +216,7 @@ function FCACC({ tab }) {
             setResults([]);
             setQuery("");
             setShowDropdown(false);
-            set
+            setOpenReport(false);
 
         } catch (err) {
             console.error(err);
@@ -528,7 +530,7 @@ function FCACC({ tab }) {
                         <button
                             className="border-2 border-blue-900 bg-transparent text-blue-500 p-2 rounded"
                             onClick={() => {
-                                if(!selectedWorker) {
+                                if (!selectedWorker) {
                                     alert("Please select a worker first");
                                     return;
                                 }
@@ -578,7 +580,7 @@ function FCACC({ tab }) {
                             ? "bg-blue-600"
                             : "bg-gray-600 cursor-not-allowed"
                             }`}
-                        onClick={submitFCACC}
+                        onClick={() => setOpenReport(true)}
                     >
                         Save FCACC
                     </button>
@@ -597,6 +599,20 @@ function FCACC({ tab }) {
                         onSave={(data) => {
                             setVisionForm(data.opthalmic_examination);
                         }}
+                    />
+                )}
+                {openReport && (
+                    <FCACCReportModal
+                        data={{
+                            fcaccForm,
+                            opthalmic_examination: visionForm,
+                            name: selectedWorker?.name || workerForm.name,
+                            designation: selectedWorker?.designation || workerForm.designation,
+                            employee_id: selectedWorker?.employee_id || workerForm.employee_id,
+                            contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
+                        }}
+                        onClose={() => setOpenReport(false)}
+                        onConfirm={() => submitFCACC()}
                     />
                 )}
             </div>
@@ -800,6 +816,7 @@ function FCACC({ tab }) {
                         </div>
                     </div>
                 )}
+                
             </div>
         );
     }
