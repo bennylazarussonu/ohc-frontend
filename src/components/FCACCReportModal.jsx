@@ -313,7 +313,7 @@ function FCACCReportModal({ data, onClose, onConfirm }) {
                       <div className="mt-3 space-y-2 text-left">
         
                         <Show value={data?.opthalmic_examination?.color_perception}>
-                          <p><b>Color Perception:</b> {data?.opthalmic_examination?.color_perception}</p>
+                          <p><b>Color Perception:</b> {data?.opthalmic_examination?.color_perception === "NCB" ? "Not Color Blind" : (data?.opthalmic_examination?.color_perception === "CBR" ? "Color Blind to Red" : (data?.opthalmic_examination?.color_perception === "CBG" ? "Color Blind to Green" : "Color Blind to Green and Red"))}</p>
                         </Show>
         
                         <Show value={data?.opthalmic_examination?.without_glasses_diagnosis}>

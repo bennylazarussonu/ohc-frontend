@@ -38,7 +38,7 @@ function FCACC({ tab }) {
     });
 
     const [fcaccForm, setFcaccForm] = useState({
-        date_of_issuance_of_certificate_for_competency_clearance: "",
+        date_of_issuance_of_certificate_for_competency_clearance: new Date().toISOString().split("T")[0],
         competency_assessment_by: "",
         general_examination: "",
         pulse: "",
@@ -292,7 +292,7 @@ function FCACC({ tab }) {
                                         </div>
 
                                         <div className="text-xs text-gray-400">
-                                            {worker.designation} • {worker.contractor_name}
+                                            ID: {worker.employee_id} | Father: {worker.fathers_name} | {worker.designation} | {worker.contractor_name} | Phn: {worker.phone_no} | Aadhar: {worker.aadhar_no}
                                         </div>
 
                                     </div>

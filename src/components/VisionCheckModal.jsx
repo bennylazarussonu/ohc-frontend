@@ -14,7 +14,7 @@ function VisionCheckModal({ vision, worker, onClose, onSave, instance }) {
     near_left_w: "",
     near_right_w: "",
 
-    color_perception: "",
+    color_perception: "NCB",
     without_glasses_diagnosis: "",
     with_glasses_diagnosis: ""
   };
