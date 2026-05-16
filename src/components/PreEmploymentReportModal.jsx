@@ -6,7 +6,7 @@ import letterhead from "../assets/preemp_banner.png"
 import malaria_top from "../assets/malaria_top.png";
 import malaria_bottom from "../assets/malaria_bottom.png";
 import malaria_table from "../assets/malaria_table.png";
-import {formatDateDMY} from "../utils/date.js";
+import { formatDateDMY } from "../utils/date.js";
 
 function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   // const [form, setForm] = useState({
@@ -26,42 +26,42 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     d => Number(d.id) === Number(selectedDoctorId)
   );
   const isAdmin = user?.role === "ADMIN";
-const isDoctor = user?.role === "DOCTOR";
-const isEmployee = user?.role === "EMPLOYEE";
+  const isDoctor = user?.role === "DOCTOR";
+  const isEmployee = user?.role === "EMPLOYEE";
 
-const isExistingReport =
-  data.status === "Declared Fit" ||
-  data.status === "Declared Unfit";
+  const isExistingReport =
+    data.status === "Declared Fit" ||
+    data.status === "Declared Unfit";
 
-const reportDoctor = doctors.find(
-  d => Number(d.id) === Number(data?.medical_examiner_id)
-);
-
-const normalize = (txt = "") =>
-  txt.toLowerCase().trim();
-
-const isOwnReport =
-  isDoctor &&
-  reportDoctor &&
-  normalize(reportDoctor.name).includes(
-    normalize(user?.userId)
+  const reportDoctor = doctors.find(
+    d => Number(d.id) === Number(data?.medical_examiner_id)
   );
 
-const canEdit =
-  isAdmin ||
-  (isDoctor && !isExistingReport) ||
-  isOwnReport;
+  const normalize = (txt = "") =>
+    txt.toLowerCase().trim();
 
-const canSave =
-  isAdmin ||
-  (isDoctor &&
-    (!isExistingReport || isOwnReport));
+  const isOwnReport =
+    isDoctor &&
+    reportDoctor &&
+    normalize(reportDoctor.name).includes(
+      normalize(user?.userId)
+    );
 
-const canPrint = true;
+  const canEdit =
+    isAdmin ||
+    (isDoctor && !isExistingReport) ||
+    isOwnReport;
 
-const canChangeDoctor = isAdmin;
+  const canSave =
+    isAdmin ||
+    (isDoctor &&
+      (!isExistingReport || isOwnReport));
 
-const readOnly = !canEdit;
+  const canPrint = true;
+
+  const canChangeDoctor = isAdmin;
+
+  const readOnly = !canEdit;
 
   const [form, setForm] = useState({
     ...data,
@@ -320,42 +320,42 @@ const readOnly = !canEdit;
 
 
   useEffect(() => {
-  if (!user) return;
+    if (!user) return;
 
-  api.get("/api/doctors").then(res => {
-    const list = res.data || [];
-    setDoctors(list);
+    api.get("/api/doctors").then(res => {
+      const list = res.data || [];
+      setDoctors(list);
 
-    /* Existing report = saved doctor */
-    if (data?.medical_examiner_id) {
-      setSelectedDoctorId(
-        Number(data.medical_examiner_id)
-      );
-      return;
-    }
-
-    /* Doctor creating new report */
-    if (isDoctor) {
-      const me = list.find(doc =>
-        normalize(doc.name).includes(
-          normalize(user?.userId)
-        )
-      );
-
-      if (me) {
+      /* Existing report = saved doctor */
+      if (data?.medical_examiner_id) {
         setSelectedDoctorId(
-          Number(me.id)
+          Number(data.medical_examiner_id)
         );
+        return;
       }
-      return;
-    }
 
-    /* Admin creating new */
-    if (isAdmin) {
-      setSelectedDoctorId("");
-    }
-  });
-}, [user, data]);
+      /* Doctor creating new report */
+      if (isDoctor) {
+        const me = list.find(doc =>
+          normalize(doc.name).includes(
+            normalize(user?.userId)
+          )
+        );
+
+        if (me) {
+          setSelectedDoctorId(
+            Number(me.id)
+          );
+        }
+        return;
+      }
+
+      /* Admin creating new */
+      if (isAdmin) {
+        setSelectedDoctorId("");
+      }
+    });
+  }, [user, data]);
 
   // 1) useEffect to compute diagnoses from visionForm
   useEffect(() => {
@@ -503,9 +503,9 @@ const readOnly = !canEdit;
 
   const handleSave = async () => {
     if (!canSave) {
-  alert("No permission to save");
-  return;
-}
+      alert("No permission to save");
+      return;
+    }
     if (form.duty_fit == null) {
       alert("Please select FIT or UNFIT for duty");
       return;
@@ -526,7 +526,18 @@ const readOnly = !canEdit;
       await api.post("/api/pre-employment/finalize", {
         preemployment_id: data.id,  // string ID like "PRE001"
         medical_examiner_id: selectedDoctorId,
-        ...form
+        ...form,
+        clinical_impression:
+    `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`,
+
+  final_recommendation:
+    `${fitText} FOR DUTY FOR EMPLOYMENT`,
+    physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name || ""} ` +
+      `${form.fathers_name ? `SON OF ${form.fathers_name} ` : ""}` +
+      `${form.residence ? `A RESIDENT OF ${form.residence} ` : ""}` +
+      `WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ` +
+      `${form.dob ? `AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS ${calculateAge(form.dob)} ` : ""}` +
+      `AND THAT HE IS ${fitText} FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
       });
       alert("Successfully saved");
 
@@ -544,16 +555,23 @@ const readOnly = !canEdit;
   };
 
   const handlePrint = async () => {
-    try{
+    try {
       setTimeout(() => {
         const printArea = document.querySelector(".print-area");
         printViaIframe(printArea);
       }, 0);
-    }catch(err){
+    } catch (err) {
       console.error(err);
       alert("Failed to print report");
     }
   }
+
+  const fitText =
+  form.duty_fit === true
+    ? "FIT"
+    : form.duty_fit === false
+      ? "UNFIT"
+      : "";
 
   return (
     <div className="modal-overlay fixed inset-0 bg-black/70 z-50 flex justify-center items-start overflow-auto">
@@ -579,7 +597,7 @@ const readOnly = !canEdit;
             >
               <FaPrint />
               Print Report
-            </button> 
+            </button>
           )}
         </div>
         <div className="print-area bg-white text-black w-[95vw] max-w-6xl top-0 left-0 p-6 rounded shadow-lg text-sm/3">
@@ -1159,10 +1177,10 @@ const readOnly = !canEdit;
                     <option value="NPL">NPL</option>
                   </select>
                   <div className="print-only text-center font-semibold">
-    {visionForm[key]
-      ? `6/${visionForm[key]}`
-      : ""}
-  </div>
+                    {visionForm[key]
+                      ? `6/${visionForm[key]}`
+                      : ""}
+                  </div>
                 </div>
               ))}
               {[
@@ -1190,10 +1208,10 @@ const readOnly = !canEdit;
                     <option value="48">N48</option>
                   </select>
                   <div className="print-only text-center font-semibold">
-    {visionForm[key]
-      ? `N${visionForm[key]}`
-      : ""}
-  </div>
+                    {visionForm[key]
+                      ? `N${visionForm[key]}`
+                      : ""}
+                  </div>
                 </div>
               ))}
 
@@ -1228,10 +1246,10 @@ const readOnly = !canEdit;
                     <option value="NPL">NPL</option>
                   </select>
                   <div className="print-only text-center font-semibold">
-    {visionForm[key]
-      ? `6/${visionForm[key]}`
-      : ""}
-  </div>
+                    {visionForm[key]
+                      ? `6/${visionForm[key]}`
+                      : ""}
+                  </div>
                 </div>
               ))}
               {[
@@ -1297,78 +1315,51 @@ const readOnly = !canEdit;
               :
             </div>
             <>
-  {/* SCREEN */}
-  <select
-    id="col-perc"
-    className="screen-only col-span-3 bg-transparent border border-white"
-    value={visionForm.color_perception || ""}
-    disabled={readOnly}
-    onChange={e => {
-      const value = e.target.value;
+              {/* SCREEN */}
+              <select
+                id="col-perc"
+                className="screen-only col-span-3 bg-transparent border border-white"
+                value={visionForm.color_perception || ""}
+                disabled={readOnly}
+                onChange={e => {
+                  const value = e.target.value;
 
-      setVisionForm(prev => ({
-        ...prev,
-        color_perception: value
-      }));
-    }}
-  >
-    <option value="NCB">
-      Normal Color Perception - Not Color Blind
-    </option>
+                  setVisionForm(prev => ({
+                    ...prev,
+                    color_perception: value
+                  }));
+                }}
+              >
+                <option value="NCB">
+                  Normal Color Perception - Not Color Blind
+                </option>
 
-    <option value="CBG">
-      Color Blind – Green
-    </option>
+                <option value="CBG">
+                  Color Blind – Green
+                </option>
 
-    <option value="CBR">
-      Color Blind – Red
-    </option>
+                <option value="CBR">
+                  Color Blind – Red
+                </option>
 
-    <option value="CBGR">
-      Color Blind – Red & Green
-    </option>
-  </select>
+                <option value="CBGR">
+                  Color Blind – Red & Green
+                </option>
+              </select>
 
-  {/* PRINT */}
-  <div className="print-only col-span-3 font-semibold">
-    {{
-      NCB: "Normal Color Perception - Not Color Blind",
-      CBG: "Color Blind – Green",
-      CBR: "Color Blind – Red",
-      CBGR: "Color Blind – Red & Green"
-    }[visionForm.color_perception] || ""}
-  </div>
-</>
-            {/* <select
-              id="col-perc"
-              className="col-span-3 bg-transparent border border-white "
-              value={visionForm.color_perception || ""}
-              disabled={readOnly}
-              onChange={e => {
-                const value = e.target.value;
-                // 1) update local visionForm
-                setVisionForm(prev => ({
-                  ...prev,
-                  color_perception: value
-                }));
-                // 2) also update nested form.opthalmic_examination if you still need it
-                // setForm(prev => ({
-                //   ...prev,
-                //   opthalmic_examination: {
-                //     ...prev.opthalmic_examination,
-                //     color_perception: value
-                //   }
-                // }));
-              }}
-            >
+              {/* PRINT */}
+              <div className="print-only col-span-3 font-semibold">
+                {{
+                  NCB: "Normal Color Perception - Not Color Blind",
+                  CBG: "Color Blind – Green",
+                  CBR: "Color Blind – Red",
+                  CBGR: "Color Blind – Red & Green"
+                }[visionForm.color_perception] || ""}
+              </div>
+            </>
 
-              <option value="NCB">Normal Color Perception - Not Color Blind</option>
-              <option value="CBG">Color Blind – Green</option>
-              <option value="CBR">Color Blind – Red</option>
-              <option value="CBGR">Color Blind – Red & Green</option>
-            </select> */}
           </div>
-          
+
 
           <hr className="border-t border-gray-900 bg-gray-900 my-1" />
 
@@ -1379,7 +1370,11 @@ const readOnly = !canEdit;
             <div className="col-span-4 mb-1">
               <textarea
                 rows={form.clinical_impression.length < 100 ? (1) : (Math.ceil(form.clinical_impression.length / 100))}
-                value={form?.clinical_impression}
+                value={
+  fitText
+    ? `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`
+    : ""
+}
                 readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
@@ -1390,7 +1385,11 @@ const readOnly = !canEdit;
             <div className="col-span-4">
               <textarea
                 rows={form.final_recommendation.length < 100 ? (1) : (Math.ceil(form.final_recommendation.length / 100))}
-                value={form?.final_recommendation}
+                value={
+  fitText
+    ? `${fitText} FOR DUTY FOR EMPLOYMENT`
+    : ""
+}
                 readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
@@ -1406,7 +1405,16 @@ const readOnly = !canEdit;
               <div className="col-span-4">
                 <textarea
                   rows={form.physical_fitness.length < 100 ? (2) : (Math.ceil(form.physical_fitness.length / 95))}
-                  value={form?.physical_fitness}
+                  value={
+  fitText
+    ? `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name || ""} ` +
+      `${form.fathers_name ? `SON OF ${form.fathers_name} ` : ""}` +
+      `${form.residence ? `A RESIDENT OF ${form.residence} ` : ""}` +
+      `WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ` +
+      `${form.dob ? `AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS ${calculateAge(form.dob)} ` : ""}` +
+      `AND THAT HE IS ${fitText} FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+    : ""
+}
                   readOnly={readOnly}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
@@ -1465,7 +1473,7 @@ const readOnly = !canEdit;
                 disabled={readOnly}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
-              <b className={`${form.duty_fit === true ? ("no-underline"): ("line-through")}`}>FIT FOR DUTY</b>
+              <b className={`${form.duty_fit === true ? ("no-underline") : ("line-through")}`}>FIT FOR DUTY</b>
             </label>
 
             <label className="flex items-center gap-2">
@@ -1475,7 +1483,7 @@ const readOnly = !canEdit;
                 checked={form.duty_fit === false}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: false }))}
               />
-              <b className={`${form.duty_fit === false ? ("no-underline"): ("line-through")}`}>UNFIT FOR DUTY</b>
+              <b className={`${form.duty_fit === false ? ("no-underline") : ("line-through")}`}>UNFIT FOR DUTY</b>
             </label>
           </div>
           <div className="mt-16 w-1/2 flex justify-start items-center">
@@ -1638,7 +1646,7 @@ const readOnly = !canEdit;
                       dob: e.target.value
                     }))}
                   />
-                  <p className="print-only bg-transparent text-sm/4 w-full">{form.dob ? formatDateDMY(form.dob): ("")}</p>
+                  <p className="print-only bg-transparent text-sm/4 w-full">{form.dob ? formatDateDMY(form.dob) : ("")}</p>
                 </div>
                 <div className={`grid col-span-2 grid-cols-2 gap-x-1 font-semibold ${!form.aadhar_no ? ("no-print") : ("")}`}>
                   <div className="flex justify-between">
@@ -1808,7 +1816,7 @@ const readOnly = !canEdit;
                 checked={form.duty_fit === true}
                 onChange={() => setForm(prev => ({ ...prev, duty_fit: true }))}
               />
-              <b className={`${form.duty_fit === true ? ("no-underline"):("line-through")}`}>FIT FOR DUTY</b>
+              <b className={`${form.duty_fit === true ? ("no-underline") : ("line-through")}`}>FIT FOR DUTY</b>
             </label>
 
             <label className="flex items-center gap-2">
@@ -1921,8 +1929,8 @@ const readOnly = !canEdit;
             />
           </div>
 
-<br />
-<br /><br />
+          <br />
+          <br /><br />
           {/* <table className="border border-[2px] border-gray-900 w-full h-[1500px]">
             <thead className="border border-2 border-gray-900">
               <tr className="border border-2 border-gray-900">
