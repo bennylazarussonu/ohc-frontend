@@ -1296,7 +1296,50 @@ const readOnly = !canEdit;
               <p>Color Perception</p>
               :
             </div>
-            <select
+            <>
+  {/* SCREEN */}
+  <select
+    id="col-perc"
+    className="screen-only col-span-3 bg-transparent border border-white"
+    value={visionForm.color_perception || ""}
+    disabled={readOnly}
+    onChange={e => {
+      const value = e.target.value;
+
+      setVisionForm(prev => ({
+        ...prev,
+        color_perception: value
+      }));
+    }}
+  >
+    <option value="NCB">
+      Normal Color Perception - Not Color Blind
+    </option>
+
+    <option value="CBG">
+      Color Blind – Green
+    </option>
+
+    <option value="CBR">
+      Color Blind – Red
+    </option>
+
+    <option value="CBGR">
+      Color Blind – Red & Green
+    </option>
+  </select>
+
+  {/* PRINT */}
+  <div className="print-only col-span-3 font-semibold">
+    {{
+      NCB: "Normal Color Perception - Not Color Blind",
+      CBG: "Color Blind – Green",
+      CBR: "Color Blind – Red",
+      CBGR: "Color Blind – Red & Green"
+    }[visionForm.color_perception] || ""}
+  </div>
+</>
+            {/* <select
               id="col-perc"
               className="col-span-3 bg-transparent border border-white "
               value={visionForm.color_perception || ""}
@@ -1323,8 +1366,9 @@ const readOnly = !canEdit;
               <option value="CBG">Color Blind – Green</option>
               <option value="CBR">Color Blind – Red</option>
               <option value="CBGR">Color Blind – Red & Green</option>
-            </select>
+            </select> */}
           </div>
+          
 
           <hr className="border-t border-gray-900 bg-gray-900 my-1" />
 
