@@ -28,6 +28,8 @@ import Notifications from './components/Notifications.jsx';
 import FCACC from './components/FCACC.jsx';
 import Malaria from './components/Malaria.jsx';
 import FAB from './components/FAB.jsx';
+import OPDHistoryModal from './components/OPDHistoryModal.jsx';
+// import { set } from 'mongoose';
 
 function App() {
   const { user, loading } = useAuth();
@@ -49,6 +51,8 @@ function App() {
   const [opdListVersion, setOpdListVersion] = useState(0);
   const [editingFromConsultation, setEditingFromConsultation] = useState(false);
   const [fcaccTab, setFcaccTab] = useState("fcacc"); 
+  const [workerOPDHistory, setWorkerOPDHistory] = useState([]);
+  const [OPDHistoryModalOpen, setOPDHistoryModalOpen] = useState(false);
   const isEditing = !!editingOpdId;
   const hasDoctorInRecord = !!opd?.treating_doctor_id;
   // const [forConsultation, setForConsultation] = useState(false);
@@ -801,7 +805,9 @@ function App() {
                           search={workerSearch}
                           results={workerResults}
                           onSearch={searchWorkers}
-                          onSelect={(worker) => {
+                          onSelect={async (worker) => {
+                            const workerOPDHistoryRes = await api.get(`/api/workers/${worker.id}/opds`);
+                            setWorkerOPDHistory(workerOPDHistoryRes.data);
                             setSelectedWorker(worker);
                             setIsNewWorker(false);
                             setWorkerForm({
@@ -869,6 +875,9 @@ function App() {
                           </div>
                           <p className='font-light text-gray-300 text-[12.5px]'>Employee ID: <b>{selectedWorker.employee_id}</b> | Father's Name: <b>{selectedWorker.fathers_name}</b> | ID: <b>{selectedWorker.id}</b> | Aadhaar: <b>{selectedWorker.aadhar_no}</b></p>
                           <p className='font-light text-gray-300 text-[12.5px]'>Phone No: <b>{selectedWorker.phone_no}</b> | DOB: <b>{formatDate(selectedWorker.dob)}</b> | Contractor Name: <b>{selectedWorker.contractor_name}</b></p>
+                          <button className='text-blue-400 text-sm rounded border border-blue-400 px-3 py-1 mt-2' onClick={() => {
+                            setOPDHistoryModalOpen(true);
+                          }}>View History</button>
                         </div>
                       )}
                       {(isNewWorker || isEditingWorker) && (
@@ -1206,6 +1215,14 @@ function App() {
         </div>
       </div>
       </div>
+      {OPDHistoryModalOpen && (
+        <OPDHistoryModal
+          isOpen={OPDHistoryModalOpen}
+          onClose={() => setOPDHistoryModalOpen(false)}
+          opdHistory={workerOPDHistory}
+          selectedWorker={selectedWorker}
+        />
+      )}
     </>
   );
 }
