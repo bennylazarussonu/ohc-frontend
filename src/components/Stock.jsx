@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { formatDateDMY } from "../utils/date.js";
 
 function Stock() {
     const [stocks, setStocks] = useState([]);
@@ -61,7 +62,7 @@ function Stock() {
     </td>
     <td className="border p-2 text-center">
         {item.expiry_date
-            ? new Date(item.expiry_date).toLocaleDateString()
+            ? formatDateDMY(new Date(item.expiry_date))
             : "-"}
     </td>
     <td className="border p-2">

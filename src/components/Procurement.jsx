@@ -98,6 +98,7 @@ function Procurement() {
                 rate_including_gst: Number(row.rate_incl_gst),
                 per_unit_cost: Number(row.cost_per_unit),
                 item_total_cost: Number(row.amount),
+                expiry_date: row.expiry_date || null,
                 medicine_id: row.medicine_id
             }));
 
@@ -127,12 +128,17 @@ function Procurement() {
             sub_category: item.sub_category ? item.sub_category : "",
             brands: item.brands || [],
             selected_brand: item.brands?.length ? item.brands[0] : "",
-            units: "",
+            package_quantity: "",
+            package_type: "",
+            units_per_package: "",
+            base_unit: "",
+            base_units: "",
             rate_excl_gst: "",
             gst_rate: 5,
             rate_incl_gst: "",
             amount: "",
             cost_per_unit: "",
+            expiry_date: "",
             medicine_id: item.medicine_id
         }));
 
@@ -212,10 +218,10 @@ function Procurement() {
                     ...row,
                     units: "",
                     rate_excl_gst: "",
+                    gst_rate: 5,
                     rate_incl_gst: "",
-                    cost_per_unit: "",
                     amount: "",
-                    gst_rate: 5
+                    cost_per_unit: ""
                 }))
             );
         } catch (err) {
@@ -286,110 +292,255 @@ function Procurement() {
         }
     };
 
-    const downloadTemplate = () => {
+    const downloadTemplate = async () => {
+
         if (!buList.length) {
             alert("No BUList data available");
             return;
         }
 
+        const ExcelJS = await import("exceljs");
+
+        const workbook = new ExcelJS.Workbook();
+
+        const worksheet = workbook.addWorksheet("BUList_Template");
+
         const headers = [
-            "s_no",
-            "item_name",
-            "brand",
-            "units",
-            "rate_excluding_gst",
-            "gst_rate",
-            "rate_including_gst",
-            "per_unit_cost",
-            "amount"
+            "S.No",
+            "Item Name",
+            "Brand",
+            "Units",
+            "Rate Excl GST",
+            "GST %",
+            "Rate Incl GST",
+            "Per Unit Cost",
+            "Expiry Date",
+            "Amount"
         ];
 
-        const rows = buList.map((item, index) => ([
-            index + 1,
-            item.item_name,
-            "", "", "", "", "", "", ""
-        ]));
+        worksheet.addRow(headers);
 
-        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        // HEADER STYLE
+        worksheet.getRow(1).font = {
+            bold: true
+        };
 
-        const range = XLSX.utils.decode_range(worksheet["!ref"]);
+        worksheet.getRow(1).alignment = {
+            vertical: "middle",
+            horizontal: "center"
+        };
 
-        // 🔥 Apply Borders + Wrap for item_name
-        for (let row = range.s.r; row <= range.e.r; row++) {
-            for (let col = range.s.c; col <= range.e.c; col++) {
-                const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        // COLUMN WIDTHS
+        worksheet.columns = [
+            { width: 10 },
+            { width: 40 },
+            { width: 30 },
+            { width: 12 },
+            { width: 18 },
+            { width: 12 },
+            { width: 18 },
+            { width: 18 },
+            { width: 18 },
+            { width: 18 },
+        ];
 
-                if (!worksheet[cellAddress]) continue;
-
-                worksheet[cellAddress].s = {
-                    alignment: {
-                        wrapText: col === 1 ? true : false,
-                        vertical: "center"
-                    },
-                    border: {
-                        top: { style: "thin" },
-                        bottom: { style: "thin" },
-                        left: { style: "thin" },
-                        right: { style: "thin" }
-                    }
-                };
-            }
-        }
-
-        // 🔥 Column width auto-adjust
-        worksheet["!cols"] = headers.map((header, colIndex) => {
-            let maxLength = header.length;
-
-            rows.forEach(row => {
-                const value = row[colIndex]
-                    ? row[colIndex].toString()
-                    : "";
-                if (value.length > maxLength) {
-                    maxLength = value.length;
-                }
-            });
-
-            return { wch: maxLength + 3 };
-        });
-
-        // 🔥 ADD DROPDOWN FOR EACH ROW (Brand column = index 2)
-        worksheet["!dataValidation"] = [];
-
+        // DATA ROWS
         buList.forEach((item, index) => {
-            if (!item.brands || !item.brands.length) return;
 
-            worksheet["!dataValidation"].push({
+            const rowNumber = index + 2;
+
+            worksheet.addRow([
+                index + 1,
+                item.item_name,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ]);
+
+            const brandCell = worksheet.getCell(`C${rowNumber}`);
+
+            // 🔥 DROPDOWN + CUSTOM TYPING
+            brandCell.dataValidation = {
+
                 type: "list",
+
                 allowBlank: true,
-                sqref: `C${index + 2}`, // Column C, skip header
-                formulas: [`"${item.brands.join(",")}"`]
+
+                formulae: [
+                    `"${item.brands.join(",")}"`
+                ],
+
+                showInputMessage: true,
+
+                promptTitle: "Available Brands",
+
+                prompt: item.brands.join(", "),
+
+                showErrorMessage: false
+            };
+        });
+
+        // BORDERS
+        worksheet.eachRow((row) => {
+            row.eachCell((cell) => {
+
+                cell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" }
+                };
+
+                cell.alignment = {
+                    vertical: "middle",
+                    wrapText: true
+                };
             });
         });
 
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "BUList_Template");
+        // GENERATE FILE
+        const buffer = await workbook.xlsx.writeBuffer();
 
-        XLSX.writeFile(workbook, "Procurement_Template.xlsx");
+        saveAs(
+            new Blob([buffer]),
+            "Procurement_Template.xlsx"
+        );
     };
 
     const handleClearAll = () => {
-    if (!window.confirm("Clear all entered procurement data?")) return;
+        if (!window.confirm("Clear all entered procurement data?")) return;
 
-    set_procured_from("");
-    set_procured_date(new Date().toISOString().split("T")[0]);
+        set_procured_from("");
+        set_procured_date(new Date().toISOString().split("T")[0]);
 
-    setProcurementRows(prev =>
-        prev.map(row => ({
-            ...row,
-            units: "",
-            rate_excl_gst: "",
-            gst_rate: 5,
-            rate_incl_gst: "",
-            amount: "",
-            cost_per_unit: ""
-        }))
-    );
-};
+        setProcurementRows(prev =>
+            prev.map(row => ({
+                ...row,
+                units: "",
+                rate_excl_gst: "",
+                gst_rate: 5,
+                rate_incl_gst: "",
+                amount: "",
+                cost_per_unit: ""
+            }))
+        );
+    };
+
+    const handleExcelUpload = async (e) => {
+
+        const file = e.target.files[0];
+
+        if (!file) return;
+
+        const ExcelJS = await import("exceljs");
+
+        const workbook = new ExcelJS.Workbook();
+
+        const arrayBuffer = await file.arrayBuffer();
+
+        await workbook.xlsx.load(arrayBuffer);
+
+        const worksheet = workbook.getWorksheet(1);
+
+        const uploadedRows = [];
+
+        worksheet.eachRow((row, rowNumber) => {
+
+            // Skip header
+            if (rowNumber === 1) return;
+
+            const item_name = row.getCell(2).value?.toString()?.trim();
+
+            if (!item_name) return;
+
+            uploadedRows.push({
+                item_name,
+
+                selected_brand:
+                    row.getCell(3).value?.toString()?.trim()?.toUpperCase() || "",
+
+                units:
+                    row.getCell(4).value || "",
+
+                rate_excl_gst:
+                    row.getCell(5).value || "",
+
+                gst_rate:
+                    row.getCell(6).value || 5,
+
+                rate_incl_gst:
+                    row.getCell(7).value || "",
+
+                cost_per_unit:
+                    row.getCell(8).value || "",
+
+                expiry_date: (() => {
+
+                    const val = row.getCell(9).value;
+
+                    if (!val) return "";
+
+                    if (val instanceof Date) {
+                        return val.toISOString().split("T")[0];
+                    }
+
+                    return val.toString();
+
+                })(),
+
+                amount:
+                    row.getCell(10).value || ""
+            });
+        });
+
+        const updatedRows = procurementRows.map(row => {
+
+            const excelRow = uploadedRows.find(
+                r =>
+                    r.item_name.trim().toUpperCase() ===
+                    row.item_name.trim().toUpperCase()
+            );
+
+            if (!excelRow) return row;
+
+            return {
+                ...row,
+                ...excelRow
+            };
+        });
+
+        // 🔥 RECALCULATE IMPORTED ROWS
+        const recalculatedRows = updatedRows.map(row => {
+
+            // amount entered
+            if (row.amount && Number(row.amount) > 0) {
+                return recalcRow(row, "amount");
+            }
+
+            // cost per unit entered
+            if (row.cost_per_unit && Number(row.cost_per_unit) > 0) {
+                return recalcRow(row, "cost_per_unit");
+            }
+
+            // rate incl gst entered
+            if (row.rate_incl_gst && Number(row.rate_incl_gst) > 0) {
+                return recalcRow(row, "rate_incl_gst");
+            }
+
+            return row;
+        });
+
+        setProcurementRows(recalculatedRows);
+
+        alert("Excel imported successfully");
+    };
+
+
 
 
 
@@ -430,6 +581,20 @@ function Procurement() {
                         onChange={e => setSearchTerm(e.target.value)}
                         className="bg-gray-700 p-2 rounded text-xs w-64 focus:outline-none focus:border focus:border-blue-400"
                     />
+                    <input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={handleExcelUpload}
+                        className="hidden"
+                        id="procurementExcel"
+                    />
+
+                    <label
+                        htmlFor="procurementExcel"
+                        className="bg-yellow-600 p-2 text-xs rounded mb-2 flex items-center gap-1 font-semibold cursor-pointer"
+                    >
+                        Upload Excel
+                    </label>
                 </div>
                 <div className="w-full">
                     <div className="flex justify-end gap-2">
@@ -465,51 +630,87 @@ function Procurement() {
                         </button>
 
                     </div>
-                    <div className="h-[210px] overflow-scroll no-scrollbar">
-                        <table className="border w-full text-sm ">
-                            <thead className="border bg-gray-900">
-                                <tr className="border">
-                                    <th className="border">S.No.</th>
-                                    <th className="border w-[25%]">Item</th>
-                                    <th className="border w-[20%]">Brand</th>
-                                    <th className="border">Edit</th>
-                                    <th className="border">Units</th>
-                                    <th className="border">Rate Excl. GST (₹)</th>
-                                    <th className="border">GST Rate (%)</th>
-                                    <th className="border">Rate Incl. GST (₹)</th>
-                                    <th className="border">Cost per Unit (₹)</th>
-                                    <th className="border">Amount (₹)</th>
+                    <div className="h-[500px] overflow-auto no-scrollbar rounded-lg border border-gray-700">
+                        <table className="border text-sm border-collapse min-w-max">
+                            <thead className="border bg-gray-900 sticky top-0 z-10">
+                                <tr className="border text-xs">
+                                    <th className="sticky left-0 z-30 bg-gray-900 border border-white w-[60px] p-2">S.No.</th>
+
+                                    <th className="sticky left-[60px] z-30 bg-gray-900 border border-white min-w-[260px] w-[260px] max-w-[260px] p-2">
+                                        Item
+                                    </th>
+
+                                    <th className="sticky left-[320px] z-30 bg-gray-900 border border-r-black min-w-[180px] w-[180px] max-w-[180px] p-2 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.5)]">
+                                        Brand
+                                    </th>
+
+                                    <th className="border w-[70px] p-2">
+                                        Edit
+                                    </th>
+
+                                    <th className="border w-[90px] p-2">
+                                        Units
+                                    </th>
+
+                                    <th className="border w-[140px] p-2">
+                                        Rate Excl GST
+                                    </th>
+
+                                    <th className="border w-[110px] p-2">
+                                        GST %
+                                    </th>
+
+                                    <th className="border w-[140px] p-2">
+                                        Rate Incl GST
+                                    </th>
+
+                                    <th className="border w-[140px] p-2">
+                                        Cost/Unit
+                                    </th>
+
+                                    <th className="border w-[150px] p-2">
+                                        Expiry
+                                    </th>
+
+                                    <th className="border w-[140px] p-2">
+                                        Amount
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="border">
                                 {filteredRows.map((row, index) => (
-                                    <tr key={row.bulist_id} className="border">
-                                        <td className="border text-center p-1">
+                                    <tr key={row.bulist_id} className="border hover:bg-gray-700/40 transition-colors">
+                                        <td className="sticky border border-white left-0 z-20 bg-gray-800 text-center p-1">
                                             {row.originalIndex + 1}
                                         </td>
 
                                         {/* ITEM NAME (read-only) */}
-                                        <td className="border p-1 text-xs">
+                                        <td className="sticky left-[60px] z-20 bg-gray-800 border border-white min-w-[260px] w-[260px] max-w-[260px] p-2 text-xs whitespace-normal break-words">
                                             {row.item_name}
                                         </td>
 
                                         {/* BRAND SELECT */}
-                                        <td className="border p-1">
-                                            <select
-                                                value={row.selected_brand || row.brands[0] || ""}
+                                        <td className="sticky left-[320px] z-20 bg-gray-800 border border-r-black min-w-[180px] w-[180px] max-w-[180px] p-1 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.5)]">
+
+                                            <input
+                                                type="text"
+                                                list={`brands-${row.bulist_id}`}
+                                                value={row.selected_brand || ""}
                                                 onChange={e => {
                                                     const updated = [...procurementRows];
-                                                    updated[row.originalIndex].selected_brand = e.target.value;
+                                                    updated[row.originalIndex].selected_brand = e.target.value.toUpperCase();
                                                     setProcurementRows(updated);
                                                 }}
+                                                placeholder="Enter Brand"
                                                 className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                                disabled={!row.brands.length}
-                                            >
-                                                <option value="">Select Brand</option>
+                                            />
+
+                                            <datalist id={`brands-${row.bulist_id}`}>
                                                 {row.brands.map((b, i) => (
-                                                    <option key={i} value={b}>{b}</option>
+                                                    <option key={i} value={b} />
                                                 ))}
-                                            </select>
+                                            </datalist>
+
                                         </td>
 
                                         <td className="border text-center">
@@ -616,6 +817,20 @@ function Procurement() {
                                                         { ...row, cost_per_unit: e.target.value },
                                                         "cost_per_unit"
                                                     );
+                                                    setProcurementRows(updated);
+                                                }}
+                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                            />
+                                        </td>
+
+                                        {/* EXPIRY DATE */}
+                                        <td className="border p-1">
+                                            <input
+                                                type="date"
+                                                value={row.expiry_date || ""}
+                                                onChange={e => {
+                                                    const updated = [...procurementRows];
+                                                    updated[row.originalIndex].expiry_date = e.target.value;
                                                     setProcurementRows(updated);
                                                 }}
                                                 className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
