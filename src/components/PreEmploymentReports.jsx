@@ -33,6 +33,7 @@ function PreEmploymentReports() {
     if (currentTab === "fit") url = "/api/pre-employment/fit";
     if (currentTab === "unfit") url = "/api/pre-employment/unfit";
     if (currentTab === "cancelled") url = "/api/pre-employment/cancelled";
+    if (currentTab === "all") url = "/api/pre-employment/all";
 
     const res = await api.get(url);
     setRecords(res.data);
@@ -73,11 +74,11 @@ const toOk = toDate
   fetchRecords(tab);
 
   // Apply default "today" filter ONLY for fit/unfit
-  if ((tab === "fit" || tab === "unfit" || tab === "cancelled") && !fromDate && !toDate) {
+  if ((tab === "fit" || tab === "unfit" || tab === "cancelled" || tab === "all") && !fromDate && !toDate) {
     const today = getTodayLocalDateString();
     setFromDate(today);
     setToDate(today);
-  }else if(tab === "on-going"){
+  }else if(tab === "on-going" || tab === "all"){
     setFromDate("");
     setToDate("");
   }
@@ -162,7 +163,8 @@ const toOk = toDate
           ["on-going", "bg-yellow-600", "text-yellow-500"], 
           ["fit", "bg-green-700", "text-green-300"], 
           ["unfit", "bg-red-700", "text-red-300"],
-          ["cancelled", "bg-gray-900", "text-black"]
+          ["cancelled", "bg-gray-900", "text-black"],
+          ["all", "bg-blue-700", "text-blue-300"]
         ].map(([t, bgColor, textColor]) => (
           <button
             key={t}
@@ -175,6 +177,7 @@ const toOk = toDate
             {t === "fit" && "Declared Fit"}
             {t === "unfit" && "Declared Unfit"}
             {t === "cancelled" && "Cancelled"}
+            {t === "all" && "All Records"}
           </button>
         ))}
       </div>
@@ -238,7 +241,7 @@ const toOk = toDate
                     </button>
                       </div>
                     )}
-                    {(tab == "fit" || tab === "unfit" || tab === "cancelled") && (
+                    {(tab == "fit" || tab === "unfit" || tab === "cancelled" || tab === "all") && (
                       <button
                       onClick={() => {
                         setSelectedCandidate(r)
