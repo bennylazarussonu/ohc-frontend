@@ -142,7 +142,7 @@ function IdRenewal() {
             remarks: "",
 
             vertigo_test_passed:
-                latestRenewal?.vertigo_test_passed || "Passed",
+                (latestRenewal?.vertigo_test_passed === true) ? "Passed" : (latestRenewal?.vertigo_test_passed === false ? "Failed" : (latestRenewal?.vertigo_test_passed || "Passed")),
         });
 
     } catch (err) {
