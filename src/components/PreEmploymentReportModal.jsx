@@ -22,6 +22,10 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [idMarksText, setIdMarksText] = useState("");
+  const [manualDiagnosisEdit, setManualDiagnosisEdit] = useState({
+  without: false,
+  with: false
+});
   const selectedDoctor = doctors.find(
     d => Number(d.id) === Number(selectedDoctorId)
   );
@@ -453,10 +457,18 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     }
 
     setVisionForm(prev => ({
-      ...prev,
-      without_glasses_diagnosis,
-      with_glasses_diagnosis
-    }));
+  ...prev,
+
+  without_glasses_diagnosis:
+    manualDiagnosisEdit.without
+      ? prev.without_glasses_diagnosis
+      : without_glasses_diagnosis,
+
+  with_glasses_diagnosis:
+    manualDiagnosisEdit.with
+      ? prev.with_glasses_diagnosis
+      : with_glasses_diagnosis
+}));
   }, [
     visionForm.far_left_wo,
     visionForm.far_right_wo,
@@ -500,6 +512,45 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
     }));
   }, [visionForm]);
 
+  useEffect(() => {
+  if (form.duty_fit == null) return;
+
+  const fitText =
+    form.duty_fit === true ? "FIT" : "UNFIT";
+
+  setForm(prev => ({
+    ...prev,
+
+    // ONLY set defaults if empty
+    clinical_impression:
+      prev.clinical_impression?.trim()
+        ? prev.clinical_impression
+        : `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`,
+
+    final_recommendation:
+      prev.final_recommendation?.trim()
+        ? prev.final_recommendation
+        : `${fitText} FOR DUTY FOR EMPLOYMENT`,
+
+    physical_fitness:
+      prev.physical_fitness?.trim()
+        ? prev.physical_fitness
+        : `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${prev.name || ""} ${
+            prev.fathers_name
+              ? `SON OF ${prev.fathers_name} `
+              : ""
+          }${
+            prev.residence
+              ? `A RESIDENT OF ${prev.residence} `
+              : ""
+          }WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ${
+            prev.dob
+              ? `AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS ${calculateAge(prev.dob)} `
+              : ""
+          }AND THAT HE IS ${fitText} FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+  }));
+}, [form.duty_fit]);
+
 
   const handleSave = async () => {
     if (!canSave) {
@@ -526,18 +577,18 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
       await api.post("/api/pre-employment/finalize", {
         preemployment_id: data.id,  // string ID like "PRE001"
         medical_examiner_id: selectedDoctorId,
-        ...form,
-        clinical_impression:
-    `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`,
+        ...form
+  //       clinical_impression:
+  //   `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`,
 
-  final_recommendation:
-    `${fitText} FOR DUTY FOR EMPLOYMENT`,
-    physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name || ""} ` +
-      `${form.fathers_name ? `SON OF ${form.fathers_name} ` : ""}` +
-      `${form.residence ? `A RESIDENT OF ${form.residence} ` : ""}` +
-      `WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ` +
-      `${form.dob ? `AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS ${calculateAge(form.dob)} ` : ""}` +
-      `AND THAT HE IS ${fitText} FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
+  // final_recommendation:
+  //   `${fitText} FOR DUTY FOR EMPLOYMENT`,
+  //   physical_fitness: `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name || ""} ` +
+  //     `${form.fathers_name ? `SON OF ${form.fathers_name} ` : ""}` +
+  //     `${form.residence ? `A RESIDENT OF ${form.residence} ` : ""}` +
+  //     `WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ` +
+  //     `${form.dob ? `AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS ${calculateAge(form.dob)} ` : ""}` +
+  //     `AND THAT HE IS ${fitText} FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
       });
       alert("Successfully saved");
 
@@ -1296,6 +1347,17 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               rows={(visionForm.without_glasses_diagnosis.length < 100) ? (1) : (Math.ceil(visionForm.without_glasses_diagnosis.length / 100))}
               className="bg-transparent col-span-3 resize-none no-scrollbar"
               readOnly={readOnly}
+              onChange={e => {
+  setManualDiagnosisEdit(prev => ({
+    ...prev,
+    without: true
+  }));
+
+  setVisionForm(prev => ({
+    ...prev,
+    without_glasses_diagnosis: e.target.value
+  }));
+}}
               placeholder="Diagnosis (Without Glasses)"
               value={visionForm.without_glasses_diagnosis || ""}
             />
@@ -1307,6 +1369,17 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               rows={(visionForm.with_glasses_diagnosis.length < 100) ? (1) : (Math.ceil(visionForm.with_glasses_diagnosis.length / 100))}
               className="bg-transparent col-span-3 resize-none"
               readOnly={readOnly}
+              onChange={e => {
+  setManualDiagnosisEdit(prev => ({
+    ...prev,
+    with: true
+  }));
+
+  setVisionForm(prev => ({
+    ...prev,
+    with_glasses_diagnosis: e.target.value
+  }));
+}}
               placeholder="Diagnosis (With Glasses)"
               value={visionForm.with_glasses_diagnosis || ""}
             />
@@ -1370,11 +1443,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <div className="col-span-4 mb-1">
               <textarea
                 rows={form.clinical_impression.length < 100 ? (1) : (Math.ceil(form.clinical_impression.length / 100))}
-                value={
-  fitText
-    ? `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`
-    : ""
-}
+                value={form.clinical_impression || ""}
                 readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["clinical_impression"]: e.target.value }))}></textarea>
@@ -1385,11 +1454,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
             <div className="col-span-4">
               <textarea
                 rows={form.final_recommendation.length < 100 ? (1) : (Math.ceil(form.final_recommendation.length / 100))}
-                value={
-  fitText
-    ? `${fitText} FOR DUTY FOR EMPLOYMENT`
-    : ""
-}
+                value={form.final_recommendation || ""}
                 readOnly={readOnly}
                 className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                 onChange={e => setForm(prev => ({ ...prev, ["final_recommendation"]: e.target.value }))}></textarea>
@@ -1405,16 +1470,7 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
               <div className="col-span-4">
                 <textarea
                   rows={form.physical_fitness.length < 100 ? (2) : (Math.ceil(form.physical_fitness.length / 95))}
-                  value={
-  fitText
-    ? `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${form.name || ""} ` +
-      `${form.fathers_name ? `SON OF ${form.fathers_name} ` : ""}` +
-      `${form.residence ? `A RESIDENT OF ${form.residence} ` : ""}` +
-      `WHO IS DESIROUS OF BEING EMPLOYED IN UNDERGROUND BUILDING & CONSTRUCTION PROJECT OF UNDERGROUND HIGH SPEED RAIL TERMINAL, OF NHSRCL, BKC, MUMBAI - 400071 (INCLUDING HEIGHTS) ` +
-      `${form.dob ? `AND THAT HIS AGE AS NEARLY AS CAN BE ASCERTAINED BY MY EXAMINATION IS ${calculateAge(form.dob)} ` : ""}` +
-      `AND THAT HE IS ${fitText} FOR DUTY FOR EMPLOYMENT IN THIS PROJECT OF MUMBAI AHMEDABAD HIGHSPEED RAIL CORRIDOR (MAHSRC), AT BANDRA KURLA COMPLEX, MUMBAI, AS AN ADULT.`
-    : ""
-}
+                  value={form.physical_fitness || ""}
                   readOnly={readOnly}
                   className="w-full text-sm/4 rounded p-0 col-span-3 no-scrollbar resize-none"
                   onChange={e => setForm(prev => ({ ...prev, ["physical_fitness"]: e.target.value }))}
