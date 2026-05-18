@@ -1,6 +1,8 @@
-import { FaEye, FaFloppyDisk, FaHandHoldingMedical, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
+import { FaEye, FaFileExcel, FaFloppyDisk, FaHandHoldingMedical, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function useDebounce(value, delay) {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -114,7 +116,9 @@ function FAB() {
                 medicine_id: null,
                 item_name: "",
                 category: "",
-                quantity: 0
+                quantity: 0,
+                stock: 0,
+                expiry_date: null
             }
         ]);
     };
@@ -134,7 +138,7 @@ function FAB() {
 
             if (debouncedSearch.length < 2) return;
 
-            const res = await api.get(`/api/fab/zones/search-stock?query=${debouncedSearch}`);
+            const res = await api.get(`/api/fab/zones/search-medicines?query=${debouncedSearch}`);
 
             setMedicineResults(prev => ({
                 ...prev,
@@ -158,16 +162,32 @@ function FAB() {
     const selectMedicine = (index, medicine) => {
 
         if (newItems.some((i, iIndex) =>
-            i.medicine_id === medicine.id && iIndex !== index
+            i.medicine_id === medicine.id &&
+            iIndex !== index
         )) {
             alert("Medicine already added");
             return;
         }
+
         const updated = [...newItems];
 
         updated[index].medicine_id = medicine.id;
-        updated[index].item_name = medicine.drug_name_and_dose;
-        updated[index].category = medicine.category;
+
+        updated[index].item_name =
+            medicine.drug_name_and_dose;
+
+        updated[index].category =
+            medicine.category;
+
+        updated[index].stock =
+            medicine.stock;
+
+        updated[index].expiry_date =
+            medicine.expiry_date;
+
+        // if no stock -> quantity 0
+        updated[index].quantity =
+            medicine.stock > 0 ? 1 : 0;
 
         setNewItems(updated);
 
@@ -189,7 +209,14 @@ function FAB() {
 
         const updated = [...newItems];
 
-        updated[index].quantity = Number(qty);
+        const enteredQty = Number(qty);
+
+        if (enteredQty > updated[index].stock) {
+            alert("Insufficient stock");
+            return;
+        }
+
+        updated[index].quantity = enteredQty;
 
         setNewItems(updated);
     };
@@ -222,7 +249,7 @@ function FAB() {
 
             // 🔹 THIS PART WAS MISSING
             const newItemRequests = newItems
-                .filter(i => i.medicine_id && i.quantity > 0)
+                .filter(i => i.medicine_id)
                 .map(i =>
                     api.post(`/api/fab/zones/${selectedZone.id}/add-item`, {
                         medicine_id: i.medicine_id,
@@ -247,6 +274,106 @@ function FAB() {
         }
 
     };
+    const downloadExcel = () => {
+
+    const generatedDate = new Date()
+        .toLocaleString();
+
+    // table rows
+    const data = zoneItems.map((item, index) => ({
+
+        "S. No.": index + 1,
+
+        "Item":
+            item.item_name,
+
+        "Category":
+            item.category,
+
+        "Expiry Date":
+            item.expiry_date
+                ? item.expiry_date.slice(0, 10)
+                : "-",
+
+        "Quantity":
+            item.quantity,
+
+        "Last Replaced":
+            item.last_replaced
+                ? item.last_replaced.slice(0, 10)
+                : "-"
+
+    }));
+
+    // create worksheet
+    const worksheet = XLSX.utils.json_to_sheet([]);
+
+    // TOP INFO
+    XLSX.utils.sheet_add_aoa(
+        worksheet,
+        [
+            [`Zone Name: ${selectedZone?.zone_name}`],
+            [`Location: ${selectedZone?.location}`],
+            [`Generated On: ${generatedDate}`],
+            [], // empty row
+        ],
+        { origin: "A1" }
+    );
+
+    // TABLE
+    XLSX.utils.sheet_add_json(
+        worksheet,
+        data,
+        {
+            origin: "A5"
+        }
+    );
+
+    // optional column widths
+    worksheet["!cols"] = [
+        { wch: 8 },
+        { wch: 40 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 18 }
+    ];
+
+    // workbook
+    const workbook =
+        XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Zone Contents"
+    );
+
+    const excelBuffer =
+        XLSX.write(workbook, {
+            bookType: "xlsx",
+            type: "array"
+        });
+
+    const fileData = new Blob(
+        [excelBuffer],
+        {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+    const safeDate = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace(/:/g, "-");
+
+    saveAs(
+        fileData,
+        `${selectedZone?.zone_name}_${safeDate}.xlsx`
+    );
+
+};
     return (
         <div className="w-full bg-gray-800 p-6 rounded-xl">
             <h3 className="text-lg font-bold">FIRST AID BOX - FAB</h3>
@@ -474,12 +601,27 @@ function FAB() {
                                     Location: {selectedZone?.location}
                                 </p>
                             </div>
-                            <div onClick={() => {
-                                setViewModal(false)
-                                setZoneItems([])
-                                setSelectedZone(null)
-                            }} className=" cursor-pointer text-xl">
-                                x
+                            <div className="flex items-center gap-2">
+
+                                <button
+                                    onClick={downloadExcel}
+                                    className="flex items-center gap-1 bg-green-700 px-3 py-2 rounded text-sm font-semibold"
+                                >
+                                    <FaFileExcel />
+                                    Download Excel
+                                </button>
+
+                                <div
+                                    onClick={() => {
+                                        setViewModal(false)
+                                        setZoneItems([])
+                                        setSelectedZone(null)
+                                    }}
+                                    className="flex items-center cursor-pointer text-lg px-4 py-1 rounded border"
+                                >
+                                    x
+                                </div>
+
                             </div>
                         </div>
                         <p className="font-semibold mt-3 text-sm">Contents of First Aid Box in accordance with BOCW Rules</p>
@@ -594,7 +736,12 @@ function FAB() {
 
                                             <td className="border p-1">{item.category}</td>
 
-                                            <td className="border p-1">-</td>
+                                            <td className="border p-1">
+                                                {item.expiry_date
+                                                    ? item.expiry_date.slice(0, 10)
+                                                    : "-"
+                                                }
+                                            </td>
 
                                             <td className="border p-1">
 
@@ -610,7 +757,9 @@ function FAB() {
 
                                             <td className="border p-1">-</td>
 
-                                            <td className="border p-1">-</td>
+                                            <td className="border p-1 text-xs">
+                                                Stock: {item.stock}
+                                            </td>
 
                                             <td className="border p-1 text-center">
 

@@ -1179,10 +1179,10 @@ function App() {
                 <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
               </div>
               <div className="bg-gray-700 w-1/4 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense Medicine</button>
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense</button>
               </div>
               <div className="bg-gray-700 w-1/4 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("stock")}>Stock</button>
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("stock")}>Inventory</button>
               </div>
               <div className="bg-gray-700 w-1/4 rounded">
                 <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "adjust" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("adjust")}>Adjust Stock</button>
@@ -1201,7 +1201,7 @@ function App() {
             )}
             {dispensaryTab === "stock" && (
               <div>
-                <h2 className='text-sm font-bold mt-4'>STOCK</h2>
+                <h2 className='text-sm font-bold mt-4'>INVENTORY</h2>
                 <Stock />
               </div>
             )}
