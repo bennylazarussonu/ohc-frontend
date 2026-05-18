@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { FaArrowLeft, FaArrowUpFromBracket, FaCircleArrowLeft, FaFilePdf, FaX } from "react-icons/fa6";
+import { FaArrowLeft, FaArrowUpFromBracket, FaCircleArrowLeft, FaFilePdf, FaX, FaFileExcel } from "react-icons/fa6";
 import PreEmploymentReportModal from "./PreEmploymentReportModal";
+import * as XLSX from "xlsx";
 
 function PreEmploymentReports() {
   const [records, setRecords] = useState([]);
@@ -111,12 +112,54 @@ const toOk = toDate
     alert(`Generate report for ${record.name} (ID: ${record.id})`);
   };
 
+  const downloadExcel = () => {
+
+  const excelData = filteredRecords.map((r) => ({
+    ID: r.id,
+    Name: r.name,
+    Father_Name: r.fathers_name || "",
+    Status: r.status || "",
+    Aadhar_No: r.aadhar_no || "",
+    Contractor_Name: r.contractor_name || "",
+    Designation: r.designation || "",
+    Gender: r.gender || "",
+    Exam_Date: r.date_of_examination
+      ? new Date(r.date_of_examination).toLocaleDateString("en-GB")
+      : "",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "PreEmploymentReports"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `PreEmploymentReports_${tab}_${Date.now()}.xlsx`
+  );
+};
+
   return (
     <>
     <div className="w-full bg-gray-800 p-6 rounded-xl text-white">
-      <h2 className="text-lg font-bold mb-4">
-        PRE-EMPLOYMENT EXAMINATION REPORTS
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+  <h2 className="text-lg font-bold">
+    PRE-EMPLOYMENT EXAMINATION REPORTS
+  </h2>
+
+  <button
+    onClick={downloadExcel}
+    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-semibold flex items-center gap-2"
+  >
+    <FaFileExcel />
+    Download Excel
+  </button>
+</div>
 
       <div className="w-full flex gap-2 justify-center items-center">
         <div>
