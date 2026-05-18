@@ -518,23 +518,28 @@ function PreEmploymentReportModal({ data, onClose, onSuccess }) {
   const fitText =
     form.duty_fit === true ? "FIT" : "UNFIT";
 
+  const replaceFitWord = (text = "") => {
+    return text
+      .replace(/\bFIT\b/g, fitText)
+      .replace(/\bUNFIT\b/g, fitText);
+  };
+
   setForm(prev => ({
     ...prev,
 
-    // ONLY set defaults if empty
     clinical_impression:
-      prev.clinical_impression?.trim()
-        ? prev.clinical_impression
+      prev.clinical_impression
+        ? replaceFitWord(prev.clinical_impression)
         : `PHYSICALLY AND MENTALLY DECLARED ${fitText} FOR JOB PLACEMENT/ CONTINUATION OF WORK`,
 
     final_recommendation:
-      prev.final_recommendation?.trim()
-        ? prev.final_recommendation
+      prev.final_recommendation
+        ? replaceFitWord(prev.final_recommendation)
         : `${fitText} FOR DUTY FOR EMPLOYMENT`,
 
     physical_fitness:
-      prev.physical_fitness?.trim()
-        ? prev.physical_fitness
+      prev.physical_fitness
+        ? replaceFitWord(prev.physical_fitness)
         : `I HEREBY CERTIFY THAT I HAVE PERSONALLY EXAMINED ${prev.name || ""} ${
             prev.fathers_name
               ? `SON OF ${prev.fathers_name} `
