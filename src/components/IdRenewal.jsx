@@ -92,37 +92,64 @@ function IdRenewal() {
         }, 300);
     };
 
-    const handleSelectWorker = (worker) => {
-        if (worker.id_status === "Active") {
-            alert("Worker's ID is Active. Cannot be Renewed.");
-        } else {
-            setSelectedWorker(worker);
-            setWorkerSearch(worker.name);
-            setWorkerResults([]);
-            setIsEditingWorker(false);
-            setIsNewWorker(false);
-            setRenewalForm({
-                previous_renewal_date: "",
-                blood_group: "",
-                general_condition: "",
-                pulse: "",
-                systolic: "",
-                diastolic: "",
-                spo2: "",
-                height: "",
-                weight: "",
-                remarks: "",
-                vertigo_test_passed: true,
-            });
-            if (worker.last_id_renewal_date) {
-                setRenewalForm({
-                    ...renewalForm,
-                    previous_renewal_date: worker.last_id_renewal_date
-                })
-            }
+    const handleSelectWorker = async (worker) => {
+    if (worker.id_status === "Active") {
+        alert("Worker's ID is Active. Cannot be Renewed.");
+        return;
+    }
 
+    try {
+        setSelectedWorker(worker);
+        setWorkerSearch(worker.name);
+        setWorkerResults([]);
+        setIsEditingWorker(false);
+        setIsNewWorker(false);
+
+        let latestRenewal = null;
+
+        try {
+            const res = await api.get(
+                `/api/id-renewal/latest/${worker.id}`
+            );
+
+            latestRenewal = res.data;
+        } catch (err) {
+            console.log("No previous renewal found");
         }
-    };
+
+        setRenewalForm({
+            previous_renewal_date:
+                worker.last_id_renewal_date
+                    ? worker.last_id_renewal_date.split("T")[0]
+                    : "",
+
+            blood_group:
+                latestRenewal?.blood_group || "",
+
+            general_condition:
+                latestRenewal?.general_condition || "",
+
+            pulse: "",
+            systolic: "",
+            diastolic: "",
+            spo2: "",
+
+            height:
+                latestRenewal?.height || "",
+
+            weight: "",
+
+            remarks: "",
+
+            vertigo_test_passed:
+                latestRenewal?.vertigo_test_passed || "Passed",
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to fetch previous renewal");
+    }
+};
 
     useEffect(() => {
         const pulse = renewalForm.pulse;

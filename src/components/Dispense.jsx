@@ -70,493 +70,545 @@ function Dispense() {
             </div>
             {tab === "dispense" && (
                 <div>
-                <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
+                    <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
 
-                    {/* WORKER SEARCH */}
-                    <div className="mb-3">
-                        <p className="text-xs font-semibold mb-2">
-                            SEARCH WORKER
-                        </p>
+                        {/* WORKER SEARCH */}
+                        <div className="mb-3">
+                            <p className="text-xs font-semibold mb-2">
+                                SEARCH WORKER
+                            </p>
 
-                        <div className="flex gap-3">
-                            <div className="flex items-center gap-3 w-full bg-gray-700 rounded p-2">
-                                <FaMagnifyingGlass />
+                            <div className="flex gap-3">
+                                <div className="flex items-center gap-3 w-full bg-gray-700 rounded p-2">
+                                    <FaMagnifyingGlass />
+
+                                    <input
+                                        type="text"
+                                        value={workerSearch}
+                                        onChange={(e) => {
+
+                                            const value = e.target.value;
+
+                                            setWorkerSearch(value);
+
+                                            clearTimeout(workerTimeout.current);
+
+                                            if (!value.trim()) {
+                                                setWorkers([]);
+                                                setSelectedWorker(null);
+                                                return;
+                                            }
+
+                                            workerTimeout.current = setTimeout(async () => {
+
+                                                try {
+
+                                                    const res = await api.get(
+                                                        `/api/dispense/workers/search?q=${value}`
+                                                    );
+
+                                                    setWorkers(res.data.data);
+
+                                                } catch (err) {
+                                                    console.log(err);
+                                                }
+
+                                            }, 400);
+                                        }}
+                                        className="w-full bg-transparent outline-none text-xs"
+                                        placeholder="Search Worker by Name, Employee ID..."
+                                    />
+                                </div>
+                            </div>
+
+                            {/* SEARCH RESULTS */}
+                            {workers.length > 0 && (
+                                <div className="bg-gray-700 rounded mt-2 max-h-52 overflow-y-auto">
+                                    {workers.map(worker => (
+                                        <div
+                                            key={worker.id}
+                                            onClick={() => {
+                                                setSelectedWorker(worker);
+                                                setWorkers([]);
+                                                setWorkerSearch(worker.name);
+                                            }}
+                                            className="p-2 border-b mb-2 border-gray-900 cursor-pointer hover:bg-gray-700 text-xs"
+                                        >
+                                            <div className="font-bold font- mb-2">
+
+                                                <p>
+                                                    {worker.name}
+                                                </p>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+
+                                                <div>
+                                                    <p className="text-gray-400">
+                                                        Fathers Name
+                                                    </p>
+
+                                                    <p>
+                                                        {worker.fathers_name}
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-gray-400">
+                                                        Employee ID
+                                                    </p>
+
+                                                    <p>
+                                                        {worker.employee_id}
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-gray-400">
+                                                        Designation
+                                                    </p>
+
+                                                    <p>
+                                                        {worker.designation}
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-gray-400">
+                                                        Contractor
+                                                    </p>
+
+                                                    <p>
+                                                        {worker.contractor_name}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* SELECTED WORKER */}
+                        {selectedWorker ? (
+                            <div className="bg-gray-900 rounded p-3 mb-5">
+                                <p className="text-xs font-semibold mb-2">
+                                    SELECTED WORKER
+                                </p>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+
+                                    <div>
+                                        <p className="text-gray-400">
+                                            Name
+                                        </p>
+
+                                        <p>
+                                            {selectedWorker.name}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-gray-400">
+                                            Fathers Name
+                                        </p>
+
+                                        <p>
+                                            {selectedWorker.fathers_name}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-gray-400">
+                                            Employee ID
+                                        </p>
+
+                                        <p>
+                                            {selectedWorker.employee_id}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-gray-400">
+                                            Designation
+                                        </p>
+
+                                        <p>
+                                            {selectedWorker.designation}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-gray-400">
+                                            Contractor
+                                        </p>
+
+                                        <p>
+                                            {selectedWorker.contractor_name}
+                                        </p>
+                                    </div>
+
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-xs bg-gray-900 rounded p-3 mb-2">
+                                <p className="text-gray-500">Select a Worker</p>
+                            </div>
+                        )}
+
+                        {/* MEDICINE SEARCH */}
+
+
+                    </div>
+                    <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
+                        <div className="mb-5">
+
+                            <p className="text-xs font-semibold mb-2">
+                                SEARCH MEDICINES
+                            </p>
+
+                            <div className="flex items-center gap-2 ">
+
+                                <FaPills />
 
                                 <input
                                     type="text"
-                                    value={workerSearch}
+                                    value={medicineSearch}
                                     onChange={(e) => {
 
                                         const value = e.target.value;
 
-                                        setWorkerSearch(value);
+                                        setMedicineSearch(value);
 
-                                        clearTimeout(workerTimeout.current);
+                                        clearTimeout(medicineTimeout.current);
 
                                         if (!value.trim()) {
-                                            setWorkers([]);
-                                            setSelectedWorker(null);
+                                            setStockResults([]);
                                             return;
                                         }
 
-                                        workerTimeout.current = setTimeout(async () => {
+                                        medicineTimeout.current = setTimeout(async () => {
 
                                             try {
 
                                                 const res = await api.get(
-                                                    `/api/dispense/workers/search?q=${value}`
+                                                    `/api/dispense/stock/search?q=${value}`
                                                 );
 
-                                                setWorkers(res.data.data);
+                                                setStockResults(res.data.data);
 
                                             } catch (err) {
                                                 console.log(err);
                                             }
 
                                         }, 400);
+
                                     }}
-                                    className="w-full bg-transparent outline-none text-xs"
-                                    placeholder="Search Worker by Name, Employee ID..."
+                                    className="w-1/5 bg-gray-700 rounded p-2 outline-none text-xs"
+                                    placeholder="Search Medicine..."
                                 />
                             </div>
-                        </div>
 
-                        {/* SEARCH RESULTS */}
-                        {workers.length > 0 && (
-                            <div className="bg-gray-900 rounded mt-2 max-h-52 overflow-y-auto">
-                                {workers.map(worker => (
-                                    <div
-                                        key={worker.id}
-                                        onClick={() => {
-                                            setSelectedWorker(worker);
-                                            setWorkers([]);
-                                            setWorkerSearch(worker.name);
-                                        }}
-                                        className="p-2 border-b border-gray-700 cursor-pointer hover:bg-gray-700 text-xs"
-                                    >
-                                        <p className="font-semibold">
-                                            {worker.name}
-                                        </p>
+                            {/* STOCK RESULTS */}
+                            {stockResults.length > 0 && (
+                                <div className="bg-gray-900 rounded mt-2 max-h-72 overflow-y-auto">
 
-                                        <p>
-                                            Fathers Name: {worker.fathers_name}
-                                        </p>
+                                    {stockResults.map(stock => (
 
-                                        <p>
-                                            EMP ID: {worker.employee_id}
-                                        </p>
+                                        <div
+                                            key={stock.id}
+                                            className="flex justify-between items-center border-b border-gray-700 p-2"
+                                        >
 
-                                        <p>
-                                            {worker.designation}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                            <div className="text-xs w-4/5">
 
-                    {/* SELECTED WORKER */}
-                    {selectedWorker ? (
-                        <div className="bg-gray-900 rounded p-3 mb-5">
-                            <p className="text-xs font-semibold mb-2">
-                                SELECTED WORKER
-                            </p>
+                                                <p className="font-semibold mb-2">
+                                                    {stock.item_name}
+                                                </p>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                                <div className="flex w-full justify-between">
+                                                    <div>
+                                                        <p className="text-gray-400">Brand</p>
+                                                        <p>
+                                                            {stock.brand}
+                                                        </p>
+                                                    </div>
 
-                                <div>
-                                    <p className="text-gray-400">
-                                        Name
-                                    </p>
+                                                    <div>
+                                                        <p className="text-gray-400">Price</p>
+                                                        <p>
+                                                            ₹ {stock.per_unit_cost} per unit
+                                                        </p>
+                                                    </div>
 
-                                    <p>
-                                        {selectedWorker.name}
-                                    </p>
-                                </div>
+                                                    <div>
+                                                        <p className="text-gray-400">Available Units</p>
+                                                        <p>
+                                                            {stock.units}
+                                                        </p>
+                                                    </div>
 
-                                <div>
-                                    <p className="text-gray-400">
-                                        Fathers Name
-                                    </p>
+                                                    <div>
+                                                        <p className="text-gray-400">Expiry Date</p>
+                                                        <p>
+                                                            {formatDateDMY(stock.expiry_date)}
+                                                        </p>
+                                                    </div>
+                                                </div>
 
-                                    <p>
-                                        {selectedWorker.fathers_name}
-                                    </p>
-                                </div>
+                                            </div>
 
-                                <div>
-                                    <p className="text-gray-400">
-                                        Employee ID
-                                    </p>
+                                            <button
+                                                onClick={() => {
 
-                                    <p>
-                                        {selectedWorker.employee_id}
-                                    </p>
-                                </div>
+                                                    const exists = dispenseItems.find(
+                                                        i => i.stock_id === stock.id
+                                                    );
 
-                                <div>
-                                    <p className="text-gray-400">
-                                        Designation
-                                    </p>
+                                                    if (exists) return;
 
-                                    <p>
-                                        {selectedWorker.designation}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <p className="text-gray-400">
-                                        Contractor
-                                    </p>
-
-                                    <p>
-                                        {selectedWorker.contractor_name}
-                                    </p>
-                                </div>
-
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="text-xs bg-gray-900 rounded p-3 mb-2">
-                            <p className="text-gray-500">Select a Worker</p>
-                        </div>
-                    )}
-
-                    {/* MEDICINE SEARCH */}
-                    
-
-                </div>
-                <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
-                <div className="mb-5">
-
-                        <p className="text-xs font-semibold mb-2">
-                            SEARCH MEDICINES
-                        </p>
-
-                        <div className="flex items-center gap-2 ">
-
-                            <FaPills />
-
-                            <input
-                                type="text"
-                                value={medicineSearch}
-                                onChange={(e) => {
-
-                                    const value = e.target.value;
-
-                                    setMedicineSearch(value);
-
-                                    clearTimeout(medicineTimeout.current);
-
-                                    if (!value.trim()) {
-                                        setStockResults([]);
-                                        return;
-                                    }
-
-                                    medicineTimeout.current = setTimeout(async () => {
-
-                                        try {
-
-                                            const res = await api.get(
-                                                `/api/dispense/stock/search?q=${value}`
-                                            );
-
-                                            setStockResults(res.data.data);
-
-                                        } catch (err) {
-                                            console.log(err);
-                                        }
-
-                                    }, 400);
-
-                                }}
-                                className="w-1/5 bg-gray-700 rounded p-2 outline-none text-xs"
-                                placeholder="Search Medicine..."
-                            />
-                        </div>
-
-                        {/* STOCK RESULTS */}
-                        {stockResults.length > 0 && (
-                            <div className="bg-gray-900 rounded mt-2 max-h-72 overflow-y-auto">
-
-                                {stockResults.map(stock => (
-
-                                    <div
-                                        key={stock.id}
-                                        className="flex justify-between items-center border-b border-gray-700 p-2"
-                                    >
-
-                                        <div className="text-xs">
-
-                                            <p className="font-semibold">
-                                                {stock.item_name}
-                                            </p>
-
-                                            <p>
-                                                {stock.brand}
-                                            </p>
-
-                                            <p>
-                                                Available: {stock.units}
-                                            </p>
-
-                                            <p>
-                                                Exp: {formatDateDMY(stock.expiry_date)}
-                                            </p>
+                                                    setDispenseItems(prev => [
+                                                        ...prev,
+                                                        {
+                                                            stock_id: stock.id,
+                                                            item_name: stock.item_name,
+                                                            brand: stock.brand,
+                                                            available_units: stock.units,
+                                                            units: 1
+                                                        }
+                                                    ]);
+                                                    setMedicineSearch("");
+                                                    setStockResults([]);
+                                                }}
+                                                className="bg-green-600 rounded px-3 py-1 text-xs flex items-center gap-2"
+                                            >
+                                                <FaPlus />
+                                                Add
+                                            </button>
 
                                         </div>
 
-                                        <button
-                                            onClick={() => {
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
-                                                const exists = dispenseItems.find(
-                                                    i => i.stock_id === stock.id
-                                                );
+                        {/* DISPENSE ITEMS */}
+                        <div>
 
-                                                if (exists) return;
+                            <p className="text-xs font-semibold mb-2">
+                                DISPENSE ITEMS
+                            </p>
 
-                                                setDispenseItems(prev => [
-                                                    ...prev,
-                                                    {
-                                                        stock_id: stock.id,
-                                                        item_name: stock.item_name,
-                                                        brand: stock.brand,
-                                                        available_units: stock.units,
-                                                        units: 1
-                                                    }
-                                                ]);
-                                                setMedicineSearch("");
-                                                setStockResults([]);
-                                            }}
-                                            className="bg-green-600 rounded px-3 py-1 text-xs flex items-center gap-2"
-                                        >
-                                            <FaPlus />
-                                            Add
-                                        </button>
+                            {dispenseItems.length === 0 && (
+                                <div className="bg-gray-900 rounded p-3 text-xs text-gray-400">
+                                    No medicines selected
+                                </div>
+                            )}
 
-                                    </div>
+                            {dispenseItems.length > 0 && (
+                                <div className="overflow-x-auto">
 
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                    <table className="w-full border text-xs">
 
-                    {/* DISPENSE ITEMS */}
-                    <div>
+                                        <thead className="bg-gray-900">
+                                            <tr>
 
-                        <p className="text-xs font-semibold mb-2">
-                            DISPENSE ITEMS
-                        </p>
+                                                <th className="border p-2">
+                                                    Medicine
+                                                </th>
 
-                        {dispenseItems.length === 0 && (
-                            <div className="bg-gray-900 rounded p-3 text-xs text-gray-400">
-                                No medicines selected
-                            </div>
-                        )}
+                                                <th className="border p-2">
+                                                    Brand
+                                                </th>
 
-                        {dispenseItems.length > 0 && (
-                            <div className="overflow-x-auto">
+                                                <th className="border p-2">
+                                                    Available
+                                                </th>
 
-                                <table className="w-full border text-xs">
+                                                <th className="border p-2">
+                                                    Units
+                                                </th>
 
-                                    <thead className="bg-gray-900">
-                                        <tr>
-
-                                            <th className="border p-2">
-                                                Medicine
-                                            </th>
-
-                                            <th className="border p-2">
-                                                Brand
-                                            </th>
-
-                                            <th className="border p-2">
-                                                Available
-                                            </th>
-
-                                            <th className="border p-2">
-                                                Units
-                                            </th>
-
-                                            <th className="border p-2">
-                                                Remove
-                                            </th>
-
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        {dispenseItems.map(item => (
-
-                                            <tr key={item.stock_id}>
-
-                                                <td className="border p-2">
-                                                    {item.item_name}
-                                                </td>
-
-                                                <td className="border p-2">
-                                                    {item.brand}
-                                                </td>
-
-                                                <td className="border p-2">
-                                                    {item.available_units}
-                                                </td>
-
-                                                <td className="border p-2">
-
-                                                    <input
-                                                        type="number"
-                                                        min={1}
-                                                        max={item.available_units}
-                                                        value={item.units}
-                                                        onChange={(e) => {
-
-                                                            const rawValue = e.target.value;
-
-                                                            setDispenseItems(prev =>
-                                                                prev.map(i => {
-
-                                                                    if (i.stock_id !== item.stock_id) {
-                                                                        return i;
-                                                                    }
-
-                                                                    // Allow empty input while typing
-                                                                    if (rawValue === "") {
-                                                                        return {
-                                                                            ...i,
-                                                                            units: ""
-                                                                        };
-                                                                    }
-
-                                                                    let value = Number(rawValue);
-
-                                                                    if (isNaN(value)) {
-                                                                        return i;
-                                                                    }
-
-                                                                    if (value < 1) {
-                                                                        value = 1;
-                                                                    }
-
-                                                                    if (value > item.available_units) {
-                                                                        value = item.available_units;
-                                                                    }
-
-                                                                    return {
-                                                                        ...i,
-                                                                        units: value
-                                                                    };
-                                                                })
-                                                            );
-
-                                                        }}
-                                                        className="bg-gray-700 rounded p-1 w-20"
-                                                    />
-
-                                                </td>
-
-                                                <td className="border p-2">
-
-                                                    <button
-                                                        onClick={() => {
-
-                                                            setDispenseItems(prev =>
-                                                                prev.filter(
-                                                                    i => i.stock_id !== item.stock_id
-                                                                )
-                                                            );
-
-                                                        }}
-                                                        className="bg-red-600 rounded p-2"
-                                                    >
-                                                        <FaXmark />
-                                                    </button>
-
-                                                </td>
+                                                <th className="border p-2">
+                                                    Remove
+                                                </th>
 
                                             </tr>
+                                        </thead>
 
-                                        ))}
+                                        <tbody>
 
-                                    </tbody>
+                                            {dispenseItems.map(item => (
 
-                                </table>
+                                                <tr key={item.stock_id}>
 
-                            </div>
-                        )}
-                    </div>
+                                                    <td className="border p-2">
+                                                        {item.item_name}
+                                                    </td>
 
-                    {/* SUBMIT */}
-                    <div className="mt-5 flex justify-end">
+                                                    <td className="border p-2">
+                                                        {item.brand}
+                                                    </td>
 
-                        <button
-                            disabled={submitting}
-                            onClick={async () => {
-                                if (!selectedWorker) {
-                                    return alert("Select worker");
-                                }
+                                                    <td className="border p-2">
+                                                        {item.available_units}
+                                                    </td>
 
-                                if (!dispenseItems.length) {
-                                    return alert("Add medicines");
-                                }
-                                const invalidUnits = dispenseItems.some(
-                                    item =>
-                                        item.units === "" ||
-                                        isNaN(Number(item.units)) ||
-                                        Number(item.units) < 1
-                                );
+                                                    <td className="border p-2">
 
-                                if (invalidUnits) {
-                                    return alert("Invalid units entered");
-                                }
-                                setSubmitting(true);
-                                try {
+                                                        <input
+                                                            type="number"
+                                                            min={1}
+                                                            max={item.available_units}
+                                                            value={item.units}
+                                                            onChange={(e) => {
 
-                                    const payload = {
+                                                                const rawValue = e.target.value;
 
-                                        opd_id: null,
+                                                                setDispenseItems(prev =>
+                                                                    prev.map(i => {
 
-                                        dispensed_to_worker_id:
-                                            selectedWorker.id,
+                                                                        if (i.stock_id !== item.stock_id) {
+                                                                            return i;
+                                                                        }
 
-                                        dispensed_items:
-                                            dispenseItems.map(item => ({
-                                                stock_ids: [item.stock_id],
-                                                units: item.units
-                                            }))
-                                    };
+                                                                        // Allow empty input while typing
+                                                                        if (rawValue === "") {
+                                                                            return {
+                                                                                ...i,
+                                                                                units: ""
+                                                                            };
+                                                                        }
 
-                                    const res = await api.post(
-                                        "/api/dispense/fill-prescription",
-                                        payload
+                                                                        let value = Number(rawValue);
+
+                                                                        if (isNaN(value)) {
+                                                                            return i;
+                                                                        }
+
+                                                                        if (value < 1) {
+                                                                            value = 1;
+                                                                        }
+
+                                                                        if (value > item.available_units) {
+                                                                            value = item.available_units;
+                                                                        }
+
+                                                                        return {
+                                                                            ...i,
+                                                                            units: value
+                                                                        };
+                                                                    })
+                                                                );
+
+                                                            }}
+                                                            className="bg-gray-700 rounded p-1 w-20"
+                                                        />
+
+                                                    </td>
+
+                                                    <td className="border p-2">
+
+                                                        <button
+                                                            onClick={() => {
+
+                                                                setDispenseItems(prev =>
+                                                                    prev.filter(
+                                                                        i => i.stock_id !== item.stock_id
+                                                                    )
+                                                                );
+
+                                                            }}
+                                                            className="bg-red-600 rounded p-2"
+                                                        >
+                                                            <FaXmark />
+                                                        </button>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            ))}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+                            )}
+                        </div>
+
+                        {/* SUBMIT */}
+                        <div className="mt-5 flex justify-end">
+
+                            <button
+                                disabled={submitting}
+                                onClick={async () => {
+                                    if (!selectedWorker) {
+                                        return alert("Select worker");
+                                    }
+
+                                    if (!dispenseItems.length) {
+                                        return alert("Add medicines");
+                                    }
+                                    const invalidUnits = dispenseItems.some(
+                                        item =>
+                                            item.units === "" ||
+                                            isNaN(Number(item.units)) ||
+                                            Number(item.units) < 1
                                     );
 
-                                    alert(res.data.message);
+                                    if (invalidUnits) {
+                                        return alert("Invalid units entered");
+                                    }
+                                    setSubmitting(true);
+                                    try {
 
-                                    setDispenseItems([]);
-                                    setSelectedWorker(null);
-                                    setWorkerSearch("");
-                                    setMedicineSearch("");
-                                    setStockResults([]);
+                                        const payload = {
 
-                                } catch (err) {
+                                            opd_id: null,
 
-                                    alert(
-                                        err.response?.data?.message ||
-                                        err.message
-                                    );
+                                            dispensed_to_worker_id:
+                                                selectedWorker.id,
 
-                                } finally {
-                                    setSubmitting(false);
-                                }
-                            }}
-                            className="bg-blue-600 px-4 py-2 rounded text-xs font-semibold"
-                        >
-                            {submitting ? "Dispensing" : "Dispense Medicine"}
-                        </button>
+                                            dispensed_items:
+                                                dispenseItems.map(item => ({
+                                                    stock_ids: [item.stock_id],
+                                                    units: item.units
+                                                }))
+                                        };
 
-                    </div>
+                                        const res = await api.post(
+                                            "/api/dispense/fill-prescription",
+                                            payload
+                                        );
+
+                                        alert(res.data.message);
+
+                                        setDispenseItems([]);
+                                        setSelectedWorker(null);
+                                        setWorkerSearch("");
+                                        setMedicineSearch("");
+                                        setStockResults([]);
+
+                                    } catch (err) {
+
+                                        alert(
+                                            err.response?.data?.message ||
+                                            err.message
+                                        );
+
+                                    } finally {
+                                        setSubmitting(false);
+                                    }
+                                }}
+                                className="bg-blue-600 px-4 py-2 rounded text-xs font-semibold"
+                            >
+                                {submitting ? "Dispensing" : "Dispense Medicine"}
+                            </button>
+
+                        </div>
                     </div>
                 </div>
             )}
