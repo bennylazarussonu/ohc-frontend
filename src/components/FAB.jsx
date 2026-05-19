@@ -1,42 +1,90 @@
-import { FaEye, FaFileExcel, FaFloppyDisk, FaHandHoldingMedical, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
+import { FaCalendarCheck, FaEye, FaFileExcel, FaHandHoldingMedical, FaList, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-function useDebounce(value, delay) {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => clearTimeout(timer);
-    }, [value, delay]);
-
-    return debouncedValue;
-}
-
 function FAB() {
+    const { user, loading } = useAuth();
     const [viewModal, setViewModal] = useState(false);
     const [zones, setZones] = useState([]);
-    const [zoneItems, setZoneItems] = useState([]);
+    const [templateItems, setTemplateItems]
+        = useState([]);
+    const [templateModal, setTemplateModal]
+        = useState(false);
+    const [editTemplateModal,
+        setEditTemplateModal]
+        = useState(false);
+
+    const [editingTemplateItem,
+        setEditingTemplateItem]
+        = useState(null);
+
+    const [editRequiredQty,
+        setEditRequiredQty]
+        = useState(1);
+
+    const [medicineSearch, setMedicineSearch]
+        = useState("");
+
+    const [medicineResults, setMedicineResults]
+        = useState([]);
+
+    const [selectedTemplateMedicine,
+        setSelectedTemplateMedicine]
+        = useState(null);
+
+    const [requiredQty, setRequiredQty]
+        = useState(1);
+
+    const [inventoryBatches, setInventoryBatches]
+        = useState([]);
+
+    const [allocateModal, setAllocateModal]
+        = useState(false);
+
+    const [selectedMedicine, setSelectedMedicine]
+        = useState(null);
+
+    const [availableBatches, setAvailableBatches]
+        = useState([]);
+
+    const [selectedBatch, setSelectedBatch]
+        = useState(null);
+
+    const [allocateQty, setAllocateQty]
+        = useState(1);
+    const [consumeInputs,
+        setConsumeInputs]
+        = useState({});
     const [selectedZone, setSelectedZone] = useState(null);
-    const [replace, setReplace] = useState({});//(AddQty)
+    const [activeVisit,
+        setActiveVisit]
+        = useState(null);
+    const [lastVisit,
+        setLastVisit]
+        = useState(null);
+    const [visitConfirmModal,
+        setVisitConfirmModal]
+        = useState(false);
+    const [visitZone,
+        setVisitZone]
+        = useState(null);
+    const [inspectionModal,
+        setInspectionModal]
+        = useState(false);
+
+    const [inspectionTab,
+        setInspectionTab]
+        = useState("consumption");
     const [addZoneModal, setAddZoneModal] = useState(false);
     const [zoneName, setZoneName] = useState("");
     const [zoneLocation, setZoneLocation] = useState("");
-    const [newItems, setNewItems] = useState([]);
-    const [medicineResults, setMedicineResults] = useState({});
-    const [consumed, setConsumed] = useState({});
-    const [searchText, setSearchText] = useState("");
     const [consumptionModal, setConsumptionModal] = useState(false);
     const [consumptionLogs, setConsumptionLogs] = useState([]);
 
     console.log(consumptionLogs);
-
-    const debouncedSearch = useDebounce(searchText, 300);
 
     useEffect(() => {
         const fetchZones = async () => {
@@ -46,6 +94,371 @@ function FAB() {
         }
         fetchZones();
     }, []);
+
+    const searchMedicines = async (
+        text
+    ) => {
+
+        setMedicineSearch(text);
+
+        if (text.length < 2) {
+
+            setMedicineResults([]);
+
+            return;
+        }
+
+        try {
+
+            const res =
+                await api.get(
+
+                    `/api/medicines/fab-search?q=${text}`
+                );
+
+            setMedicineResults(
+                res.data
+            );
+
+        } catch (err) {
+
+            console.error(err);
+        }
+    };
+
+    const addTemplateItem = async () => {
+
+        try {
+
+            if (!selectedTemplateMedicine) {
+
+                alert("Select medicine");
+
+                return;
+            }
+
+            await api.post(
+
+                `/api/fab/templates/${selectedZone.id}/template-items`,
+
+                {
+                    medicine_id:
+                        selectedTemplateMedicine.id,
+
+                    default_quantity:
+                        requiredQty
+                }
+            );
+
+            const res =
+                await api.get(
+
+                    `/api/fab/templates/${selectedZone.id}/template-items`
+                );
+
+            setTemplateItems(
+                res.data
+            );
+
+            setTemplateModal(false);
+            setMedicineSearch("");
+
+            setMedicineResults([]);
+
+            setSelectedTemplateMedicine(null);
+
+            setRequiredQty(1);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                err?.response?.data?.message
+                || "Failed to add template item"
+            );
+        }
+    };
+
+    const editTemplateItem = (
+        item
+    ) => {
+
+        setEditingTemplateItem(item);
+
+        setEditRequiredQty(
+            item.default_quantity
+        );
+
+        setEditTemplateModal(true);
+    };
+
+    const updateTemplateQty = async () => {
+
+        try {
+
+            await api.put(
+
+                `/api/fab/templates/${selectedZone.id}/template-items/${editingTemplateItem.medicine_id}`,
+
+                {
+                    default_quantity:
+                        editRequiredQty
+                }
+            );
+
+            const res =
+                await api.get(
+
+                    `/api/fab/templates/${selectedZone.id}/template-items`
+                );
+
+            setTemplateItems(
+                res.data
+            );
+
+            setEditTemplateModal(false);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Failed to update template"
+            );
+        }
+    };
+
+    const openAllocateModal = async (
+        medicine
+    ) => {
+
+        try {
+
+            const res =
+                await api.get(
+
+                    `/api/fab/inventory/available/${medicine.medicine_id}`
+                );
+
+            setAvailableBatches(
+                res.data
+            );
+
+            setSelectedMedicine(
+                medicine
+            );
+
+            setSelectedBatch(null);
+
+            setAllocateQty(1);
+
+            setAllocateModal(true);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Failed to fetch batches"
+            );
+        }
+    };
+
+    const allocateStock = async () => {
+
+        try {
+
+            if (!selectedBatch) {
+
+                alert("Select batch");
+
+                return;
+            }
+
+            if (allocateQty < 1) {
+
+                alert("Invalid quantity");
+
+                return;
+            }
+
+            if (allocateQty > selectedBatch.units) {
+
+                alert("Insufficient stock");
+
+                return;
+            }
+
+            await api.post(
+
+                `/api/fab/inventory/${selectedZone.id}/allocate`,
+
+                {
+                    stock_id:
+                        selectedBatch.id,
+
+                    visit_id:
+                        activeVisit?.id,
+
+                    quantity:
+                        allocateQty
+                }
+            );
+
+            const inventoryRes =
+                await api.get(
+
+                    `/api/fab/inventory/${selectedZone.id}/inventory`
+                );
+
+            setInventoryBatches(
+                inventoryRes.data
+            );
+
+            const updatedAllocated =
+                inventoryRes.data
+                    .filter(
+                        batch =>
+                            batch.medicine_id
+                            === selectedMedicine.medicine_id
+                    )
+                    .reduce(
+                        (sum, batch) =>
+                            sum + batch.quantity,
+                        0
+                    );
+
+            const remaining =
+                selectedMedicine.default_quantity
+                - updatedAllocated;
+
+            if (remaining <= 0) {
+
+                setAllocateModal(false);
+            }
+
+            const batchRes =
+                await api.get(
+
+                    `/api/fab/inventory/available/${selectedMedicine.medicine_id}`
+                );
+
+            setAvailableBatches(
+                batchRes.data
+            );
+            setSelectedBatch(null);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                err?.response?.data?.message
+                || "Allocation failed"
+            );
+        }
+    };
+
+    const startVisit = async (zone) => {
+
+        try {
+
+            const res =
+                await api.post(
+
+                    `/api/fab/inventory/${zone.id}/start-visit`,
+
+                    {
+
+                        visited_by:
+                            user.userId
+                            || "Unknown",
+
+                        remarks:
+                            "Routine inspection"
+                    }
+                );
+
+            setActiveVisit(
+                res.data
+            );
+            setSelectedZone(zone);
+            await loadZoneData(zone);
+            setInspectionTab(
+                "consumption"
+            );
+
+            setInspectionModal(true);
+            setVisitConfirmModal(false);
+
+            setVisitZone(null);
+
+            alert(
+                "Visit started"
+            );
+
+        } catch (err) {
+
+            if (
+                err?.response?.data?.visit
+            ) {
+
+                setActiveVisit(
+
+                    err.response.data.visit
+                );
+                setSelectedZone(zone);
+                await loadZoneData(zone);
+                setInspectionTab(
+                    "consumption"
+                );
+
+                setInspectionModal(true);
+
+                alert(
+                    "Continuing existing visit"
+                );
+
+                return;
+            }
+        }
+    };
+    const closeVisit = async () => {
+
+        try {
+
+            if (!activeVisit) {
+
+                alert(
+                    "No active visit"
+                );
+
+                return;
+            }
+
+            await api.post(
+
+                `/api/fab/inventory/visits/${activeVisit.id}/close`
+            );
+
+            alert(
+                "Visit closed"
+            );
+
+            setActiveVisit(null);
+            setInspectionModal(false);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                err?.response?.data?.message
+                || "Failed to close visit"
+            );
+        }
+    };
 
     const createZone = async () => {
 
@@ -68,88 +481,70 @@ function FAB() {
         setAddZoneModal(false);
     };
 
-    const handleReplace = (medicineId, qty) => {
-        setReplace(prev => ({
-            ...prev,
-            [medicineId]: Number(qty)
-        }));
+    const openZone = async (
+        zone
+    ) => {
+
+        try {
+
+            await loadZoneData(zone);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Failed to open zone"
+            );
+        }
     };
 
-    const handleConsumed = (medicineId, qty) => {
-        setConsumed(prev => ({
-            ...prev,
-            [medicineId]: Number(qty)
-        }));
-    };
+    const loadZoneData = async (
+        zone
+    ) => {
 
-    const openZone = async (zone) => {
+        const templateRes =
+            await api.get(
 
-        const res = await api.get(`/api/fab/zones/${zone.id}/items`);
+                `/api/fab/templates/${zone.id}/template-items`
+            );
 
-        setZoneItems(res.data);
+        const inventoryRes =
+            await api.get(
+
+                `/api/fab/inventory/${zone.id}/inventory`
+            );
+
+        const visitRes =
+            await api.get(
+
+                `/api/fab/inventory/${zone.id}/last-visit`
+            );
+
+        const activeVisitRes =
+            await api.get(
+
+                `/api/fab/inventory/${zone.id}/active-visit`
+            );
+
+        setActiveVisit(
+            activeVisitRes.data
+        );
+
+        setTemplateItems(
+            templateRes.data
+        );
+
+        setInventoryBatches(
+            inventoryRes.data
+        );
+
+        setLastVisit(
+            visitRes.data
+        );
+
         setSelectedZone(zone);
-        setReplace({});      // reset replacement values
-        setViewModal(true);
-        setNewItems([]);
-        setMedicineResults({});
-        setConsumed({});
     };
-
-    const getColor = (replaceQty, availableStock) => {
-        if (replaceQty === 0) return "bg-gray-700"
-
-        if (replaceQty <= availableStock)
-            return "bg-green-700"
-
-        return "bg-red-700"
-    }
-
-    const isDirty =
-        Object.keys(replace).length > 0 ||
-        Object.keys(consumed).length > 0 ||
-        newItems.length > 0;
-
-    const addRow = () => {
-        setNewItems([
-            ...newItems,
-            {
-                medicine_id: null,
-                item_name: "",
-                category: "",
-                quantity: 0,
-                stock: 0,
-                expiry_date: null
-            }
-        ]);
-    };
-
-    const searchMedicine = (index, text) => {
-
-        const updated = [...newItems];
-        updated[index].item_name = text;
-        setNewItems(updated);
-
-        setSearchText(text);
-    };
-
-    useEffect(() => {
-
-        const fetch = async () => {
-
-            if (debouncedSearch.length < 2) return;
-
-            const res = await api.get(`/api/fab/zones/search-medicines?query=${debouncedSearch}`);
-
-            setMedicineResults(prev => ({
-                ...prev,
-                [newItems.length - 1]: res.data
-            }));
-
-        };
-
-        fetch();
-
-    }, [debouncedSearch]);
 
     const openConsumption = async (zone) => {
         const res = await api.get(`/api/fab/zones/${zone.id}/consumption`);
@@ -159,221 +554,185 @@ function FAB() {
         setConsumptionModal(true);
     };
 
-    const selectMedicine = (index, medicine) => {
+    const downloadExcel = () => {
 
-        if (newItems.some((i, iIndex) =>
-            i.medicine_id === medicine.id &&
-            iIndex !== index
-        )) {
-            alert("Medicine already added");
-            return;
-        }
+        const generatedDate = new Date()
+            .toLocaleString();
 
-        const updated = [...newItems];
+        // table rows
+        const data =
+            inventoryBatches.map(
 
-        updated[index].medicine_id = medicine.id;
+                (item, index) => ({
 
-        updated[index].item_name =
-            medicine.drug_name_and_dose;
+                    "S. No.":
+                        index + 1,
 
-        updated[index].category =
-            medicine.category;
+                    "Medicine":
+                        item.item_name,
 
-        updated[index].stock =
-            medicine.stock;
+                    "Brand":
+                        item.brand,
 
-        updated[index].expiry_date =
-            medicine.expiry_date;
+                    "Expiry":
+                        item.expiry_date
+                            ?.slice(0, 10),
 
-        // if no stock -> quantity 0
-        updated[index].quantity =
-            medicine.stock > 0 ? 1 : 0;
+                    "Quantity":
+                        item.quantity,
 
-        setNewItems(updated);
+                    "Cost":
+                        item.per_unit_cost
+                })
+            );
 
-        setMedicineResults(prev => ({
-            ...prev,
-            [index]: []
-        }));
+        // create worksheet
+        const worksheet = XLSX.utils.json_to_sheet([]);
+
+        // TOP INFO
+        XLSX.utils.sheet_add_aoa(
+            worksheet,
+            [
+                [`Zone Name: ${selectedZone?.zone_name}`],
+                [`Location: ${selectedZone?.location}`],
+                [`Generated On: ${generatedDate}`],
+                [], // empty row
+            ],
+            { origin: "A1" }
+        );
+
+        // TABLE
+        XLSX.utils.sheet_add_json(
+            worksheet,
+            data,
+            {
+                origin: "A5"
+            }
+        );
+
+        // optional column widths
+        worksheet["!cols"] = [
+            { wch: 8 },
+            { wch: 40 },
+            { wch: 25 },
+            { wch: 15 },
+            { wch: 12 },
+            { wch: 18 }
+        ];
+
+        // workbook
+        const workbook =
+            XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Zone Contents"
+        );
+
+        const excelBuffer =
+            XLSX.write(workbook, {
+                bookType: "xlsx",
+                type: "array"
+            });
+
+        const fileData = new Blob(
+            [excelBuffer],
+            {
+                type:
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        );
+
+        const safeDate = new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace(/:/g, "-");
+
+        saveAs(
+            fileData,
+            `${selectedZone?.zone_name}_${safeDate}.xlsx`
+        );
+
     };
 
-    const removeRow = (index) => {
-
-        const updated = [...newItems];
-        updated.splice(index, 1);
-
-        setNewItems(updated);
-    };
-
-    const updateQuantity = (index, qty) => {
-
-        const updated = [...newItems];
-
-        const enteredQty = Number(qty);
-
-        if (enteredQty > updated[index].stock) {
-            alert("Insufficient stock");
-            return;
-        }
-
-        updated[index].quantity = enteredQty;
-
-        setNewItems(updated);
-    };
-
-    const saveChanges = async () => {
+    const saveConsumption = async () => {
 
         try {
 
-            const consumedUpdates = Object.entries(consumed).map(([medicine_id, qty]) => ({
-                medicine_id: Number(medicine_id),
-                consumed_qty: Number(qty)
-            }));
-
-            const addUpdates = Object.entries(replace).map(([medicine_id, qty]) => ({
-                medicine_id: Number(medicine_id),
-                add_qty: Number(qty)
-            }));
-
-            if (consumedUpdates.length > 0) {
-                await api.post(`/api/fab/zones/${selectedZone.id}/consume`, {
-                    updates: consumedUpdates
-                });
-            }
-
-            if (addUpdates.length > 0) {
-                await api.post(`/api/fab/zones/${selectedZone.id}/add`, {
-                    updates: addUpdates
-                });
-            }
-
-            // 🔹 THIS PART WAS MISSING
-            const newItemRequests = newItems
-                .filter(i => i.medicine_id)
-                .map(i =>
-                    api.post(`/api/fab/zones/${selectedZone.id}/add-item`, {
-                        medicine_id: i.medicine_id,
-                        quantity: i.quantity
-                    })
+            const entries =
+                Object.entries(
+                    consumeInputs
                 );
 
-            if (newItemRequests.length > 0) {
-                await Promise.all(newItemRequests);
+            if (
+                entries.length === 0
+            ) {
+
+                alert(
+                    "No consumption entered"
+                );
+
+                return;
             }
 
-            const res = await api.get(`/api/fab/zones/${selectedZone.id}/items`);
-            setZoneItems(res.data);
+            for (const [
+                batchId,
+                qty
+            ] of entries) {
 
-            setReplace({});
-            setConsumed({});
-            setNewItems([]);
+                const quantity =
+                    Number(qty);
+
+                if (
+                    quantity < 1
+                ) {
+                    continue;
+                }
+
+                await api.post(
+
+                    `/api/fab/inventory/${selectedZone.id}/consume`,
+
+                    {
+                        visit_id: activeVisit?.id,
+                        inventory_batch_id:
+                            batchId,
+
+                        quantity,
+
+                        reason:
+                            "USED"
+                    }
+                );
+            }
+
+            const inventoryRes =
+                await api.get(
+
+                    `/api/fab/inventory/${selectedZone.id}/inventory`
+                );
+
+            setInventoryBatches(
+                inventoryRes.data
+            );
+
+            setConsumeInputs({});
+
+            alert(
+                "Consumption saved"
+            );
 
         } catch (err) {
+
             console.error(err);
-            alert("Failed to save changes");
-        }
 
+            alert(
+                err?.response?.data?.message
+                || "Consumption failed"
+            );
+        }
     };
-    const downloadExcel = () => {
-
-    const generatedDate = new Date()
-        .toLocaleString();
-
-    // table rows
-    const data = zoneItems.map((item, index) => ({
-
-        "S. No.": index + 1,
-
-        "Item":
-            item.item_name,
-
-        "Category":
-            item.category,
-
-        "Expiry Date":
-            item.expiry_date
-                ? item.expiry_date.slice(0, 10)
-                : "-",
-
-        "Quantity":
-            item.quantity,
-
-        "Last Replaced":
-            item.last_replaced
-                ? item.last_replaced.slice(0, 10)
-                : "-"
-
-    }));
-
-    // create worksheet
-    const worksheet = XLSX.utils.json_to_sheet([]);
-
-    // TOP INFO
-    XLSX.utils.sheet_add_aoa(
-        worksheet,
-        [
-            [`Zone Name: ${selectedZone?.zone_name}`],
-            [`Location: ${selectedZone?.location}`],
-            [`Generated On: ${generatedDate}`],
-            [], // empty row
-        ],
-        { origin: "A1" }
-    );
-
-    // TABLE
-    XLSX.utils.sheet_add_json(
-        worksheet,
-        data,
-        {
-            origin: "A5"
-        }
-    );
-
-    // optional column widths
-    worksheet["!cols"] = [
-        { wch: 8 },
-        { wch: 40 },
-        { wch: 25 },
-        { wch: 15 },
-        { wch: 12 },
-        { wch: 18 }
-    ];
-
-    // workbook
-    const workbook =
-        XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Zone Contents"
-    );
-
-    const excelBuffer =
-        XLSX.write(workbook, {
-            bookType: "xlsx",
-            type: "array"
-        });
-
-    const fileData = new Blob(
-        [excelBuffer],
-        {
-            type:
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        }
-    );
-
-    const safeDate = new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace(/:/g, "-");
-
-    saveAs(
-        fileData,
-        `${selectedZone?.zone_name}_${safeDate}.xlsx`
-    );
-
-};
     return (
         <div className="w-full bg-gray-800 p-6 rounded-xl">
             <h3 className="text-lg font-bold">FIRST AID BOX - FAB</h3>
@@ -467,7 +826,8 @@ function FAB() {
                                 <th className="p-2 border">ID</th>
                                 <th className="p-2 border">Zone Name</th>
                                 <th className="p-2 border">Location</th>
-                                <th className="p-2 border">Action</th>
+                                <th className="p-2 border">Inspection</th>
+                                <th className="p-2 border">View</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -477,11 +837,57 @@ function FAB() {
                                     <td className="p-2 border">{zone.zone_name}</td>
                                     <td className="p-2 border">{zone.location}</td>
 
-                                    <td className="p-2 border flex items-center gap-2">
+                                    <td className="p-2 border">
 
-                                        <button className="text-sm bg-green-600 flex items-center gap-2 p-2 font-semibold text-white rounded">
-                                            <FaPenToSquare />
-                                            Edit
+                                        <div className="flex gap-2">
+
+                                            <button
+
+                                                onClick={() => {
+
+                                                    setVisitZone(zone);
+
+                                                    setVisitConfirmModal(true);
+                                                }}
+
+                                                disabled={
+                                                    activeVisit?.zone_id === zone.id
+                                                }
+
+                                                className={`
+                p-1 flex text-xs items-center gap-2 text-white rounded
+
+                ${activeVisit?.zone_id === zone.id
+                                                        ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                                                        : "bg-blue-600"
+                                                    }
+            `}
+                                            >
+                                                <FaCalendarCheck />
+
+                                                Start Inspection
+                                            </button>
+
+
+
+                                        </div>
+
+                                    </td>
+                                    {/* <td className="p-2 border">
+                                        <button
+
+                                            onClick={() => {
+
+                                                setVisitZone(zone);
+
+                                                setVisitConfirmModal(true);
+                                            }}
+
+                                            className="p-1 bg-blue-600 flex text-xs items-center gap-2 text-white rounded"
+                                        >
+                                            <FaCalendarCheck />
+
+                                            Start Inspection
                                         </button>
 
                                         <button
@@ -489,17 +895,55 @@ function FAB() {
                                             className="p-2 text-sm bg-blue-600 flex items-center gap-2 font-semibold text-white rounded"
                                         >
                                             <FaEye />
-                                            View
+                                            Manage Consumption
                                         </button>
-
                                         <button
-                                            onClick={() => openConsumption(zone)}
-                                            className="p-2 text-sm bg-yellow-600 flex items-center gap-2 font-semibold text-white rounded"
-                                        >
-                                            <FaHandHoldingMedical />
-                                            Consumption
-                                        </button>
+                                            onClick={async () => {
 
+                                                try {
+
+                                                    const templateRes =
+                                                        await api.get(
+                                                            `/api/fab/templates/${zone.id}/template-items`
+                                                        );
+
+                                                    const inventoryRes =
+                                                        await api.get(
+                                                            `/api/fab/inventory/${zone.id}/inventory`
+                                                        );
+
+                                                    setTemplateItems(
+                                                        templateRes.data
+                                                    );
+
+                                                    setInventoryBatches(
+                                                        inventoryRes.data
+                                                    );
+
+                                                    setSelectedZone(zone);
+
+                                                    setTemplateViewModal(true);
+
+                                                } catch (err) {
+
+                                                    console.error(err);
+
+                                                    alert("Failed to open template");
+
+                                                }
+
+                                            }}
+                                            className="text-sm bg-purple-600 flex items-center gap-2 p-2 font-semibold text-white rounded">
+                                            <FaList />
+                                            Template & Allocation
+                                        </button>
+                                    </td> */}
+
+                                    <td className="p-2 border">
+                                        <button className="p-1 bg-green-600 flex text-xs items-center gap-2 text-white rounded">
+                                            <FaEye />
+                                            View Details
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -507,73 +951,168 @@ function FAB() {
                     </table>
                 </div>
             </div>
-            {consumptionModal && (
+            {visitConfirmModal && (
 
-                <div className="fixed inset-0 flex justify-center items-center bg-black/60">
+                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
 
-                    <div className="bg-gray-900 p-6 rounded-lg w-[700px]">
+                    <div className="bg-gray-900 p-6 rounded-lg w-[420px]">
+
+                        <h2 className="text-lg font-bold mb-3">
+
+                            Start Inspection
+
+                        </h2>
+
+                        <p className="text-sm text-gray-300">
+
+                            Are you sure you want to start an inspection visit for:
+
+                        </p>
+
+                        <div className="mt-3 bg-gray-800 p-3 rounded">
+
+                            <p className="font-semibold">
+
+                                {visitZone?.zone_name}
+
+                            </p>
+
+                            <p className="text-sm text-gray-400">
+
+                                {visitZone?.location}
+
+                            </p>
+
+                        </div>
+
+                        <p className="text-xs text-yellow-400 mt-3">
+
+                            Only one active visit is allowed per zone.
+
+                        </p>
+
+                        <div className="flex justify-end gap-2 mt-5">
+
+                            <button
+
+                                onClick={() => {
+
+                                    setVisitConfirmModal(false);
+
+                                    setVisitZone(null);
+                                }}
+
+                                className="bg-gray-600 px-4 py-2 rounded text-sm"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+
+                                onClick={() =>
+                                    startVisit(visitZone)
+                                }
+
+                                className="bg-green-600 px-4 py-2 rounded text-sm font-semibold"
+                            >
+                                Start Inspection
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+            {templateModal && (
+
+                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[70]">
+
+                    <div className="bg-gray-900 p-6 rounded w-[700px]">
 
                         <div className="flex justify-between items-center mb-4">
 
-                            <div>
-                                <h2 className="text-lg font-bold">
-                                    Consumption History
-                                </h2>
-
-                                <p className="text-sm text-gray-400">
-                                    Zone: {selectedZone?.zone_name}
-                                </p>
-                            </div>
+                            <h2 className="text-lg font-bold">
+                                Add Template Medicine
+                            </h2>
 
                             <button
-                                onClick={() => setConsumptionModal(false)}
-                                className="text-xl"
+                                onClick={() =>
+                                    setTemplateModal(false)
+                                }
                             >
                                 x
                             </button>
 
                         </div>
 
-                        <div className="max-h-[400px] overflow-y-auto">
+                        <input
+                            type="text"
+                            placeholder="Search medicine..."
+                            value={medicineSearch}
+                            onChange={(e) =>
+                                searchMedicines(
+                                    e.target.value
+                                )
+                            }
+                            className="w-full bg-gray-800 p-2 rounded"
+                        />
 
-                            <table className="w-full border text-sm">
+                        <div className="mt-4 max-h-[250px] overflow-y-auto border">
+
+                            <table className="w-full text-sm">
 
                                 <thead className="bg-gray-800">
 
                                     <tr>
-                                        <th className="border p-2">Item</th>
-                                        <th className="border p-2">Quantity</th>
-                                        <th className="border p-2">Reason</th>
-                                        <th className="border p-2">User</th>
-                                        <th className="border p-2">Time</th>
+
+                                        <th className="border p-2">
+                                            Medicine
+                                        </th>
+
+                                        <th className="border p-2">
+                                            Category
+                                        </th>
+
+                                        <th className="border p-2">
+                                            Select
+                                        </th>
+
                                     </tr>
 
                                 </thead>
 
                                 <tbody>
 
-                                    {consumptionLogs.map((log, index) => (
+                                    {medicineResults.map((medicine) => (
 
-                                        <tr key={index}>
+                                        <tr key={medicine.id}>
 
                                             <td className="border p-2">
-                                                {log.item_name}
+                                                {medicine.drug_name_and_dose}
+                                            </td>
+
+                                            <td className="border p-2">
+                                                {medicine.category}
                                             </td>
 
                                             <td className="border p-2 text-center">
-                                                {log.quantity}
-                                            </td>
 
-                                            <td className="border p-2 text-center">
-                                                {log.reason}
-                                            </td>
+                                                <input
+                                                    type="radio"
 
-                                            <td className="border p-2 text-center">
-                                                {log.user}
-                                            </td>
+                                                    checked={
+                                                        selectedTemplateMedicine?.id
+                                                        === medicine.id
+                                                    }
 
-                                            <td className="border p-2 text-center">
-                                                {new Date(log.timestamp).toLocaleString()}
+                                                    onChange={() =>
+                                                        setSelectedTemplateMedicine(
+                                                            medicine
+                                                        )
+                                                    }
+                                                />
+
                                             </td>
 
                                         </tr>
@@ -586,23 +1125,230 @@ function FAB() {
 
                         </div>
 
+                        <div className="mt-4">
+
+                            <label className="text-sm">
+                                Required Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                min="1"
+                                value={requiredQty}
+                                onChange={(e) =>
+                                    setRequiredQty(
+                                        Number(e.target.value)
+                                    )
+                                }
+                                className="w-full bg-gray-800 p-2 rounded mt-1"
+                            />
+
+                        </div>
+
+                        <button
+                            onClick={addTemplateItem}
+                            className="mt-4 bg-green-600 px-4 py-2 rounded"
+                        >
+                            Add To Template
+                        </button>
+
                     </div>
 
                 </div>
 
             )}
-            {viewModal && (
-                <div className="fixed inset-0 flex justify-center w-full items-center bg-black/60">
-                    <div className="w-4/5 bg-gray-900 p-6 rounded-lg">
-                        <div className="flex w-full justify-between items-center">
-                            <div>
-                                <h2 className="text-lg font-bold">{selectedZone?.zone_name}</h2>
-                                <p className="text-sm text-gray-400">
-                                    Location: {selectedZone?.location}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-2">
+            {allocateModal && (
 
+                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[80]">
+
+                    <div className="bg-gray-900 p-6 rounded w-[700px]">
+
+                        <div className="flex justify-between items-center mb-4">
+
+                            <h2 className="font-bold text-lg">
+                                Allocate Stock
+                            </h2>
+
+                            <button
+                                onClick={() =>
+                                    setAllocateModal(false)
+                                }
+                            >
+                                x
+                            </button>
+
+                        </div>
+
+                        <table className="w-full border text-sm">
+
+                            <thead className="bg-gray-800">
+
+                                <tr>
+
+                                    <th className="border p-2">
+                                        Brand
+                                    </th>
+
+                                    <th className="border p-2">
+                                        Expiry
+                                    </th>
+
+                                    <th className="border p-2">
+                                        Available
+                                    </th>
+
+                                    <th className="border p-2">
+                                        Cost
+                                    </th>
+
+                                    <th className="border p-2">
+                                        Select
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                                {availableBatches.length === 0 && (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan={5}
+                                            className="border p-4 text-center text-gray-400"
+                                        >
+                                            No stock batches available
+                                        </td>
+
+                                    </tr>
+
+                                )}
+
+                                {availableBatches.map((batch) => (
+
+                                    <tr key={batch.id} className={batch.id}>
+
+                                        <td className="border p-2">
+                                            {batch.brand}
+                                        </td>
+
+                                        <td className="border p-2">
+
+                                            {batch.expiry_date
+                                                ?.slice(0, 10)}
+
+                                        </td>
+
+                                        <td className="border p-2">
+                                            {batch.units}
+                                        </td>
+
+                                        <td className="border p-2">
+                                            {batch.per_unit_cost}
+                                        </td>
+
+                                        <td className="border p-2 text-center">
+
+                                            <input
+                                                type="radio"
+                                                checked={
+                                                    selectedBatch?.id
+                                                    === batch.id
+                                                }
+                                                onChange={() =>
+                                                    setSelectedBatch(batch)
+                                                }
+                                            />
+
+                                        </td>
+
+                                    </tr>
+
+                                ))}
+
+                            </tbody>
+
+                        </table>
+
+                        <p className="text-sm mb-3">
+
+                            Remaining Required:
+                            {" "}
+
+                            {
+                                selectedMedicine?.default_quantity
+                                -
+                                inventoryBatches
+                                    .filter(
+                                        batch =>
+                                            batch.medicine_id
+                                            === selectedMedicine?.medicine_id
+                                    )
+                                    .reduce(
+                                        (sum, batch) =>
+                                            sum + batch.quantity,
+                                        0
+                                    )
+                            }
+
+                        </p>
+
+                        <div className="mt-4">
+
+                            <input
+                                type="number"
+                                min="1"
+                                value={allocateQty}
+                                onChange={(e) =>
+                                    setAllocateQty(
+                                        Number(e.target.value)
+                                    )
+                                }
+                                className="bg-gray-800 p-2 rounded w-full"
+                            />
+
+                        </div>
+
+                        <button
+                            disabled={!selectedBatch}
+                            onClick={allocateStock}
+                            className={`${!selectedBatch
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""}mt-4 bg-green-600 px-4 py-2 rounded`}
+                        >
+                            Allocate
+                        </button>
+
+                    </div>
+
+                </div>
+
+            )}
+            {inspectionModal && (
+
+                <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
+
+                    <div className="w-4/5 h-[90vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
+
+                        <div className="flex justify-between items-center mb-4">
+
+                            <div>
+
+                                <h2 className="text-xl font-bold">
+
+                                    Inspection Visit
+
+                                </h2>
+
+                                <p className="text-sm text-gray-400">
+
+                                    {selectedZone?.zone_name}
+                                </p>
+
+                            </div>
+
+                            <div className="flex justify-end gap-3">
                                 <button
                                     onClick={downloadExcel}
                                     className="flex items-center gap-1 bg-green-700 px-3 py-2 rounded text-sm font-semibold"
@@ -610,195 +1356,469 @@ function FAB() {
                                     <FaFileExcel />
                                     Download Excel
                                 </button>
+                                <button
 
-                                <div
-                                    onClick={() => {
-                                        setViewModal(false)
-                                        setZoneItems([])
-                                        setSelectedZone(null)
-                                    }}
-                                    className="flex items-center cursor-pointer text-lg px-4 py-1 rounded border"
+                                    onClick={closeVisit}
+                                    disabled={
+                                        activeVisit?.zone_id !== selectedZone?.id
+                                    }
+
+                                    className={`
+                p-1 flex text-xs items-center gap-2 text-white rounded
+
+                ${activeVisit?.zone_id !== selectedZone?.id
+                                            ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                                            : "bg-red-600"
+                                        }
+            `}
                                 >
-                                    x
-                                </div>
+                                    <FaCalendarCheck />
 
+                                    Close Inspection
+                                </button>
                             </div>
+
                         </div>
-                        <p className="font-semibold mt-3 text-sm">Contents of First Aid Box in accordance with BOCW Rules</p>
-                        <div className="w-full h-[300px] overflow-y-auto no-scrollbar">
-                            <table className="border w-full">
-                                <thead className="bg-gray-800">
-                                    <tr>
-                                        <th className="border p-1">S. No.</th>
-                                        <th className="border p-1">Item</th>
-                                        <th className="border p-1">Category</th>
-                                        <th className="border p-1">Expiry Date</th>
-                                        <th className="border p-1">Quantity</th>
-                                        <th className="border p-1">Last Date of Replacement</th>
-                                        <th className="border p-1">Stock</th>
-                                        <th className="border p-1">Consumed</th>
-                                        <th className="border p-1">Add</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
 
-                                    {zoneItems.map((item, index) => {
+                        {/* TABS */}
 
-                                        const replaceQty = replace[item.medicine_id] || 0;
+                        <div className="flex gap-2 border-b border-gray-700 pb-2 mb-4">
 
-                                        return (
-                                            <tr key={item.medicine_id}>
+                            <button
 
-                                                <td className="border p-1">{index + 1}</td>
+                                onClick={() =>
+                                    setInspectionTab(
+                                        "consumption"
+                                    )
+                                }
 
-                                                <td className="border p-1">{item.item_name}</td>
+                                className={`
+                        px-4 py-2 rounded text-sm font-semibold
 
-                                                <td className="border p-1">{item.category}</td>
+                        ${inspectionTab === "consumption"
+                                        ? "bg-blue-600"
+                                        : "bg-gray-700"
+                                    }
+                    `}
+                            >
+                                Consumption
+                            </button>
 
-                                                <td className="border p-1">
-                                                    {item.expiry_date?.slice(0, 10)}
-                                                </td>
+                            <button
 
-                                                <td className="border p-1">{item.quantity}</td>
+                                onClick={() =>
+                                    setInspectionTab(
+                                        "allocation"
+                                    )
+                                }
 
-                                                <td className="border p-1">
-                                                    {item.last_replaced?.slice(0, 10)}
-                                                </td>
+                                className={`
+                        px-4 py-2 rounded text-sm font-semibold
 
-                                                <td className="border p-1 text-xs text-gray-400">
-                                                    Stock: {item.available_stock}
-                                                </td>
+                        ${inspectionTab === "allocation"
+                                        ? "bg-green-600"
+                                        : "bg-gray-700"
+                                    }
+                    `}
+                            >
+                                Replacement
+                            </button>
 
-                                                <td className="border p-1 text-center">
+                        </div>
 
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={consumed[item.medicine_id] || 0}
-                                                        onChange={(e) => handleConsumed(item.medicine_id, e.target.value)}
-                                                        className="p-1 text-sm rounded bg-yellow-700"
-                                                    />
+                        {/* TAB CONTENT */}
 
-                                                </td>
+                        <div className="h-[calc(100%-120px)] overflow-auto">
 
-                                                <td className="border p-1 text-center">
+                            {inspectionTab === "consumption" && (
 
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={replace[item.medicine_id] || 0}
-                                                        onChange={(e) => handleReplace(item.medicine_id, e.target.value)}
-                                                        className={`p-1 text-sm rounded ${getColor(replace[item.medicine_id] || 0, item.available_stock)}`}
-                                                    />
+                                <div className=" rounded h-[350px] overflow-scroll no-scrollbar">
 
-                                                </td>
+                                    {/* MOVE CONSUMPTION TABLE HERE */}
+                                    <div className="h-[350px]">
 
-                                            </tr>
-                                        );
+                                        <h3 className="font-bold text-lg">
 
-                                    })}
-                                    {newItems.map((item, index) => (
+                                            Contents of First Aid Box
+                                            {" "}
+                                            as per the Last Date of Visit
+                                            {" - "}
 
-                                        <tr key={`new-${index}`}>
+                                            {
+                                                lastVisit?.visit_date
+                                                    ?.slice(0, 10)
 
-                                            <td className="border p-1">*</td>
+                                                ||
 
-                                            <td className="border p-1 relative">
+                                                "No Visit Yet"
+                                            }
 
-                                                <input
-                                                    type="text"
-                                                    value={item.item_name}
-                                                    readOnly={item.medicine_id !== null}
-                                                    onChange={(e) => searchMedicine(index, e.target.value)}
-                                                    className="bg-gray-800 p-1 text-sm rounded w-full"
-                                                />
+                                        </h3>
+                                        <p className="text-sm text-gray-400 mb-2">
 
-                                                {medicineResults[index]?.length > 0 && (
+                                            Total Batches:
+                                            {" "}
+                                            {inventoryBatches.length}
 
-                                                    <div className="absolute bg-gray-900 border w-full max-h-40 overflow-y-auto z-10">
+                                        </p>
+                                        <div className="h-[300px] overflow-scroll no-scrollbar">
 
-                                                        {medicineResults[index].map((m) => (
-                                                            <div
-                                                                key={m.id}
-                                                                onClick={() => selectMedicine(index, m)}
-                                                                className="p-1 hover:bg-gray-700 cursor-pointer text-sm flex justify-between"
-                                                            >
-                                                                <span>{m.drug_name_and_dose}</span>
-                                                                <span className="text-xs text-gray-400">Stock: {m.stock}</span>
-                                                            </div>
-                                                        ))}
+                                        
+                                        <table className="w-full border text-sm ">
 
-                                                    </div>
+                                            <thead className="bg-gray-800">
 
-                                                )}
+                                                <tr>
+                                                    <th className="border p-1">
+                                                        Medicine
+                                                    </th>
 
-                                            </td>
+                                                    <th className="border p-1">
+                                                        Brand
+                                                    </th>
 
-                                            <td className="border p-1">{item.category}</td>
+                                                    <th className="border p-1">
+                                                        Expiry
+                                                    </th>
 
-                                            <td className="border p-1">
-                                                {item.expiry_date
-                                                    ? item.expiry_date.slice(0, 10)
-                                                    : "-"
+                                                    <th className="border p-1">
+                                                        Quantity
+                                                    </th>
+
+                                                    <th className="border p-1">
+                                                        Cost
+                                                    </th>
+
+                                                    <th className="border p-1">
+                                                        Quantity Consumed
+                                                    </th>
+                                                </tr>
+
+                                            </thead>
+
+                                            <tbody>
+
+                                                {inventoryBatches.map((batch, index) => (
+
+                                                    <tr key={index}>
+                                                        <td className="border p-1">
+                                                            {batch.item_name}
+                                                        </td>
+
+                                                        <td className="border p-1">
+                                                            {batch.brand}
+                                                        </td>
+
+                                                        <td className="border p-1">
+
+                                                            {batch.expiry_date
+                                                                ?.slice(0, 10)}
+
+                                                        </td>
+
+                                                        <td className="border p-1">
+                                                            {batch.quantity}
+                                                        </td>
+
+                                                        <td className="border p-1">
+                                                            {batch.per_unit_cost}
+                                                        </td>
+
+                                                        <td className="border p-1 text-center">
+
+                                                            <input
+                                                                type="number"
+
+                                                                min="0"
+
+                                                                max={batch.quantity}
+
+                                                                value={
+                                                                    consumeInputs[batch._id]
+                                                                    || ""
+                                                                }
+
+                                                                onChange={(e) => {
+
+                                                                    const value =
+                                                                        e.target.value;
+
+                                                                    setConsumeInputs({
+
+                                                                        ...consumeInputs,
+
+                                                                        [batch._id]:
+                                                                            value
+                                                                    });
+
+                                                                }}
+
+                                                                className="w-[80px] bg-gray-800 p-1 rounded text-center"
+                                                            />
+
+                                                        </td>
+
+                                                    </tr>
+
+                                                ))}
+
+
+                                            </tbody>
+
+                                        </table>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end mt-4">
+
+                                        <button
+
+                                            onClick={saveConsumption}
+
+                                            disabled={!activeVisit}
+
+                                            className={`
+        px-4 py-2 rounded text-sm font-semibold
+
+        ${!activeVisit
+                                                    ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                                                    : "bg-red-600"
                                                 }
-                                            </td>
+    `}
+                                        >
+                                            Mark as Consumed
+                                        </button>
 
-                                            <td className="border p-1">
+                                    </div>
+                                </div>
+                            )}
 
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value={item.quantity}
-                                                    onChange={(e) => updateQuantity(index, e.target.value)}
-                                                    className="bg-gray-800 p-1 text-sm rounded w-full"
-                                                />
+                            {inspectionTab === "allocation" && (
 
-                                            </td>
+                                <div>
 
-                                            <td className="border p-1">-</td>
+                                    <div className="w-full h-[300px] overflow-y-auto no-scrollbar">
+                                        <table className="border w-full">
+                                            <thead className="bg-gray-800">
+                                                <tr>
+                                                    <th className="border p-1">
+                                                        S.No
+                                                    </th>
 
-                                            <td className="border p-1 text-xs">
-                                                Stock: {item.stock}
-                                            </td>
+                                                    <th className="border p-1">
+                                                        Medicine
+                                                    </th>
 
-                                            <td className="border p-1 text-center">
+                                                    <th className="border p-1">
+                                                        Category
+                                                    </th>
 
-                                                <button
-                                                    onClick={() => removeRow(index)}
-                                                    className="text-red-400 text-xs"
-                                                >
-                                                    Remove
-                                                </button>
+                                                    <th className="border p-1">
+                                                        Required Qty
+                                                    </th>
 
-                                            </td>
+                                                    <th className="border p-1">
+                                                        Current Quantity
+                                                    </th>
 
-                                        </tr>
+                                                    <th className="border p-1">
+                                                        Consumed
+                                                    </th>
 
-                                    ))}
+                                                    <th className="border p-1">
+                                                        Allocate
+                                                    </th>
+                                                    <th className="border p-1">
+                                                        Actions
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
 
-                                </tbody>
-                            </table>
+                                                {templateItems.map((item, index) => {
+                                                    const allocatedQty =
+                                                        inventoryBatches
+                                                            .filter(
+                                                                batch =>
+                                                                    batch.medicine_id
+                                                                    === item.medicine_id
+                                                            )
+                                                            .reduce(
+                                                                (sum, batch) =>
+                                                                    sum + batch.quantity,
+                                                                0
+                                                            );
+
+                                                    const remainingQty =
+                                                        item.default_quantity
+                                                        - allocatedQty;
+
+                                                    return (
+                                                        <tr key={index}>
+
+                                                            <td className="border p-1">
+                                                                {index + 1}
+                                                            </td>
+
+                                                            <td className="border p-1">
+                                                                {item.item_name}
+                                                            </td>
+
+                                                            <td className="border p-1">
+                                                                {item.category}
+                                                            </td>
+
+                                                            <td className="border p-1">
+                                                                {item.default_quantity}
+                                                            </td>
+
+                                                            <td className="border p-1 text-center">
+                                                                {allocatedQty}
+                                                            </td>
+
+                                                            <td
+                                                                className={`border p-1 text-center font-semibold ${remainingQty > 0
+                                                                    ? "text-red-400"
+                                                                    : "text-green-400"
+                                                                    }`}
+                                                            >
+                                                                {remainingQty}
+                                                            </td>
+
+                                                            <td className="border p-1">
+
+                                                                <button
+                                                                    onClick={() =>
+                                                                        openAllocateModal(item)
+                                                                    }
+
+                                                                    disabled={
+                                                                        remainingQty <= 0
+                                                                        || !activeVisit
+                                                                    }
+
+                                                                    className={`
+                px-2 py-1 rounded text-xs
+
+                ${remainingQty <= 0 || !activeVisit
+                                                                            ? "bg-gray-600 opacity-50 cursor-not-allowed"
+                                                                            : "bg-blue-600"
+                                                                        }
+            `}
+                                                                >
+                                                                    Allocate
+                                                                </button>
+
+                                                            </td>
+                                                            <td className="border p-1">
+
+                                                                <div className="flex gap-2">
+
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            editTemplateItem(item)
+                                                                        }
+                                                                        className="bg-yellow-600 px-2 py-1 rounded text-xs"
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            deleteTemplateItem(item)
+                                                                        }
+                                                                        className="bg-red-600 px-2 py-1 rounded text-xs"
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+
+                                                                </div>
+
+                                                            </td>
+
+                                                        </tr>
+
+                                                    )
+                                                })}
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="flex justify-between mt-3">
+                                        <div className="flex justify-end mb-2">
+
+                                            <button
+                                                onClick={() =>
+                                                    setTemplateModal(true)
+                                                }
+                                                className="bg-blue-600 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                                            >
+                                                <FaPlus />
+                                                Add Template Medicine
+                                            </button>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            )}
+
                         </div>
-                        <div className="flex w-full justify-between">
-                            <button
-                                onClick={addRow}
-                                className="text-blue-600 flex items-center gap-1 font-semibold text-sm"
-                            >
-                                <FaPlus />
-                                Add to List
-                            </button>
-                            <button
-                                disabled={!isDirty}
-                                onClick={saveChanges}
-                                className={`flex items-center gap-2 rounded p-2 font-semibold text-sm
-${isDirty ? "bg-green-600" : "bg-gray-600 cursor-not-allowed"}`}
-                            >
-                                <FaFloppyDisk />
-                                Save
-                            </button>
-                        </div>
+
                     </div>
+
                 </div>
+            )}
+            {editTemplateModal && (
+
+                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[90]">
+
+                    <div className="bg-gray-900 p-6 rounded w-[400px]">
+
+                        <div className="flex justify-between items-center mb-4">
+
+                            <h2 className="font-bold text-lg">
+                                Edit Required Quantity
+                            </h2>
+
+                            <button
+                                onClick={() =>
+                                    setEditTemplateModal(false)
+                                }
+                            >
+                                x
+                            </button>
+
+                        </div>
+
+                        <p className="mb-3 text-sm">
+
+                            {editingTemplateItem?.item_name}
+
+                        </p>
+
+                        <input
+                            type="number"
+                            min="1"
+                            value={editRequiredQty}
+                            onChange={(e) =>
+                                setEditRequiredQty(
+                                    Number(e.target.value)
+                                )
+                            }
+                            className="w-full bg-gray-800 p-2 rounded"
+                        />
+
+                        <button
+                            onClick={updateTemplateQty}
+                            className="mt-4 bg-green-600 px-4 py-2 rounded"
+                        >
+                            Save
+                        </button>
+
+                    </div>
+
+                </div>
+
             )}
         </div>
     );
