@@ -24,7 +24,7 @@ function Navbar({ border, active, onChange }) {
   const menus = [
     { key: "profile", label: "Profile", icon: <FaUser /> },
     { key: "notifications", label: "Notifications", icon: <FaBell /> },
-    { key: "alerts", label: "Alerts", icon: <FaTriangleExclamation /> },
+    { key: "alerts", label: "Expiry Alerts", icon: <FaTriangleExclamation /> },
     { key: "dashboard", label: "Dashboard", icon: <FaDashcube /> },
     { key: "workers", label: "Workers", icon: <FaUsers /> },
     { key: "medicines", label: "Medicines", icon: <FaPills /> },

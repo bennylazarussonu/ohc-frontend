@@ -29,6 +29,7 @@ import FCACC from './components/FCACC.jsx';
 import Malaria from './components/Malaria.jsx';
 import FAB from './components/FAB.jsx';
 import OPDHistoryModal from './components/OPDHistoryModal.jsx';
+import Alerts from './components/Alerts.jsx';
 // import { set } from 'mongoose';
 
 function App() {
@@ -1128,6 +1129,9 @@ function App() {
         {activeMenu === "fab" && (
           <FAB />
         )}
+        {activeMenu === "alerts" && (
+          <Alerts />
+        )}
 
         {/* {activeMenu === "dispensary" && (
           // <BUListUpload/>
@@ -1187,6 +1191,9 @@ function App() {
               <div className="bg-gray-700 w-1/4 rounded">
                 <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "adjust" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("adjust")}>Adjust Stock</button>
               </div>
+              <div className="bg-gray-700 w-1/4 rounded">
+                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "alerts" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("alerts")}>Expiry Alerts</button>
+              </div>
             </div>
 
             <div className={dispensaryTab === "procurement" ? "block" : "hidden"}>
@@ -1209,6 +1216,12 @@ function App() {
               <div>
                 <h2 className='text-sm font-bold mt-4'>ADJUST STOCK</h2>
                 <OpeningStock />
+              </div>
+            )}
+            {dispensaryTab === "alerts" && (
+              <div>
+                <h2 className='text-sm font-bold mt-4'>EXPIRY ALERTS</h2>
+                <Alerts />
               </div>
             )}
           </div>
