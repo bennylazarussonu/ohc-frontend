@@ -7,7 +7,9 @@ import { saveAs } from "file-saver";
 
 function FAB() {
     const { user, loading } = useAuth();
-    const [viewModal, setViewModal] = useState(false);
+    const [viewInventoryModal,
+        setViewInventoryModal]
+        = useState(false);
     const [zones, setZones] = useState([]);
     const [templateItems, setTemplateItems]
         = useState([]);
@@ -499,6 +501,46 @@ function FAB() {
         }
     };
 
+    const openInventoryView = async (
+        zone
+    ) => {
+
+        try {
+
+            const inventoryRes =
+                await api.get(
+
+                    `/api/fab/inventory/${zone.id}/inventory`
+                );
+
+            const visitRes =
+                await api.get(
+
+                    `/api/fab/inventory/${zone.id}/last-visit`
+                );
+
+            setInventoryBatches(
+                inventoryRes.data
+            );
+
+            setLastVisit(
+                visitRes.data
+            );
+
+            setSelectedZone(zone);
+
+            setViewInventoryModal(true);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Failed to load inventory"
+            );
+        }
+    };
+
     const loadZoneData = async (
         zone
     ) => {
@@ -940,7 +982,14 @@ function FAB() {
                                     </td> */}
 
                                     <td className="p-2 border">
-                                        <button className="p-1 bg-green-600 flex text-xs items-center gap-2 text-white rounded">
+                                        <button
+
+                                            onClick={() =>
+                                                openInventoryView(zone)
+                                            }
+
+                                            className="p-1 bg-green-600 flex text-xs items-center gap-2 text-white rounded"
+                                        >
                                             <FaEye />
                                             View Details
                                         </button>
@@ -1463,109 +1512,109 @@ function FAB() {
                                         </p>
                                         <div className="h-[300px] overflow-scroll no-scrollbar">
 
-                                        
-                                        <table className="w-full border text-sm ">
 
-                                            <thead className="bg-gray-800">
+                                            <table className="w-full border text-sm ">
 
-                                                <tr>
-                                                    <th className="border p-1">
-                                                        Medicine
-                                                    </th>
+                                                <thead className="bg-gray-800">
 
-                                                    <th className="border p-1">
-                                                        Brand
-                                                    </th>
+                                                    <tr>
+                                                        <th className="border p-1">
+                                                            Medicine
+                                                        </th>
 
-                                                    <th className="border p-1">
-                                                        Expiry
-                                                    </th>
+                                                        <th className="border p-1">
+                                                            Brand
+                                                        </th>
 
-                                                    <th className="border p-1">
-                                                        Quantity
-                                                    </th>
+                                                        <th className="border p-1">
+                                                            Expiry
+                                                        </th>
 
-                                                    <th className="border p-1">
-                                                        Cost
-                                                    </th>
+                                                        <th className="border p-1">
+                                                            Quantity
+                                                        </th>
 
-                                                    <th className="border p-1">
-                                                        Quantity Consumed
-                                                    </th>
-                                                </tr>
+                                                        <th className="border p-1">
+                                                            Cost
+                                                        </th>
 
-                                            </thead>
-
-                                            <tbody>
-
-                                                {inventoryBatches.map((batch, index) => (
-
-                                                    <tr key={index}>
-                                                        <td className="border p-1">
-                                                            {batch.item_name}
-                                                        </td>
-
-                                                        <td className="border p-1">
-                                                            {batch.brand}
-                                                        </td>
-
-                                                        <td className="border p-1">
-
-                                                            {batch.expiry_date
-                                                                ?.slice(0, 10)}
-
-                                                        </td>
-
-                                                        <td className="border p-1">
-                                                            {batch.quantity}
-                                                        </td>
-
-                                                        <td className="border p-1">
-                                                            {batch.per_unit_cost}
-                                                        </td>
-
-                                                        <td className="border p-1 text-center">
-
-                                                            <input
-                                                                type="number"
-
-                                                                min="0"
-
-                                                                max={batch.quantity}
-
-                                                                value={
-                                                                    consumeInputs[batch._id]
-                                                                    || ""
-                                                                }
-
-                                                                onChange={(e) => {
-
-                                                                    const value =
-                                                                        e.target.value;
-
-                                                                    setConsumeInputs({
-
-                                                                        ...consumeInputs,
-
-                                                                        [batch._id]:
-                                                                            value
-                                                                    });
-
-                                                                }}
-
-                                                                className="w-[80px] bg-gray-800 p-1 rounded text-center"
-                                                            />
-
-                                                        </td>
-
+                                                        <th className="border p-1">
+                                                            Quantity Consumed
+                                                        </th>
                                                     </tr>
 
-                                                ))}
+                                                </thead>
+
+                                                <tbody>
+
+                                                    {inventoryBatches.map((batch, index) => (
+
+                                                        <tr key={index}>
+                                                            <td className="border p-1">
+                                                                {batch.item_name}
+                                                            </td>
+
+                                                            <td className="border p-1">
+                                                                {batch.brand}
+                                                            </td>
+
+                                                            <td className="border p-1">
+
+                                                                {batch.expiry_date
+                                                                    ?.slice(0, 10)}
+
+                                                            </td>
+
+                                                            <td className="border p-1">
+                                                                {batch.quantity}
+                                                            </td>
+
+                                                            <td className="border p-1">
+                                                                {batch.per_unit_cost}
+                                                            </td>
+
+                                                            <td className="border p-1 text-center">
+
+                                                                <input
+                                                                    type="number"
+
+                                                                    min="0"
+
+                                                                    max={batch.quantity}
+
+                                                                    value={
+                                                                        consumeInputs[batch._id]
+                                                                        || ""
+                                                                    }
+
+                                                                    onChange={(e) => {
+
+                                                                        const value =
+                                                                            e.target.value;
+
+                                                                        setConsumeInputs({
+
+                                                                            ...consumeInputs,
+
+                                                                            [batch._id]:
+                                                                                value
+                                                                        });
+
+                                                                    }}
+
+                                                                    className="w-[80px] bg-gray-800 p-1 rounded text-center"
+                                                                />
+
+                                                            </td>
+
+                                                        </tr>
+
+                                                    ))}
 
 
-                                            </tbody>
+                                                </tbody>
 
-                                        </table>
+                                            </table>
                                         </div>
                                     </div>
                                     <div className="flex justify-end mt-4">
@@ -1768,6 +1817,148 @@ function FAB() {
 
                 </div>
             )}
+            {viewInventoryModal && (
+
+    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-40">
+
+        <div className="w-4/5 h-[85vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
+
+            <div className="flex justify-between items-center mb-4">
+
+                <div>
+
+                    <h2 className="text-xl font-bold">
+
+                        Zone Inventory
+
+                    </h2>
+
+                    <p className="text-sm text-gray-400">
+
+                        {selectedZone?.zone_name}
+
+                    </p>
+
+                    <p className="text-xs text-gray-500">
+
+                        Last Inspection:
+                        {" "}
+
+                        {
+                            lastVisit?.visit_date
+                                ?.slice(0, 10)
+
+                            ||
+
+                            "No Visit Yet"
+                        }
+
+                    </p>
+
+                </div>
+
+                <div className="flex gap-2">
+
+                    <button
+                        onClick={downloadExcel}
+                        className="bg-green-700 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                    >
+                        <FaFileExcel />
+
+                        Download Excel
+                    </button>
+
+                    <button
+                        onClick={() =>
+                            setViewInventoryModal(false)
+                        }
+                        className="bg-red-600 px-3 py-2 rounded text-sm font-semibold"
+                    >
+                        Close
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div className="h-[calc(100%-80px)] overflow-auto no-scrollbar">
+
+                <table className="w-full border text-sm">
+
+                    <thead className="bg-gray-800 sticky top-0">
+
+                        <tr>
+
+                            <th className="border p-2">
+                                Medicine
+                            </th>
+
+                            <th className="border p-2">
+                                Brand
+                            </th>
+
+                            <th className="border p-2">
+                                Expiry
+                            </th>
+
+                            <th className="border p-2">
+                                Quantity
+                            </th>
+
+                            <th className="border p-2">
+                                Cost
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {inventoryBatches.map((batch, index) => (
+
+                            <tr key={index}>
+
+                                <td className="border p-2">
+                                    {batch.item_name}
+                                </td>
+
+                                <td className="border p-2">
+                                    {batch.brand}
+                                </td>
+
+                                <td className="border p-2">
+
+                                    {
+                                        batch.expiry_date
+                                            ?.slice(0, 10)
+                                    }
+
+                                </td>
+
+                                <td className="border p-2">
+                                    {batch.quantity}
+                                </td>
+
+                                <td className="border p-2">
+                                    {batch.per_unit_cost}
+                                </td>
+
+                            </tr>
+
+                        ))}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+)}
             {editTemplateModal && (
 
                 <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[90]">
