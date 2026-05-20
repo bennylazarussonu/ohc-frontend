@@ -1,5 +1,7 @@
-import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk, FaEye } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk, FaEye, FaFileExcel} from "react-icons/fa6";
 import api from "../api/axios";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import { useState, useRef, useEffect } from "react";
 import VisionCheckModal from "./VisionCheckModal.jsx";
 import IdRenewalReportModal from "./IdRenewalReportModal.jsx";
@@ -348,6 +350,62 @@ function IdRenewal() {
         matchesToDate
     );
 });
+
+const downloadRenewedIdsExcel = () => {
+
+    const excelData = filteredRenewedIds.map((item, index) => ({
+        "Sr No": index + 1,
+        "Worker Name": item.worker?.name || "",
+        "Father Name": item.worker?.fathers_name || "",
+        "Employee ID": item.worker?.employee_id || "",
+        "General Condition": item.general_condition || "",
+        "Blood Group": item.blood_group || "",
+        "Pulse": item.pulse || "",
+        "Blood Pressure":
+            `${item.blood_pressure?.systolic || ""}/${item.blood_pressure?.diastolic || ""}`,
+        "SpO2": item.spo2 || "",
+        "Height": item.height || "",
+        "Weight": item.weight || "",
+        "Vertigo Test": item.vertigo_test_passed || "",
+        "Remarks": item.remarks || "",
+        "Renewal Date": formatDateDMY(item.date_of_renewal),
+        "Previous Renewal Date":
+            item.previous_renewal_date
+                ? formatDateDMY(item.previous_renewal_date)
+                : ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Renewed IDs"
+    );
+
+    const excelBuffer = XLSX.write(
+        workbook,
+        {
+            bookType: "xlsx",
+            type: "array"
+        }
+    );
+
+    const fileData = new Blob(
+        [excelBuffer],
+        {
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+    saveAs(
+        fileData,
+        `Renewed_IDs_${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+};
 
     return (
         <div className="">
@@ -954,7 +1012,19 @@ function IdRenewal() {
             )}
             {tab === "list" && (
                 <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
-                    <h2 className="text-sm font-bold mb-3">LIST OF RENEWED IDs</h2>
+                    <div className="flex justify-between items-center mb-3">
+    <h2 className="text-sm font-bold">
+        LIST OF RENEWED IDs
+    </h2>
+
+    <button
+        onClick={downloadRenewedIdsExcel}
+        className="bg-green-700 hover:bg-green-800 px-3 py-2 rounded text-xs flex items-center gap-2"
+    >
+        <FaFileExcel />
+        Download Excel
+    </button>
+</div>
                     <div className="flex gap-3 mb-4 items-end">
 
     <div className="w-1/2">
