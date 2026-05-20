@@ -1,4 +1,4 @@
-import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk, FaEye, FaFileExcel} from "react-icons/fa6";
+import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk, FaEye, FaFileExcel } from "react-icons/fa6";
 import api from "../api/axios";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -319,93 +319,93 @@ function IdRenewal() {
 
     const filteredRenewedIds = renewedIds.filter((item) => {
 
-    const search = renewedSearch.toLowerCase();
+        const search = renewedSearch.toLowerCase();
 
-    const matchesSearch =
-        item.worker?.name?.toLowerCase().includes(search) ||
-        item.worker?.employee_id?.toLowerCase().includes(search) ||
-        item.worker?.fathers_name?.toLowerCase().includes(search);
+        const matchesSearch =
+            item.worker?.name?.toLowerCase().includes(search) ||
+            item.worker?.employee_id?.toLowerCase().includes(search) ||
+            item.worker?.fathers_name?.toLowerCase().includes(search);
 
-    const renewalDate = new Date(item.date_of_renewal);
+        const renewalDate = new Date(item.date_of_renewal);
 
-    let matchesFromDate = true;
-    let matchesToDate = true;
+        let matchesFromDate = true;
+        let matchesToDate = true;
 
-    if (fromDate) {
-        matchesFromDate =
-            renewalDate >= new Date(fromDate);
-    }
-
-    if (toDate) {
-        const endDate = new Date(toDate);
-        endDate.setHours(23, 59, 59, 999);
-
-        matchesToDate =
-            renewalDate <= endDate;
-    }
-
-    return (
-        matchesSearch &&
-        matchesFromDate &&
-        matchesToDate
-    );
-});
-
-const downloadRenewedIdsExcel = () => {
-
-    const excelData = filteredRenewedIds.map((item, index) => ({
-        "Sr No": index + 1,
-        "Worker Name": item.worker?.name || "",
-        "Father Name": item.worker?.fathers_name || "",
-        "Employee ID": item.worker?.employee_id || "",
-        "General Condition": item.general_condition || "",
-        "Blood Group": item.blood_group || "",
-        "Pulse": item.pulse || "",
-        "Blood Pressure":
-            `${item.blood_pressure?.systolic || ""}/${item.blood_pressure?.diastolic || ""}`,
-        "SpO2": item.spo2 || "",
-        "Height": item.height || "",
-        "Weight": item.weight || "",
-        "Vertigo Test": item.vertigo_test_passed || "",
-        "Remarks": item.remarks || "",
-        "Renewal Date": formatDateDMY(item.date_of_renewal),
-        "Previous Renewal Date":
-            item.previous_renewal_date
-                ? formatDateDMY(item.previous_renewal_date)
-                : ""
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    const workbook = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Renewed IDs"
-    );
-
-    const excelBuffer = XLSX.write(
-        workbook,
-        {
-            bookType: "xlsx",
-            type: "array"
+        if (fromDate) {
+            matchesFromDate =
+                renewalDate >= new Date(fromDate);
         }
-    );
 
-    const fileData = new Blob(
-        [excelBuffer],
-        {
-            type:
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        if (toDate) {
+            const endDate = new Date(toDate);
+            endDate.setHours(23, 59, 59, 999);
+
+            matchesToDate =
+                renewalDate <= endDate;
         }
-    );
 
-    saveAs(
-        fileData,
-        `Renewed_IDs_${new Date().toISOString().split("T")[0]}.xlsx`
-    );
-};
+        return (
+            matchesSearch &&
+            matchesFromDate &&
+            matchesToDate
+        );
+    });
+
+    const downloadRenewedIdsExcel = () => {
+
+        const excelData = filteredRenewedIds.map((item, index) => ({
+            "Sr No": index + 1,
+            "Worker Name": item.worker?.name || "",
+            "Father Name": item.worker?.fathers_name || "",
+            "Employee ID": item.worker?.employee_id || "",
+            "General Condition": item.general_condition || "",
+            "Blood Group": item.blood_group || "",
+            "Pulse": item.pulse || "",
+            "Blood Pressure":
+                `${item.blood_pressure?.systolic || ""}/${item.blood_pressure?.diastolic || ""}`,
+            "SpO2": item.spo2 || "",
+            "Height": item.height || "",
+            "Weight": item.weight || "",
+            "Vertigo Test": item.vertigo_test_passed || "",
+            "Remarks": item.remarks || "",
+            "Renewal Date": formatDateDMY(item.date_of_renewal),
+            "Previous Renewal Date":
+                item.previous_renewal_date
+                    ? formatDateDMY(item.previous_renewal_date)
+                    : ""
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Renewed IDs"
+        );
+
+        const excelBuffer = XLSX.write(
+            workbook,
+            {
+                bookType: "xlsx",
+                type: "array"
+            }
+        );
+
+        const fileData = new Blob(
+            [excelBuffer],
+            {
+                type:
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        );
+
+        saveAs(
+            fileData,
+            `Renewed_IDs_${new Date().toISOString().split("T")[0]}.xlsx`
+        );
+    };
 
     return (
         <div className="">
@@ -1013,83 +1013,94 @@ const downloadRenewedIdsExcel = () => {
             {tab === "list" && (
                 <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
                     <div className="flex justify-between items-center mb-3">
-    <h2 className="text-sm font-bold">
-        LIST OF RENEWED IDs
-    </h2>
+                        <h2 className="text-sm font-bold">
+                            LIST OF RENEWED IDs
+                        </h2>
 
-    <button
-        onClick={downloadRenewedIdsExcel}
-        className="bg-green-700 hover:bg-green-800 px-3 py-2 rounded text-xs flex items-center gap-2"
-    >
-        <FaFileExcel />
-        Download Excel
-    </button>
-</div>
+                        <button
+                            onClick={downloadRenewedIdsExcel}
+                            className="bg-green-700 hover:bg-green-800 px-3 py-2 rounded text-xs flex items-center gap-2"
+                        >
+                            <FaFileExcel />
+                            Download Excel
+                        </button>
+                    </div>
                     <div className="flex gap-3 mb-4 items-end">
 
-    <div className="w-1/2">
-        <p className="text-xs text-gray-400 mb-1">
-            Search
-        </p>
+                        <div className="w-1/2">
+                            <p className="text-xs text-gray-400 mb-1">
+                                Search
+                            </p>
 
-        <div className="flex items-center gap-2 bg-gray-900 rounded px-2">
-            <FaMagnifyingGlass className="text-gray-400 text-xs" />
+                            <div className="flex items-center gap-2 bg-gray-900 rounded px-2">
+                                <FaMagnifyingGlass className="text-gray-400 text-xs" />
 
-            <input
-                type="text"
-                placeholder="Search Name, Employee ID, Father Name"
-                className="bg-transparent outline-none p-2 text-xs w-full"
-                value={renewedSearch}
-                onChange={(e) =>
-                    setRenewedSearch(e.target.value)
-                }
-            />
-        </div>
-    </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search Name, Employee ID, Father Name"
+                                    className="bg-transparent outline-none p-2 text-xs w-full"
+                                    value={renewedSearch}
+                                    onChange={(e) =>
+                                        setRenewedSearch(e.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
 
-    <div>
-        <p className="text-xs text-gray-400 mb-1">
-            From
-        </p>
+                        <div>
+                            <p className="text-xs text-gray-400 mb-1">
+                                From
+                            </p>
 
-        <input
-            type="date"
-            className="bg-gray-900 rounded p-2 text-xs"
-            value={fromDate}
-            onChange={(e) =>
-                setFromDate(e.target.value)
-            }
-        />
-    </div>
+                            <input
+                                type="date"
+                                className="bg-gray-900 rounded p-2 text-xs"
+                                value={fromDate}
+                                onChange={(e) =>
+                                    setFromDate(e.target.value)
+                                }
+                            />
+                        </div>
 
-    <div>
-        <p className="text-xs text-gray-400 mb-1">
-            To
-        </p>
+                        <div>
+                            <p className="text-xs text-gray-400 mb-1">
+                                To
+                            </p>
 
-        <input
-            type="date"
-            className="bg-gray-900 rounded p-2 text-xs"
-            value={toDate}
-            onChange={(e) =>
-                setToDate(e.target.value)
-            }
-        />
-    </div>
+                            <input
+                                type="date"
+                                className="bg-gray-900 rounded p-2 text-xs"
+                                value={toDate}
+                                onChange={(e) =>
+                                    setToDate(e.target.value)
+                                }
+                            />
+                        </div>
 
-    <button
-        className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-xs"
-        onClick={() => {
-            setRenewedSearch("");
-            setFromDate("");
-            setToDate("");
-        }}
-    >
-        Clear
-    </button>
+                        <button
+                            className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-xs"
+                            onClick={() => {
+                                setRenewedSearch("");
+                                setFromDate("");
+                                setToDate("");
+                            }}
+                        >
+                            Clear
+                        </button>
 
-</div>
-                    <div className="h-[350px] overflow-scroll no-scrollbar">
+                    </div>
+                    
+                    <div className="flex w-full justify-between mb-2">
+                        
+                        <div>
+                            <p className="text-xs text-gray-400">Showing: <b className="font-semibold text-xs text-white">{filteredRenewedIds.length} Records</b></p>
+                            
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400">Total Records: <b className="text-white font-semibold">{renewedIds.length}</b></p>
+                        </div>
+                    </div>
+                    <div className="h-[315px] overflow-scroll no-scrollbar">
                         <table className="w-full text-sm border">
                             <thead className="bg-gray-900">
                                 <tr>
@@ -1153,10 +1164,10 @@ const downloadRenewedIdsExcel = () => {
                                                         console.log(item);
                                                     }}
                                                 >
-                                                    <FaEye/>
+                                                    <FaEye />
                                                 </button>
                                                 <button className="text-green-500 hover:text-green-700 px-2 py-2 rounded">
-                                                    <FaPenToSquare/>
+                                                    <FaPenToSquare />
                                                 </button>
                                             </td>
                                         </tr>
