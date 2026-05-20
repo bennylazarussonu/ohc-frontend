@@ -1,7 +1,7 @@
 import BulkUpload from './components/Workers.jsx';
 import BulkMedicineUpload from './components/Medicines.jsx';
 import { FaPenToSquare, FaRegFloppyDisk, FaUser, FaUserDoctor, FaUserPlus } from 'react-icons/fa6'
-import { useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from './api/axios';
 import WorkerSection from './components/WorkerSection';
 import OPDSection from './components/OPDSection';
@@ -51,7 +51,7 @@ function App() {
   const [editingFromReports, setEditingFromReports] = useState(false);
   const [opdListVersion, setOpdListVersion] = useState(0);
   const [editingFromConsultation, setEditingFromConsultation] = useState(false);
-  const [fcaccTab, setFcaccTab] = useState("fcacc"); 
+  const [fcaccTab, setFcaccTab] = useState("fcacc");
   const [workerOPDHistory, setWorkerOPDHistory] = useState([]);
   const [OPDHistoryModalOpen, setOPDHistoryModalOpen] = useState(false);
   const isEditing = !!editingOpdId;
@@ -104,32 +104,32 @@ function App() {
     });
   }, [user, opdTab, editingFromConsultation]);
 
-  
+
 
   const searchWorkers = (value) => {
-  setWorkerSearch(value);
+    setWorkerSearch(value);
 
-  if (timerRef.current) {
-    clearTimeout(timerRef.current);
-  }
-
-  if (value.trim().length < 2) {
-    setWorkerResults([]);
-    return;
-  }
-
-  timerRef.current = setTimeout(async () => {
-    try {
-      const res = await api.get("/api/workers/search", {
-        params: { q: value }
-      });
-
-      setWorkerResults(res.data);
-    } catch (err) {
-      console.error(err);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
-  }, 300);
-};
+
+    if (value.trim().length < 2) {
+      setWorkerResults([]);
+      return;
+    }
+
+    timerRef.current = setTimeout(async () => {
+      try {
+        const res = await api.get("/api/workers/search", {
+          params: { q: value }
+        });
+
+        setWorkerResults(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300);
+  };
 
 
 
@@ -484,12 +484,12 @@ function App() {
     };
     fetchMsg();
   }, []);
-  
+
   useEffect(() => {
-  if (user?.role === "EMPLOYEE") {
-    setOpdTab("new");
-  }
-}, [user]);
+    if (user?.role === "EMPLOYEE") {
+      setOpdTab("new");
+    }
+  }, [user]);
 
   if (loading) return <p>Loading...</p>;
   if (!user) return <Login />;
@@ -498,7 +498,7 @@ function App() {
   const isAdmin = user?.role === "ADMIN";
   const isEmployee = user?.role === "EMPLOYEE";
 
-  
+
 
   const isNew = opdTab === "new" && !editingOpdId;
   const isReportsEdit = editingFromReports;
@@ -591,214 +591,214 @@ function App() {
 
   return (
     <>
-    <div className="flex">
-      <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"}/>
-      <div className="p-6 h-screen overflow-y-scroll no-scrollbar flex flex-col items-center bg-gray-900 w-4/5 text-white">
-        {activeMenu === "workers" && (
-          <BulkUpload />
-        )}
+      <div className="flex">
+        <Navbar active={activeMenu} onChange={setActiveMenu} border={"profile"} />
+        <div className="p-6 h-screen overflow-y-scroll no-scrollbar flex flex-col items-center bg-gray-900 w-4/5 text-white">
+          {activeMenu === "workers" && (
+            <BulkUpload />
+          )}
 
-        {activeMenu === "medicines" && (
-          <BulkMedicineUpload />
-        )}
+          {activeMenu === "medicines" && (
+            <BulkMedicineUpload />
+          )}
 
-        {activeMenu === "opd" && (
-          <>
-            {user.role !== "EMPLOYEE" && (
-              <div className="flex bg-gray-800 w-full  rounded p-2 gap-2 mb-3">
+          {activeMenu === "opd" && (
+            <>
+              {user.role !== "EMPLOYEE" && (
+                <div className="flex bg-gray-800 w-full  rounded p-2 gap-2 mb-3">
 
-                <button
-                  className={`px-3 w-1/3 py-1 rounded text-sm font-semibold ${opdTab === "new" ? "bg-blue-600" : "bg-gray-700"}`}
-                  onClick={() => {
-                    resetNewOpd();
-                    setOpdTab("new");
-                  }}
+                  <button
+                    className={`px-3 w-1/3 py-1 rounded text-sm font-semibold ${opdTab === "new" ? "bg-blue-600" : "bg-gray-700"}`}
+                    onClick={() => {
+                      resetNewOpd();
+                      setOpdTab("new");
+                    }}
 
-                >
-                  New OPD
-                </button>
+                  >
+                    New OPD
+                  </button>
 
-                <button
-                  className={`px-3 w-1/3 py-1 rounded text-sm font-semibold ${opdTab === "consultation" ? "bg-blue-600" : "bg-gray-700"}`}
-                  onClick={() => {
-                    setOpdTab("consultation");
-                    setEditingOpdId(null);
-                    setEditingFromConsultation(false);
-                    setEditingFromReports(false);
-                  }}
+                  <button
+                    className={`px-3 w-1/3 py-1 rounded text-sm font-semibold ${opdTab === "consultation" ? "bg-blue-600" : "bg-gray-700"}`}
+                    onClick={() => {
+                      setOpdTab("consultation");
+                      setEditingOpdId(null);
+                      setEditingFromConsultation(false);
+                      setEditingFromReports(false);
+                    }}
 
-                >
-                  For Consultation
-                </button>
+                  >
+                    For Consultation
+                  </button>
 
 
-                <button
-                  className={`px-3 w-1/3 rounded py-1 text-sm rounded font-semibold ${opdTab === "reports" ? "bg-blue-600" : "bg-gray-700"}`}
-                  onClick={() => {
-                    setOpdTab("reports");
-                    setEditingOpdId(null);
-                    setEditingFromConsultation(false);
-                    setEditingFromReports(false);
-                  }}
+                  <button
+                    className={`px-3 w-1/3 rounded py-1 text-sm rounded font-semibold ${opdTab === "reports" ? "bg-blue-600" : "bg-gray-700"}`}
+                    onClick={() => {
+                      setOpdTab("reports");
+                      setEditingOpdId(null);
+                      setEditingFromConsultation(false);
+                      setEditingFromReports(false);
+                    }}
 
-                >
-                  Reports
-                </button>
-              </div>
-            )}
-            <div className="bg-gray-800 rounded-xl p-6 w-full">
-              {opdTab === "reports" && user.role !== "EMPLOYEE" && !editingFromReports && (
-                <OPDReportList onEdit={handleEditOpd} refreshKey={opdListVersion} />
-              )}
-              {opdTab === "reports" && user.role !== "EMPLOYEE" && editingFromReports && (
-                <div className="w-full">
-                  {/* Worker summary */}
-                  <p className='flex items-center gap-2 text-lg font-bold'>
-                    <FaPenToSquare />
-                    Edit OPD
-                  </p>
-                  {selectedWorker && (
-                    <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
-                      <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
-                        <FaUser /> WORKER DETAILS
-                      </h3>
-                      <p><b>{selectedWorker.name}</b></p>
-                      <p className="text-xs text-gray-300">
-                        Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
-                      </p>
-                    </div>
-                  )}
-
-                  <DoctorSelect />
-
-                  {/* OPD + Prescription */}
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <OPDSection opd={opd} setOpd={setOpd} />
-                    <PrescriptionSection
-                      prescription={prescription}
-                      setPrescription={setPrescription}
-                    />
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-3 mt-4">
-                    <button
-                      onClick={() => { handleSubmit(false) }}
-                      className="bg-green-600 px-4 py-2 rounded"
-                    >
-                      <FaRegFloppyDisk /> Save Changes
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setEditingFromReports(false);
-                        setEditingOpdId(null);
-                        setOpd({});
-                        setPrescription([]);
-                        setSelectedWorker(null);
-                        setOpdTab("reports");
-                      }}
-                      className="bg-gray-600 px-4 py-2 rounded"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  >
+                    Reports
+                  </button>
                 </div>
               )}
+              <div className="bg-gray-800 rounded-xl p-6 w-full">
+                {opdTab === "reports" && user.role !== "EMPLOYEE" && !editingFromReports && (
+                  <OPDReportList onEdit={handleEditOpd} refreshKey={opdListVersion} />
+                )}
+                {opdTab === "reports" && user.role !== "EMPLOYEE" && editingFromReports && (
+                  <div className="w-full">
+                    {/* Worker summary */}
+                    <p className='flex items-center gap-2 text-lg font-bold'>
+                      <FaPenToSquare />
+                      Edit OPD
+                    </p>
+                    {selectedWorker && (
+                      <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
+                        <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
+                          <FaUser /> WORKER DETAILS
+                        </h3>
+                        <p><b>{selectedWorker.name}</b></p>
+                        <p className="text-xs text-gray-300">
+                          Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
+                        </p>
+                      </div>
+                    )}
 
-              {opdTab === "consultation" && !editingFromConsultation && (
-                <OPDConsultation
-                  onEdit={(opdId) => {
-                    // setEditingFromConsultation(true);
-                    // setEditingFromReports(false);
-                    handleEditOpd(opdId, "consultation");
-                  }}
-                  refreshKey={opdListVersion}
-                />
-              )}
-              {opdTab === "consultation" && editingFromConsultation && (
-                <div className="w-full">
-                  <p className="flex items-center gap-2 text-lg font-bold">
-                    <FaPenToSquare />
-                    Consultation
-                  </p>
+                    <DoctorSelect />
 
-                  {selectedWorker && (
-                    <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
-                      <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
-                        <FaUser /> WORKER DETAILS
-                      </h3>
-                      <p><b>{selectedWorker.name}</b></p>
-                      <p className="text-xs text-gray-300">
-                        Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
-                      </p>
+                    {/* OPD + Prescription */}
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <OPDSection opd={opd} setOpd={setOpd} />
+                      <PrescriptionSection
+                        prescription={prescription}
+                        setPrescription={setPrescription}
+                      />
                     </div>
-                  )}
 
-                  <DoctorSelect />
+                    {/* Actions */}
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => { handleSubmit(false) }}
+                        className="bg-green-600 px-4 py-2 rounded"
+                      >
+                        <FaRegFloppyDisk /> Save Changes
+                      </button>
 
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <OPDSection opd={opd} setOpd={setOpd} />
-                    <PrescriptionSection
-                      prescription={prescription}
-                      setPrescription={setPrescription}
-                    />
+                      <button
+                        onClick={() => {
+                          setEditingFromReports(false);
+                          setEditingOpdId(null);
+                          setOpd({});
+                          setPrescription([]);
+                          setSelectedWorker(null);
+                          setOpdTab("reports");
+                        }}
+                        className="bg-gray-600 px-4 py-2 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
+                )}
 
-                  <div className="flex gap-3 mt-4">
-                    <button
-                      onClick={() => handleSubmit(false)} // doctor finishes consultation
-                      className="bg-green-600 px-4 py-2 rounded"
-                    >
-                      <FaRegFloppyDisk /> Finish Consultation
-                    </button>
+                {opdTab === "consultation" && !editingFromConsultation && (
+                  <OPDConsultation
+                    onEdit={(opdId) => {
+                      // setEditingFromConsultation(true);
+                      // setEditingFromReports(false);
+                      handleEditOpd(opdId, "consultation");
+                    }}
+                    refreshKey={opdListVersion}
+                  />
+                )}
+                {opdTab === "consultation" && editingFromConsultation && (
+                  <div className="w-full">
+                    <p className="flex items-center gap-2 text-lg font-bold">
+                      <FaPenToSquare />
+                      Consultation
+                    </p>
 
-                    <button
-                      onClick={() => {
-                        setEditingFromConsultation(false);
-                        setEditingOpdId(null);
-                        setOpd({});
-                        setPrescription([]);
-                        setSelectedWorker(null);
-                        setOpdTab("consultation");
-                        setSelectedDoctorId(null);
-                      }}
-                      className="bg-gray-600 px-4 py-2 rounded"
-                    >
-                      Cancel
-                    </button>
+                    {selectedWorker && (
+                      <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
+                        <h3 className="font-bold mb-2 text-[16px] flex items-center gap-2">
+                          <FaUser /> WORKER DETAILS
+                        </h3>
+                        <p><b>{selectedWorker.name}</b></p>
+                        <p className="text-xs text-gray-300">
+                          Employee ID: <b>{selectedWorker.employee_id}</b> | ID: <b>{selectedWorker.id}</b>
+                        </p>
+                      </div>
+                    )}
+
+                    <DoctorSelect />
+
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <OPDSection opd={opd} setOpd={setOpd} />
+                      <PrescriptionSection
+                        prescription={prescription}
+                        setPrescription={setPrescription}
+                      />
+                    </div>
+
+                    <div className="flex gap-3 mt-4">
+                      <button
+                        onClick={() => handleSubmit(false)} // doctor finishes consultation
+                        className="bg-green-600 px-4 py-2 rounded"
+                      >
+                        <FaRegFloppyDisk /> Finish Consultation
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setEditingFromConsultation(false);
+                          setEditingOpdId(null);
+                          setOpd({});
+                          setPrescription([]);
+                          setSelectedWorker(null);
+                          setOpdTab("consultation");
+                          setSelectedDoctorId(null);
+                        }}
+                        className="bg-gray-600 px-4 py-2 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
 
-              {opdTab === "new" && (
-                <>
-                  {latestReportData ? (
-                    <>
-                      <div className="print-area">
-                        <OPDReport data={latestReportData} />
-                      </div>
-                      <div className="flex justify-center gap-4 mt-6">
-                        <button
-                          onClick={() => window.print()}
-                          className="bg-blue-600 px-4 py-2 rounded"
-                        >
-                          Print / Save PDF
-                        </button>
+                {opdTab === "new" && (
+                  <>
+                    {latestReportData ? (
+                      <>
+                        <div className="print-area">
+                          <OPDReport data={latestReportData} />
+                        </div>
+                        <div className="flex justify-center gap-4 mt-6">
+                          <button
+                            onClick={() => window.print()}
+                            className="bg-blue-600 px-4 py-2 rounded"
+                          >
+                            Print / Save PDF
+                          </button>
 
-                        <button
-                          onClick={() => setLatestReportData(null)}
-                          className="bg-gray-600 px-4 py-2 rounded"
-                        >
-                          New OPD
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full">
-                      <div className="flex w-full gap-2">
-                        {/* <WorkerSection onSelect={(worker) => {
+                          <button
+                            onClick={() => setLatestReportData(null)}
+                            className="bg-gray-600 px-4 py-2 rounded"
+                          >
+                            New OPD
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full">
+                        <div className="flex w-full gap-2">
+                          {/* <WorkerSection onSelect={(worker) => {
                     setSelectedWorker(worker);
                     setIsNewWorker(false);
                     setWorkerForm({
@@ -814,207 +814,207 @@ function App() {
                       date_of_joining: worker.date_of_joining ? worker.date_of_joining.split("T")[0] : "",
                     })
                   }} /> */}
-                        <WorkerSection
-                          disabled={!!editingOpdId}
-                          search={workerSearch}
-                          results={workerResults}
-                          onSearch={searchWorkers}
-                          onSelect={async (worker) => {
-                            const workerOPDHistoryRes = await api.get(`/api/workers/${worker.id}/opds`);
-                            setWorkerOPDHistory(workerOPDHistoryRes.data);
-                            console.log("Selected Worker: ", worker);
-                            setSelectedWorker(worker);
-                            setIsNewWorker(false);
-                            setWorkerForm({
-                              name: worker.name || "",
-                              fathers_name: worker.fathers_name || "",
-                              dob: worker.dob ? worker.dob.split("T")[0] : "",
-                              phone_no: worker.phone_no || "",
-                              employee_id: worker.employee_id || "",
-                              aadhar_no: worker.aadhar_no || "",
-                              gender: worker.gender || "Male",
-                              designation: worker.designation || "",
-                              contractor_name: worker.contractor_name || "",
-                              date_of_joining: worker.date_of_joining
-                                ? worker.date_of_joining.split("T")[0]
-                                : ""
-                            });
-
-setTimeout(() => {
-  setWorkerSearch("");
-  setWorkerResults([]);
-}, 0);
-                          }}
-                        />
-
-                        <button
-                          disabled={isEditingWorker || !!editingOpdId}
-                          onClick={() => {
-                            setSelectedWorker(null);
-                            setIsNewWorker(true);
-                            setWorkerForm({
-                              name: "",
-                              employee_id: "",
-                              fathers_name: "",
-                              aadhar_no: "",
-                              gender: "Male",
-                              dob: "",
-                              phone_no: "",
-                              designation: "",
-                              contractor_name: "",
-                              date_of_joining: ""
-                            });
-                          }}
-                          className="w-1/5 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
-                        >
-                          <span className="flex items-center gap-2">
-                            <FaUserPlus /> Add New Worker
-                          </span>
-                        </button>
-                      </div>
-
-
-                      {selectedWorker && !isNewWorker && !isEditingWorker && (
-                        <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className='flex items-center gap-2'>
-                              <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
-                            </div>
-                            <button
-                              className="flex items-center gap-2 text-sm text-green-400"
-                              onClick={() => setIsEditingWorker(true)}
-                            >
-                              <FaPenToSquare />
-                              <p>Edit Worker</p>
-                            </button>
-                          </div>
-                          <div className="col-span-3">
-                            <p className='text-[14px]'><b>{selectedWorker.name}</b></p>
-                          </div>
-                          <p className='font-light text-gray-300 text-[12.5px]'>Employee ID: <b>{selectedWorker.employee_id}</b> | Father's Name: <b>{selectedWorker.fathers_name}</b> | ID: <b>{selectedWorker.id}</b> | Aadhaar: <b>{selectedWorker.aadhar_no}</b></p>
-                          <p className='font-light text-gray-300 text-[12.5px]'>Phone No: <b>{selectedWorker.phone_no}</b> | DOB: <b>{formatDate(selectedWorker.dob)}</b> | Contractor Name: <b>{selectedWorker.contractor_name}</b></p>
-                          <button className='text-blue-400 text-sm rounded border border-blue-400 px-3 py-1 mt-2' onClick={() => {
-                            setOPDHistoryModalOpen(true);
-                          }}>View History</button>
-                        </div>
-                      )}
-                      {(isNewWorker || isEditingWorker) && (
-                        <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
-                          <div className="flex items-center gap-2 mb-2">
-                            <FaUser className="text-[16px]" />
-                            <h3 className="font-bold text-[16px]">WORKER DETAILS</h3>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-3 text-[12.5px]">
-                            {[
-                              ["name", "Name"],
-                              ["employee_id", "Employee ID"],
-                              ["fathers_name", "Father's Name"],
-                              ["aadhar_no", "Aadhaar No"],
-                              ["phone_no", "Phone No"],
-                              ["designation", "Designation"],
-                              ["contractor_name", "Contractor Name"],
-                              ["date_of_joining", "Date of Joining"]
-                            ].map(([key, label]) => (
-                              <div>
-                                <input
-                                  key={key}
-                                  type={(key === "date_of_joining" ? ("date") : ("text"))}
-                                  placeholder={label}
-                                  className="p-2 bg-gray-800 rounded w-full"
-                                  value={workerForm[key]}
-                                  onChange={(e) =>
-                                    setWorkerForm({ ...workerForm, [key]: e.target.value })
-                                  }
-                                />
-                                {(<span className='text-xs text-gray-300'>{label}</span>)}
-                              </div>
-                            ))}
-                            <div>
-                              <select
-                                className="p-2 bg-gray-800 rounded w-full"
-                                value={workerForm.gender}
-                                onChange={(e) =>
-                                  setWorkerForm({ ...workerForm, gender: e.target.value })
-                                }
-                              >
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                              </select>
-                              <span className='text-xs text-gray-300'>Gender</span>
-                            </div>
-
-
-                            <div>
-                              <input
-                                type="date"
-                                className="p-2 bg-gray-800 rounded w-full"
-                                value={workerForm.dob}
-                                onChange={(e) =>
-                                  setWorkerForm({ ...workerForm, dob: e.target.value })
-                                }
-                              />
-                              <span className="text-xs text-gray-300">Date of Birth</span>
-                            </div>
-                          </div>
-
-                          {!selectedWorker && (
-                            <p className="text-xs text-gray-400 mt-2">
-                              Enter details to create a new worker
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      {isEditingWorker && (
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={async () => {
-                              try {
-                                const res = await api.put(
-                                  `/api/workers/${selectedWorker.id}`,
-                                  workerForm
-                                );
-
-                                setSelectedWorker(res.data);
-                                setIsEditingWorker(false);
-                                alert("Worker updated successfully");
-                              } catch (err) {
-                                console.error(err);
-                                alert("Failed to update worker");
-                              }
-                            }}
-                            className="bg-green-600 px-3 py-1 rounded text-sm"
-                          >
-                            Save Changes
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setIsEditingWorker(false);
+                          <WorkerSection
+                            disabled={!!editingOpdId}
+                            search={workerSearch}
+                            results={workerResults}
+                            onSearch={searchWorkers}
+                            onSelect={async (worker) => {
+                              const workerOPDHistoryRes = await api.get(`/api/workers/${worker.id}/opds`);
+                              setWorkerOPDHistory(workerOPDHistoryRes.data);
+                              console.log("Selected Worker: ", worker);
+                              setSelectedWorker(worker);
+                              setIsNewWorker(false);
                               setWorkerForm({
-                                name: selectedWorker.name || "",
-                                fathers_name: selectedWorker.fathers_name || "",
-                                dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
-                                phone_no: selectedWorker.phone_no || "",
-                                employee_id: selectedWorker.employee_id || "",
-                                aadhar_no: selectedWorker.aadhar_no || "",
-                                gender: selectedWorker.gender || "Male",
-                                designation: selectedWorker.designation || "",
-                                contractor_name: selectedWorker.contractor_name || "",
-                                date_of_joining: selectedWorker.date_of_joining
-                                  ? selectedWorker.date_of_joining.split("T")[0]
+                                name: worker.name || "",
+                                fathers_name: worker.fathers_name || "",
+                                dob: worker.dob ? worker.dob.split("T")[0] : "",
+                                phone_no: worker.phone_no || "",
+                                employee_id: worker.employee_id || "",
+                                aadhar_no: worker.aadhar_no || "",
+                                gender: worker.gender || "Male",
+                                designation: worker.designation || "",
+                                contractor_name: worker.contractor_name || "",
+                                date_of_joining: worker.date_of_joining
+                                  ? worker.date_of_joining.split("T")[0]
                                   : ""
                               });
+
+                              setTimeout(() => {
+                                setWorkerSearch("");
+                                setWorkerResults([]);
+                              }, 0);
                             }}
-                            className="bg-gray-600 px-3 py-1 rounded text-sm"
+                          />
+
+                          <button
+                            disabled={isEditingWorker || !!editingOpdId}
+                            onClick={() => {
+                              setSelectedWorker(null);
+                              setIsNewWorker(true);
+                              setWorkerForm({
+                                name: "",
+                                employee_id: "",
+                                fathers_name: "",
+                                aadhar_no: "",
+                                gender: "Male",
+                                dob: "",
+                                phone_no: "",
+                                designation: "",
+                                contractor_name: "",
+                                date_of_joining: ""
+                              });
+                            }}
+                            className="w-1/5 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
                           >
-                            Cancel
+                            <span className="flex items-center gap-2">
+                              <FaUserPlus /> Add New Worker
+                            </span>
                           </button>
                         </div>
-                      )}
 
-                      {/* <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
+
+                        {selectedWorker && !isNewWorker && !isEditingWorker && (
+                          <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className='flex items-center gap-2'>
+                                <FaUser className='text-[16px] mb-2' /> <h3 className="font-bold mb-2 text-[16px]">WORKER DETAILS</h3>
+                              </div>
+                              <button
+                                className="flex items-center gap-2 text-sm text-green-400"
+                                onClick={() => setIsEditingWorker(true)}
+                              >
+                                <FaPenToSquare />
+                                <p>Edit Worker</p>
+                              </button>
+                            </div>
+                            <div className="col-span-3">
+                              <p className='text-[14px]'><b>{selectedWorker.name}</b></p>
+                            </div>
+                            <p className='font-light text-gray-300 text-[12.5px]'>Employee ID: <b>{selectedWorker.employee_id}</b> | Father's Name: <b>{selectedWorker.fathers_name}</b> | ID: <b>{selectedWorker.id}</b> | Aadhaar: <b>{selectedWorker.aadhar_no}</b></p>
+                            <p className='font-light text-gray-300 text-[12.5px]'>Phone No: <b>{selectedWorker.phone_no}</b> | DOB: <b>{formatDate(selectedWorker.dob)}</b> | Contractor Name: <b>{selectedWorker.contractor_name}</b></p>
+                            <button className='text-blue-400 text-sm rounded border border-blue-400 px-3 py-1 mt-2' onClick={() => {
+                              setOPDHistoryModalOpen(true);
+                            }}>View History</button>
+                          </div>
+                        )}
+                        {(isNewWorker || isEditingWorker) && (
+                          <div className="mt-2 bg-gray-900 p-3 rounded-lg w-full">
+                            <div className="flex items-center gap-2 mb-2">
+                              <FaUser className="text-[16px]" />
+                              <h3 className="font-bold text-[16px]">WORKER DETAILS</h3>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3 text-[12.5px]">
+                              {[
+                                ["name", "Name"],
+                                ["employee_id", "Employee ID"],
+                                ["fathers_name", "Father's Name"],
+                                ["aadhar_no", "Aadhaar No"],
+                                ["phone_no", "Phone No"],
+                                ["designation", "Designation"],
+                                ["contractor_name", "Contractor Name"],
+                                ["date_of_joining", "Date of Joining"]
+                              ].map(([key, label]) => (
+                                <div>
+                                  <input
+                                    key={key}
+                                    type={(key === "date_of_joining" ? ("date") : ("text"))}
+                                    placeholder={label}
+                                    className="p-2 bg-gray-800 rounded w-full"
+                                    value={workerForm[key]}
+                                    onChange={(e) =>
+                                      setWorkerForm({ ...workerForm, [key]: e.target.value })
+                                    }
+                                  />
+                                  {(<span className='text-xs text-gray-300'>{label}</span>)}
+                                </div>
+                              ))}
+                              <div>
+                                <select
+                                  className="p-2 bg-gray-800 rounded w-full"
+                                  value={workerForm.gender}
+                                  onChange={(e) =>
+                                    setWorkerForm({ ...workerForm, gender: e.target.value })
+                                  }
+                                >
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                                <span className='text-xs text-gray-300'>Gender</span>
+                              </div>
+
+
+                              <div>
+                                <input
+                                  type="date"
+                                  className="p-2 bg-gray-800 rounded w-full"
+                                  value={workerForm.dob}
+                                  onChange={(e) =>
+                                    setWorkerForm({ ...workerForm, dob: e.target.value })
+                                  }
+                                />
+                                <span className="text-xs text-gray-300">Date of Birth</span>
+                              </div>
+                            </div>
+
+                            {!selectedWorker && (
+                              <p className="text-xs text-gray-400 mt-2">
+                                Enter details to create a new worker
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {isEditingWorker && (
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await api.put(
+                                    `/api/workers/${selectedWorker.id}`,
+                                    workerForm
+                                  );
+
+                                  setSelectedWorker(res.data);
+                                  setIsEditingWorker(false);
+                                  alert("Worker updated successfully");
+                                } catch (err) {
+                                  console.error(err);
+                                  alert("Failed to update worker");
+                                }
+                              }}
+                              className="bg-green-600 px-3 py-1 rounded text-sm"
+                            >
+                              Save Changes
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setIsEditingWorker(false);
+                                setWorkerForm({
+                                  name: selectedWorker.name || "",
+                                  fathers_name: selectedWorker.fathers_name || "",
+                                  dob: selectedWorker.dob ? selectedWorker.dob.split("T")[0] : "",
+                                  phone_no: selectedWorker.phone_no || "",
+                                  employee_id: selectedWorker.employee_id || "",
+                                  aadhar_no: selectedWorker.aadhar_no || "",
+                                  gender: selectedWorker.gender || "Male",
+                                  designation: selectedWorker.designation || "",
+                                  contractor_name: selectedWorker.contractor_name || "",
+                                  date_of_joining: selectedWorker.date_of_joining
+                                    ? selectedWorker.date_of_joining.split("T")[0]
+                                    : ""
+                                });
+                              }}
+                              className="bg-gray-600 px-3 py-1 rounded text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+
+                        {/* <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
                         <select
                           className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
                           value={selectedDoctorId || ""}
@@ -1044,113 +1044,106 @@ setTimeout(() => {
                           </p>
                         )}
                       </div> */}
-                      <DoctorSelect />
-                      <div className="grid grid-cols-2 gap-4">
-                        <OPDSection opd={opd} setOpd={setOpd} onTemplateSelect={handleTemplateSelect} />
-                        <PrescriptionSection prescription={prescription} setPrescription={setPrescription} />
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            handleSubmit(false)
-                          }
-                          disabled={workerSearchLoading}
-                          className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
-                        >
-                          {workerSearchLoading ? "Saving..." : (
-                            <span className="flex items-center gap-2">
-                              <FaRegFloppyDisk />
-                              Save OPD
-                            </span>
-                          )}
-                        </button>
-                        {user.role === "EMPLOYEE" && (
+                        <DoctorSelect />
+                        <div className="grid grid-cols-2 gap-4">
+                          <OPDSection opd={opd} setOpd={setOpd} onTemplateSelect={handleTemplateSelect} />
+                          <PrescriptionSection prescription={prescription} setPrescription={setPrescription} />
+                        </div>
+                        <div className="flex gap-2">
                           <button
-                            onClick={() => {
-                              handleSubmit(true)
-                            }}
+                            onClick={() =>
+                              handleSubmit(false)
+                            }
                             disabled={workerSearchLoading}
                             className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
                           >
                             {workerSearchLoading ? "Saving..." : (
                               <span className="flex items-center gap-2">
                                 <FaRegFloppyDisk />
-                                Save OPD & Set for Doctor's Consultation
+                                Save OPD
                               </span>
                             )}
                           </button>
-                        )}
-                      </div>
-                    </div>)}
-                </>
-              )}
+                          {user.role === "EMPLOYEE" && (
+                            <button
+                              onClick={() => {
+                                handleSubmit(true)
+                              }}
+                              disabled={workerSearchLoading}
+                              className="my-3 bg-green-600 hover:bg-green-700 p-2 rounded text-[14px] disabled:opacity-50"
+                            >
+                              {workerSearchLoading ? "Saving..." : (
+                                <span className="flex items-center gap-2">
+                                  <FaRegFloppyDisk />
+                                  Save OPD & Set for Doctor's Consultation
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>)}
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeMenu === "reports" && (
+            <Reports />
+          )}
+          {activeMenu === "doctors" && (
+            <Doctor />
+          )}
+          {activeMenu === "profile" && (
+            <Profile />
+          )}
+          {activeMenu === "staff" && (
+            <Staff />
+          )}
+          {activeMenu === "pre-emp" && (
+            <PreEmployment />
+          )}
+
+          {activeMenu === "id-renew" && (
+            <div className='w-full'>
+
+              <IdRenewal />
             </div>
-          </>
-        )}
-
-        {activeMenu === "reports" && (
-          <Reports />
-        )}
-        {activeMenu === "doctors" && (
-          <Doctor />
-        )}
-        {activeMenu === "profile" && (
-          <Profile />
-        )}
-        {activeMenu === "staff" && (
-          <Staff />
-        )}
-        {activeMenu === "pre-emp" && (
-          <PreEmployment />
-        )}
-
-        {activeMenu === "id-renew" && (
-          <div className='w-full'>
-            <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
-              <div className="w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center">
-                ID Renewal
+          )}
+          {activeMenu === "dashboard" && (
+            <Dashboard />
+          )}
+          {activeMenu === "opening-stock" && (
+            <OpeningStock />
+          )}
+          {activeMenu === "notifications" && (
+            <Notifications user={user} />
+          )}
+          {activeMenu === "fcacc" && (
+            <div className='w-full'>
+              <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
+                <div onClick={() => setFcaccTab("fcacc")} className={fcaccTab === "fcacc" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
+                  FCACCs
+                </div>
+                <div onClick={() => setFcaccTab("list")} className={fcaccTab === "list" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
+                  List of FCACCs
+                </div>
               </div>
-              <div className="w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center">
-                List of Renewed IDs
-              </div>
+              <FCACC tab={fcaccTab} />
+
             </div>
-            <IdRenewal />
-          </div>
-        )}
-        {activeMenu === "dashboard" && (
-          <Dashboard />
-        )}
-        {activeMenu === "opening-stock" && (
-          <OpeningStock />
-        )}
-        {activeMenu === "notifications" && (
-          <Notifications user={user} />
-        )}
-        {activeMenu === "fcacc" && (
-          <div className='w-full'>
-            <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
-              <div onClick={() => setFcaccTab("fcacc")} className={fcaccTab === "fcacc" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
-              FCACCs
-              </div>
-              <div onClick={() => setFcaccTab("list")} className={fcaccTab === "list" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
-                List of FCACCs
-              </div>
-            </div>
-          <FCACC tab={fcaccTab}/>
+          )}
+          {activeMenu === "malaria" && (
+            <Malaria />
+          )}
+          {activeMenu === "fab" && (
+            <FAB />
+          )}
+          {activeMenu === "alerts" && (
+            <Alerts />
+          )}
 
-          </div>
-        )}
-        {activeMenu === "malaria" && (
-          <Malaria />
-        )}
-        {activeMenu === "fab" && (
-          <FAB />
-        )}
-        {activeMenu === "alerts" && (
-          <Alerts />
-        )}
-
-        {/* {activeMenu === "dispensary" && (
+          {/* {activeMenu === "dispensary" && (
           // <BUListUpload/>
           <div className='w-full'>
             <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
@@ -1193,57 +1186,57 @@ setTimeout(() => {
             )}
           </div>
         )} */}
-        <div className={`${activeMenu === "dispensary" ? "block" : "hidden"} w-full`}>
-          <div className='w-full'>
-            <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
-              <div className={`bg-gray-700 w-1/4 rounded`}>
-                <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
+          <div className={`${activeMenu === "dispensary" ? "block" : "hidden"} w-full`}>
+            <div className='w-full'>
+              <div className="w-full flex bg-gray-800 p-2 rounded gap-2">
+                <div className={`bg-gray-700 w-1/4 rounded`}>
+                  <button className={`text-sm p-1 text-center rounded font-semibold w-full ${dispensaryTab === "procurement" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("procurement")}>Procurement</button>
+                </div>
+                <div className="bg-gray-700 w-1/4 rounded">
+                  <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense</button>
+                </div>
+                <div className="bg-gray-700 w-1/4 rounded">
+                  <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("stock")}>Inventory</button>
+                </div>
+                <div className="bg-gray-700 w-1/4 rounded">
+                  <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "adjust" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("adjust")}>Adjust Stock</button>
+                </div>
+                <div className="bg-gray-700 w-1/4 rounded">
+                  <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "alerts" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("alerts")}>Expiry Alerts</button>
+                </div>
               </div>
-              <div className="bg-gray-700 w-1/4 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "dispense" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("dispense")}>Dispense</button>
-              </div>
-              <div className="bg-gray-700 w-1/4 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "stock" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("stock")}>Inventory</button>
-              </div>
-              <div className="bg-gray-700 w-1/4 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "adjust" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("adjust")}>Adjust Stock</button>
-              </div>
-              <div className="bg-gray-700 w-1/4 rounded">
-                <button className={`text-sm p-1 text-center font-semibold w-full rounded ${dispensaryTab === "alerts" ? ("bg-blue-600") : ("")}`} onClick={() => setDispensaryTab("alerts")}>Expiry Alerts</button>
-              </div>
-            </div>
 
-            <div className={dispensaryTab === "procurement" ? "block" : "hidden"}>
-              <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
-              <Procurement />
+              <div className={dispensaryTab === "procurement" ? "block" : "hidden"}>
+                <h2 className='text-sm font-bold mt-4'>PROCUREMENT</h2>
+                <Procurement />
+              </div>
+              {dispensaryTab === "dispense" && (
+                <div>
+                  <h2 className='text-sm font-bold mt-4'>DISPENSE</h2>
+                  <Dispense />
+                </div>
+              )}
+              {dispensaryTab === "stock" && (
+                <div>
+                  <h2 className='text-sm font-bold mt-4'>INVENTORY</h2>
+                  <Stock />
+                </div>
+              )}
+              {dispensaryTab === "adjust" && (
+                <div>
+                  <h2 className='text-sm font-bold mt-4'>ADJUST STOCK</h2>
+                  <OpeningStock />
+                </div>
+              )}
+              {dispensaryTab === "alerts" && (
+                <div>
+                  <h2 className='text-sm font-bold mt-4'>EXPIRY ALERTS</h2>
+                  <Alerts />
+                </div>
+              )}
             </div>
-            {dispensaryTab === "dispense" && (
-              <div>
-                <h2 className='text-sm font-bold mt-4'>DISPENSE</h2>
-                <Dispense />
-              </div>
-            )}
-            {dispensaryTab === "stock" && (
-              <div>
-                <h2 className='text-sm font-bold mt-4'>INVENTORY</h2>
-                <Stock />
-              </div>
-            )}
-            {dispensaryTab === "adjust" && (
-              <div>
-                <h2 className='text-sm font-bold mt-4'>ADJUST STOCK</h2>
-                <OpeningStock />
-              </div>
-            )}
-            {dispensaryTab === "alerts" && (
-              <div>
-                <h2 className='text-sm font-bold mt-4'>EXPIRY ALERTS</h2>
-                <Alerts />
-              </div>
-            )}
           </div>
         </div>
-      </div>
       </div>
       {OPDHistoryModalOpen && (
         <OPDHistoryModal

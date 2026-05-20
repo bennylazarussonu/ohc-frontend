@@ -1,10 +1,12 @@
-import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk } from "react-icons/fa6";
 import api from "../api/axios";
 import { useState, useRef, useEffect } from "react";
 import VisionCheckModal from "./VisionCheckModal.jsx";
 import IdRenewalReportModal from "./IdRenewalReportModal.jsx";
+import { formatDateDMY } from "../utils/date.js";
 
 function IdRenewal() {
+    const [tab, setTab] = useState("renewal");
     const [workerSearch, setWorkerSearch] = useState("");
     const [workerResults, setWorkerResults] = useState([]);
     const [selectedWorker, setSelectedWorker] = useState(null);
@@ -93,63 +95,63 @@ function IdRenewal() {
     };
 
     const handleSelectWorker = async (worker) => {
-    if (worker.id_status === "Active") {
-        alert("Worker's ID is Active. Cannot be Renewed.");
-        return;
-    }
-
-    try {
-        setSelectedWorker(worker);
-        setWorkerSearch(worker.name);
-        setWorkerResults([]);
-        setIsEditingWorker(false);
-        setIsNewWorker(false);
-
-        let latestRenewal = null;
-
-        try {
-            const res = await api.get(
-                `/api/id-renewal/latest/${worker.id}`
-            );
-
-            latestRenewal = res.data;
-        } catch (err) {
-            console.log("No previous renewal found");
+        if (worker.id_status === "Active") {
+            alert("Worker's ID is Active. Cannot be Renewed.");
+            return;
         }
 
-        setRenewalForm({
-            previous_renewal_date:
-                worker.last_id_renewal_date
-                    ? worker.last_id_renewal_date.split("T")[0]
-                    : "",
+        try {
+            setSelectedWorker(worker);
+            setWorkerSearch(worker.name);
+            setWorkerResults([]);
+            setIsEditingWorker(false);
+            setIsNewWorker(false);
 
-            blood_group:
-                latestRenewal?.blood_group || "",
+            let latestRenewal = null;
 
-            general_condition:
-                latestRenewal?.general_condition || "",
+            try {
+                const res = await api.get(
+                    `/api/id-renewal/latest/${worker.id}`
+                );
 
-            pulse: "",
-            systolic: "",
-            diastolic: "",
-            spo2: "",
+                latestRenewal = res.data;
+            } catch (err) {
+                console.log("No previous renewal found");
+            }
 
-            height:
-                latestRenewal?.height || "",
+            setRenewalForm({
+                previous_renewal_date:
+                    worker.last_id_renewal_date
+                        ? worker.last_id_renewal_date.split("T")[0]
+                        : "",
 
-            weight: "",
+                blood_group:
+                    latestRenewal?.blood_group || "",
 
-            remarks: "",
+                general_condition:
+                    latestRenewal?.general_condition || "",
 
-            vertigo_test_passed:
-                (latestRenewal?.vertigo_test_passed === "true") ? "Passed" : (latestRenewal?.vertigo_test_passed === "false" ? "Failed" : (latestRenewal?.vertigo_test_passed || "Passed")),
-        });
+                pulse: "",
+                systolic: "",
+                diastolic: "",
+                spo2: "",
 
-    } catch (err) {
-        console.error(err);
-        alert("Failed to fetch previous renewal");
-    }
-};
+                height:
+                    latestRenewal?.height || "",
+
+                weight: "",
+
+                remarks: "",
+
+                vertigo_test_passed:
+                    (latestRenewal?.vertigo_test_passed === "true") ? "Passed" : (latestRenewal?.vertigo_test_passed === "false" ? "Failed" : (latestRenewal?.vertigo_test_passed || "Passed")),
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to fetch previous renewal");
+        }
+    };
 
     useEffect(() => {
         const pulse = renewalForm.pulse;
@@ -287,544 +289,612 @@ function IdRenewal() {
     // };
 
     return (
-        <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
-            <h2 className="text-lg font-bold mb-3">ID RENEWAL</h2>
-
-            {/* Search box */}
-            <div className="relative">
-                <div className="flex gap-2">
-                    <div className="flex items-center gap-2 w-4/5">
-                        <FaMagnifyingGlass />
-                        <input
-                            type="text"
-                            className="bg-gray-700 rounded w-full p-2 text-sm"
-                            placeholder="Search by Name, EmpID, Father Name, Aadhar, Phone"
-                            value={workerSearch}
-                            onChange={(e) => {
-                                searchWorkers(e.target.value);
-                            }}
-                        />
-                    </div>
-                    <button
-                        className="w-1/5 bg-blue-600 rounded hover:bg-blue-700 px-3 py-1 text-sm"
-                        onClick={() => {
-                            setSelectedWorker(null);
-                            setIsNewWorker(true);
-                            setIsEditingWorker(false);
-                            setWorkerForm({
-                                name: "",
-                                employee_id: "",
-                                fathers_name: "",
-                                aadhar_no: "",
-                                gender: "Male",
-                                dob: "",
-                                phone_no: "",
-                                designation: "",
-                                contractor_name: "",
-                                date_of_joining: ""
-                            });
-                        }}
-                    >
-                        <span className="flex items-center gap-2">
-                            <FaUserPlus />
-                            Add New Worker
-                        </span>
-                    </button>
+        <div className="">
+            <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
+                <div onClick={() => { setTab("renewal") }} className="cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center">
+                    ID Renewal
                 </div>
+                <div onClick={() => { setTab("list") }} className="cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center">
+                    List of Renewed IDs
+                </div>
+            </div>
+            {tab === "renewal" && (
+                <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
+                    <h2 className="text-sm font-bold mb-3">ID RENEWAL</h2>
 
-                {/* Results dropdown */}
-                {workerResults.length > 0 && (
-                    <div className="absolute z-100 bg-gray-900 w-3/4 mt-1 ml-5 rounded border border-gray-700 max-h-40 overflow-auto no-scrollbar">
-                        {workerResults.map((worker, idx) => (
-                            <div
-                                key={worker.id}
-                                onClick={() => {
-                                    handleSelectWorker(worker);
-                                    setIsNewWorker(false);
-                                }}
-                                className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-800 flex justify-between"
-                            >
-                                <div>
-                                    <p className="font-semibold">{worker.name}</p>
-                                    <p className="text-xs text-gray-400">
-                                        EmpID: {worker.employee_id} | Father: {worker.fathers_name} | Aadhar: {worker.aadhar_no} | Phone: {worker.phone_no}
-                                    </p>
-                                    <p className="text-xs text-gray-400">Last Renewal Date: {worker.last_id_renewal_date ? worker.last_id_renewal_date.split("T")[0] : ("")}</p>
-                                    {(worker.id_status && worker.id_status === "Active") ? (
-                                        <p className="text-green-400 text-sm">ID Renewed</p>
-                                    ) : (worker.id_status && worker.id_status === "Expired") ? (
-                                        <p className="text-red-400 text-sm">ID Requires Renewal</p>
-                                    ) : ("")}
-                                </div>
-                                <p className="text-xs text-gray-400">
-                                    {idx + 1} / {workerResults.length}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Loading */}
-                {workerSearchLoading && (
-                    <p className="text-xs text-gray-400 mt-1">Searching…</p>
-                )}
-
-                {(isNewWorker || isEditingWorker) && (
-                    <div className="mt-2 bg-gray-800 p-3 rounded-lg w-full">
-                        <div className="flex items-center gap-2 mb-2">
-                            <FaUser className="text-[16px]" />
-                            <h3 className="font-bold text-[16px]">WORKER DETAILS</h3>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 text-[12.5px]">
-                            {[
-                                ["name", "Name"],
-                                ["employee_id", "Employee ID"],
-                                ["fathers_name", "Father's Name"],
-                                ["aadhar_no", "Aadhaar No"],
-                                ["phone_no", "Phone No"],
-                                ["designation", "Designation"],
-                                ["contractor_name", "Contractor Name"],
-                                ["date_of_joining", "Date of Joining"]
-                            ].map(([key, label]) => (
-                                <div>
-                                    <input
-                                        key={key}
-                                        type={(key === "date_of_joining" ? ("date") : ("text"))}
-                                        placeholder={label}
-                                        className="p-2 bg-gray-700 rounded w-full"
-                                        value={workerForm[key]}
-                                        onChange={(e) =>
-                                            setWorkerForm({ ...workerForm, [key]: e.target.value })
-                                        }
-                                    />
-                                    {(<span className='text-xs text-gray-300'>{label}</span>)}
-                                </div>
-                            ))}
-                            <div>
-                                <select
-                                    className="p-2 bg-gray-700 rounded w-full"
-                                    value={workerForm.gender}
-                                    onChange={(e) =>
-                                        setWorkerForm({ ...workerForm, gender: e.target.value })
-                                    }
-                                >
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                                <span className='text-xs text-gray-300'>Gender</span>
-                            </div>
-
-
-                            <div>
+                    {/* Search box */}
+                    <div className="relative">
+                        <div className="flex gap-2">
+                            <div className="flex items-center gap-2 w-4/5">
+                                <FaMagnifyingGlass />
                                 <input
-                                    type="date"
-                                    className="p-2 bg-gray-700 rounded w-full"
-                                    value={workerForm.dob}
-                                    onChange={(e) =>
-                                        setWorkerForm({ ...workerForm, dob: e.target.value })
-                                    }
+                                    type="text"
+                                    className="bg-gray-700 rounded w-full p-2 text-xs"
+                                    placeholder="Search by Name, EmpID, Father Name, Aadhar, Phone"
+                                    value={workerSearch}
+                                    onChange={(e) => {
+                                        searchWorkers(e.target.value);
+                                    }}
                                 />
-                                <span className="text-xs text-gray-300">Date of Birth</span>
                             </div>
+                            <button
+                                className="w-1/5 bg-blue-600 rounded hover:bg-blue-700 p-2 text-xs"
+                                onClick={() => {
+                                    setSelectedWorker(null);
+                                    setIsNewWorker(true);
+                                    setIsEditingWorker(false);
+                                    setWorkerForm({
+                                        name: "",
+                                        employee_id: "",
+                                        fathers_name: "",
+                                        aadhar_no: "",
+                                        gender: "Male",
+                                        dob: "",
+                                        phone_no: "",
+                                        designation: "",
+                                        contractor_name: "",
+                                        date_of_joining: ""
+                                    });
+                                }}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <FaUserPlus />
+                                    Add New Worker
+                                </span>
+                            </button>
                         </div>
 
-                        {!selectedWorker && (
-                            <p className="text-xs text-gray-400 mt-2">
-                                Enter details to create a new worker
-                            </p>
+                        {/* Results dropdown */}
+                        {workerResults.length > 0 && (
+                            <div className="absolute z-100 bg-gray-900 w-3/4 mt-1 ml-5 rounded border border-gray-700 max-h-40 overflow-auto no-scrollbar">
+                                {workerResults.map((worker, idx) => (
+                                    <div
+                                        key={worker.id}
+                                        onClick={() => {
+                                            handleSelectWorker(worker);
+                                            setIsNewWorker(false);
+                                        }}
+                                        className="px-3 py-2 cursor-pointer hover:bg-gray-800 flex justify-between border-b border-gray-400"
+                                    >
+                                        <div>
+                                            <p className="font-bold text-sm mb-2">{worker.name}</p>
+                                            <div className="grid grid-cols-4 gap-x-16 gap-y-2 w-full text-xs mb-2">
+                                                <div className="text-xs">
+                                                    <p className="text-gray-400">Father Name</p>
+                                                    <p className="font-semibold">{worker.fathers_name}</p>
+                                                </div>
+                                                <div className="text-xs">
+                                                    <p className="text-gray-400">Employee ID</p>
+                                                    <p className="font-semibold">{worker.employee_id}</p>
+                                                </div>
+                                                <div className="text-xs">
+                                                    <p className="text-gray-400">Aadhar No.</p>
+                                                    <p className="font-semibold">{worker.aadhar_no}</p>
+                                                </div>
+                                                <div className="text-xs">
+                                                    <p className="text-gray-400">Phone No.</p>
+                                                    <p className="font-semibold">{worker.phone_no}</p>
+                                                </div>
+                                                <div className="text-xs">
+                                                    <p className="text-xs text-gray-400">Last Renewal Date: </p>
+                                                    <p className="font-semibold">{worker.last_id_renewal_date ? worker.last_id_renewal_date.split("T")[0] : ("")}</p>
+                                                </div>
+                                                <div className="text-xs">
+                                                    <p className="text-gray-400 text-xs">Status:</p>
+                                                    {(worker.id_status && worker.id_status === "Active") ? (
+                                                        <p className="text-green-400 text-xs">ID Renewed</p>
+                                                    ) : (worker.id_status && worker.id_status === "Expired") ? (
+                                                        <p className="text-red-400 text-xs">ID Requires Renewal</p>
+                                                    ) : ("")}
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <p className="text-xs text-gray-400">
+                                            {idx + 1} / {workerResults.length}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Loading */}
+                        {workerSearchLoading && (
+                            <p className="text-xs text-gray-400 mt-1">Searching…</p>
+                        )}
+
+                        {(isNewWorker || isEditingWorker) && (
+                            <div className="mt-2 bg-gray-900 p-3 rounded w-full">
+                                <div className="flex items-center gap-2 mb-2 text-sm">
+                                    <FaUser className="" />
+                                    <h3 className="font-bold">WORKER DETAILS</h3>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-3 text-xs">
+                                    {[
+                                        ["name", "Name"],
+                                        ["employee_id", "Employee ID"],
+                                        ["fathers_name", "Father's Name"],
+                                        ["aadhar_no", "Aadhaar No"],
+                                        ["phone_no", "Phone No"],
+                                        ["designation", "Designation"],
+                                        ["contractor_name", "Contractor Name"],
+                                        ["date_of_joining", "Date of Joining"]
+                                    ].map(([key, label]) => (
+                                        <div>
+                                            <input
+                                                key={key}
+                                                type={(key === "date_of_joining" ? ("date") : ("text"))}
+                                                placeholder={label}
+                                                className="p-2 bg-gray-800 text-xs rounded w-full"
+                                                value={workerForm[key]}
+                                                onChange={(e) =>
+                                                    setWorkerForm({ ...workerForm, [key]: e.target.value })
+                                                }
+                                            />
+                                            {(<span className='p-1 text-xs text-gray-300'>{label}</span>)}
+                                        </div>
+                                    ))}
+                                    <div>
+                                        <select
+                                            className="p-2 bg-gray-800 rounded w-full"
+                                            value={workerForm.gender}
+                                            onChange={(e) =>
+                                                setWorkerForm({ ...workerForm, gender: e.target.value })
+                                            }
+                                        >
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <span className='p-1 text-xs text-gray-300'>Gender</span>
+                                    </div>
+
+
+                                    <div>
+                                        <input
+                                            type="date"
+                                            className="p-2 bg-gray-800 rounded w-full"
+                                            value={workerForm.dob}
+                                            onChange={(e) =>
+                                                setWorkerForm({ ...workerForm, dob: e.target.value })
+                                            }
+                                        />
+                                        <span className="p-1 text-xs text-gray-300">Date of Birth</span>
+                                    </div>
+                                </div>
+
+                                {!selectedWorker && (
+                                    <p className="text-xs text-gray-400 mt-2">
+                                        Enter details to create a new worker
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        {isEditingWorker && (
+                            <div className="flex gap-2 mt-3">
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await api.put(
+                                                `/api/workers/${selectedWorker.id}`,
+                                                workerForm
+                                            );
+
+                                            setSelectedWorker(res.data);
+                                            setIsEditingWorker(false);
+                                            alert("Worker updated successfully");
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert("Failed to update worker");
+                                        }
+                                    }}
+                                    className="flex items-center text-xs gap-2 bg-green-600 p-2 rounded text-sm"
+                                >
+                                    <FaFloppyDisk />
+                                    Save Changes
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setIsEditingWorker(false);
+                                        setWorkerForm(mapWorkerToForm(selectedWorker));
+                                    }}
+                                    className="bg-gray-600 px-3 py-1 rounded text-xs"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         )}
                     </div>
-                )}
-                {isEditingWorker && (
-                    <div className="flex gap-2 mt-3">
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const res = await api.put(
-                                        `/api/workers/${selectedWorker.id}`,
-                                        workerForm
-                                    );
 
-                                    setSelectedWorker(res.data);
-                                    setIsEditingWorker(false);
-                                    alert("Worker updated successfully");
-                                } catch (err) {
-                                    console.error(err);
-                                    alert("Failed to update worker");
+
+                    {/* Selected Worker */}
+                    {selectedWorker && !isNewWorker && !isEditingWorker && (
+                        <div className="mt-4 p-3 bg-gray-900 rounded">
+                            <div className="flex justify-between mb-2">
+                                <div>
+                                    <p className="text-xs text-gray-300">Selected Worker</p>
+                                    <p className="font-bold text-sm">{selectedWorker.name}</p>
+                                </div>
+                                <button
+                                    className="flex items-center gap-2 text-xs text-green-400"
+                                    onClick={() => {
+                                        setIsEditingWorker(true);
+                                        setWorkerForm(mapWorkerToForm(selectedWorker))
+                                    }}
+                                >
+                                    <FaPenToSquare />
+                                    Edit
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-4 w-full gap-x-16 gap-y-2">
+                                <div className="text-xs">
+                                    <p className="text-gray-400">Father Name:</p>
+                                    <p className="font-semibold text-xs">{selectedWorker.fathers_name}</p>
+                                </div>
+                                <div className="text-xs">
+                                    <p className="text-gray-400">Employee ID:</p>
+                                    <p className="font-semibold text-xs">{selectedWorker.employee_id}</p>
+                                </div>
+                                <div className="text-xs">
+                                    <p className="text-gray-400">Phone No.:</p>
+                                    <p className="font-semibold text-xs">{selectedWorker.phone_no}</p>
+                                </div>
+                                <div className="text-xs">
+                                    <p className="text-gray-400">Aadhar No.:</p>
+                                    <p className="font-semibold text-xs">{selectedWorker.aadhar_no}</p>
+                                </div>
+                                <div className="text-xs">
+                                    <p className="text-gray-400">Date of Joining:</p>
+                                    <p className="font-semibold text-xs">{formatDateDMY(selectedWorker.date_of_joining)}</p>
+                                </div>
+                                <div className="text-xs">
+                                    <p className="text-gray-400">Designation:</p>
+                                    <p className="font-semibold text-xs">{selectedWorker.designation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="grid grid-cols-4 gap-3 rounded-lg mt-3">
+                        <div className="col-start-1">
+                            <p className="text-xs text-gray-400 mb-1">Last Date of Renewal:</p>
+                            <input
+                                max={new Date().toISOString().split("T")[0]}
+                                type="date"
+                                className="bg-gray-900 rounded text-xs p-2 w-full"
+                                value={
+                                    selectedWorker?.last_id_renewal_date
+                                        ? (selectedWorker.last_id_renewal_date.split("T")[0])
+                                        : renewalForm.previous_renewal_date
                                 }
-                            }}
-                            className="bg-green-600 px-3 py-1 rounded text-sm"
-                        >
-                            Save Changes
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setIsEditingWorker(false);
-                                setWorkerForm(mapWorkerToForm(selectedWorker));
-                            }}
-                            className="bg-gray-600 px-3 py-1 rounded text-sm"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                )}
-            </div>
-
-
-            {/* Selected Worker */}
-            {selectedWorker && !isNewWorker && !isEditingWorker && (
-                <div className="mt-4 p-3 border border-gray-600 rounded">
-                    <div className="flex justify-between">
-                        <p className="font-bold">{selectedWorker.name}</p>
-                        <button
-                            className="flex items-center gap-2 text-sm text-green-400"
-                            onClick={() => {
-                                setIsEditingWorker(true);
-                                setWorkerForm(mapWorkerToForm(selectedWorker))
-                            }}
-                        >
-                            <FaPenToSquare />
-                            Edit Worker
-                        </button>
-                    </div>
-                    <p>
-                        <span className="font-light text-sm">
-                            {selectedWorker.fathers_name} | Emp ID: {selectedWorker.employee_id} | Phone: {selectedWorker.phone_no}
-                            <br />
-                            DOJ: {selectedWorker.date_of_joining
-                                ? selectedWorker.date_of_joining.split("T")[0]
-                                : "—"} | {selectedWorker.designation}
-                        </span></p>
-
-                </div>
-            )}
-            <br />
-            <div className="grid grid-cols-4 gap-3 rounded-lg mt-3">
-                <div className="col-start-1">
-                    <p className="text-sm text-gray-400 font-bold">Last Date of Renewal:</p>
-                    <input
-                        max={new Date().toISOString().split("T")[0]}
-                        type="date"
-                        className="bg-gray-700 rounded text-sm p-2 w-full"
-                        value={
-                            selectedWorker?.last_id_renewal_date
-                                ? (selectedWorker.last_id_renewal_date.split("T")[0])
-                                : renewalForm.previous_renewal_date
-                        }
-                        disabled={!!selectedWorker?.last_id_renewal_date}
-                        onChange={(e) =>
-                            setRenewalForm({
-                                ...renewalForm,
-                                previous_renewal_date: e.target.value,
-                            })
-                        }
-                    />
-
-                </div>
-                <div className="col-start-4">
-                    <p className="text-sm text-gray-400 font-bold">Current Renewal Date:</p>
-                    <input
-                        type="date"
-                        disabled={true}
-                        value={new Date().toISOString().split("T")[0]}
-                        className="bg-gray-700 rounded text-sm p-2 w-full"
-                    />
-                </div>
-                <div className="col-span-4 font-bold text-gray-400">Parameters</div>
-                <select
-                    className="w-full bg-gray-700 outline-none border-none col-span-2 rounded text-sm p-2"
-                    placeholder="Blood Group"
-                    value={renewalForm.blood_group}
-                    onChange={(e) => setRenewalForm({ ...renewalForm, blood_group: e.target.value })}
-                >
-                    <option value="">Blood Group</option>
-                    <option value="A+">A POSITIVE</option>
-                    <option value="A-">A NEGATIVE</option>
-                    <option value="B+">B POSITIVE</option>
-                    <option value="B-">B NEGATIVE</option>
-                    <option value="AB+">AB POSITIVE</option>
-                    <option value="AB-">AB NEGATIVE</option>
-                    <option value="O+">O POSITIVE</option>
-                    <option value="O-">O NEGATIVE</option>
-                </select>
-                <input
-                    type="text"
-                    className="col-span-2 bg-gray-700 p-2 rounded text-sm"
-                    placeholder="General Condition"
-                    value={renewalForm.general_condition}
-                    onChange={(e) => setRenewalForm({ ...renewalForm, general_condition: e.target.value })}
-                />
-                {[
-                    ["pulse", "Heart Rate"],
-                ].map(([key, label]) => (
-                    <div>
-                        <input
-                            type="number"
-                            key={key}
-                            placeholder={label}
-                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none ${pulseDiagnosis.border}`}
-                            value={renewalForm[key]}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
-                        />
-                        <p className={`text-xs ${pulseDiagnosis.color}`}>{pulseDiagnosis.text}</p>
-                    </div>
-                ))}
-                {[
-                    ["systolic", "Sytolic Pressure"],
-                    ["diastolic", "Diastolic Pressure"],
-                ].map(([key, label]) => (
-                    <div>
-                        <input
-                            type="number"
-                            key={key}
-                            placeholder={label}
-                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none ${bpDiagnosis.border}`}
-                            value={renewalForm[key]}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
-                        />
-                        <p className={`text-xs ${bpDiagnosis.color} ${key === "diastolic" ? ("hidden") : ("")}`}>{bpDiagnosis.text}</p>
-                    </div>
-                ))}
-                {[
-                    ["spo2", "SpO2"]
-                ].map(([key, label]) => (
-                    <div>
-                        <input
-                            type="number"
-                            key={key}
-                            placeholder={label}
-                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none ${spo2Diagnosis.border}`}
-                            value={renewalForm[key]}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
-                        />
-                        <p className={`text-xs ${spo2Diagnosis.color}`}>{spo2Diagnosis.text}</p>
-                    </div>
-                ))}
-                {[
-                    ["height", "Height"],
-                    ["weight", "Weight"]
-                ].map(([key, label]) => (
-                    <div>
-                        <input
-                            type="number"
-                            key={key}
-                            placeholder={label}
-                            className={`bg-gray-700 p-2 rounded text-sm w-full focus:outline-none`}
-                            value={renewalForm[key]}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
-                        />
-                    </div>
-                ))}
-                <input
-                    type="text"
-                    className="bg-gray-700 p-2 rounded text-sm"
-                    placeholder="Remarks"
-                    value={renewalForm.remarks}
-                    onChange={(e) => setRenewalForm({ ...renewalForm, remarks: e.target.value })}
-                />
-                <button
-                    className="border-2 border-blue-900 bg-transparent text-blue-500 p-2 rounded"
-                    onClick={() => {
-                        if (!selectedWorker) {
-                            alert("Please select a worker first");
-                            return;
-                        }
-
-                        // fetchWorkerVision(selectedWorker.id);
-                        setOpenVision(true);
-                    }}
-                >
-                    Vision Examination
-                </button>
-                <div className="col-span-3 grid grid-cols-9 flex items-center">
-                    <p className="text-sm text-gray-400 font-semibold">Vertigo Test:</p>
-                    <label className="flex items-center gap-2">
-                        <input
-                            type="radio"
-                            name="vertigo_test_passed"
-                            checked={renewalForm.vertigo_test_passed === "Passed"}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Passed" })}
-                        />
-                        <p>Passed</p>
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <input
-                            name="vertigo_test_passed"
-                            type="radio"
-                            checked={renewalForm.vertigo_test_passed === "Failed"}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Failed" })}
-                        />
-                        <p>Not Passed</p>
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <input
-                            name="vertigo_test_passed"
-                            type="radio"
-                            checked={renewalForm.vertigo_test_passed === "Not Done"}
-                            onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Not Done" })}
-                        />
-                        <p>Not Done</p>
-                    </label>
-                </div>
-                <div className="col-span-4 grid grid-cols-4">
-                    <div className="flex justify-end col-start-4">
-                        <button
-                            className="bg-green-700 w-1/2 p-2 flex items-center justify-center gap-2 rounded"
-                            disabled={saveLoading}
-                            onClick={async () => {
-                                try {
-
-                                    if (!selectedWorker && !isNewWorker) {
-                                        alert("Please Select a Worker or Add New Worker for Renewal");
-                                        return;
-                                    }
-
-                                    if (!renewalForm.previous_renewal_date || renewalForm.previous_renewal_date === null) {
-                                        alert("'Last Date of Renewal' cannot be empty");
-                                        return;
-                                    }
-
-                                    if (renewalForm.pulse > 104) {
-                                        alert("Elevated Heart Rate. Candidate not eligible for ID Renewal");
-                                        return;
-                                    }
-
-                                    if (renewalForm.systolic > 140 || renewalForm.diastolic > 90) {
-                                        alert("Elevated Blood Pressure. Candidate not eligible for ID Renewal");
-                                        return;
-                                    }
-
-                                    if (renewalForm.spo2 && renewalForm.spo2 < 95) {
-                                        alert("Low Oxygen Saturation. Candidate not eligible for ID Renewal");
-                                        return;
-                                    }
-
-                                    // const payload = {
-                                    //     ...renewalForm,
-                                    //     opthalmic_examination: visionForm
-                                    // };
-
-                                    // setSaveLoading(true);
-
-                                    // // Existing worker
-                                    // if (selectedWorker) {
-                                    //     payload.worker_id = selectedWorker.id;
-                                    // }
-
-                                    // // New worker
-                                    // if (isNewWorker) {
-                                    //     payload.worker_data = workerForm;
-                                    // }
-
-                                    // const res = await api.post("/api/id-renewal/renew", payload);
-
-
-                                    // alert("ID renewed successfully");
-
-                                    // setSelectedWorker(null);
-                                    // setRenewalForm({
-                                    //     previous_renewal_date: "",
-                                    //     blood_group: "",
-                                    //     general_condition: "",
-                                    //     pulse: "",
-                                    //     systolic: "",
-                                    //     diastolic: "",
-                                    //     spo2: "",
-                                    //     height: "",
-                                    //     weight: "",
-                                    //     remarks: "",
-                                    //     vertigo_test_passed: true,
-                                    // });
-                                    // setIsNewWorker(false);
-                                    const payload = {
+                                disabled={!!selectedWorker?.last_id_renewal_date}
+                                onChange={(e) =>
+                                    setRenewalForm({
                                         ...renewalForm,
-                                        opthalmic_examination: visionForm,
-                                        worker_id: selectedWorker?.id,
-                                        ...(isNewWorker && { worker_data: workerForm })
-                                    };
+                                        previous_renewal_date: e.target.value,
+                                    })
+                                }
+                            />
 
-                                    setFinalPayload(payload);   // 🔥 store it
-                                    setOpenReport(true);       // 🔥 open modal
+                        </div>
+                        <div className="col-start-4">
+                            <p className="text-xs text-gray-400 mb-1">Current Renewal Date:</p>
+                            <input
+                                type="date"
+                                disabled={true}
+                                value={new Date().toISOString().split("T")[0]}
+                                className="bg-gray-900 rounded text-xs p-2 w-full"
+                            />
+                        </div>
+                    </div>
+                    <div className="col-span-4 text-sm text-gray-400 mt-4 mb-2">Parameters</div>
+                    <div className="grid grid-cols-4 gap-3 rounded-lg">
+                        <select
+                            className="w-full bg-gray-900 outline-none border-none col-span-2 rounded text-xs p-2"
+                            placeholder="Blood Group"
+                            value={renewalForm.blood_group}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, blood_group: e.target.value })}
+                        >
+                            <option value="">Blood Group</option>
+                            <option value="A+">A POSITIVE</option>
+                            <option value="A-">A NEGATIVE</option>
+                            <option value="B+">B POSITIVE</option>
+                            <option value="B-">B NEGATIVE</option>
+                            <option value="AB+">AB POSITIVE</option>
+                            <option value="AB-">AB NEGATIVE</option>
+                            <option value="O+">O POSITIVE</option>
+                            <option value="O-">O NEGATIVE</option>
+                        </select>
+                        <input
+                            type="text"
+                            className="col-span-2 bg-gray-900 p-2 rounded text-xs"
+                            placeholder="General Condition"
+                            value={renewalForm.general_condition}
+                            onChange={(e) => setRenewalForm({ ...renewalForm, general_condition: e.target.value })}
+                        />
+                        {[
+                            ["pulse", "Heart Rate"],
+                        ].map(([key, label]) => (
+                            <div>
+                                <input
+                                    type="number"
+                                    key={key}
+                                    placeholder={label}
+                                    className={`bg-gray-900 p-2 rounded text-xs w-full focus:outline-none ${pulseDiagnosis.border}`}
+                                    value={renewalForm[key]}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                                />
+                                <p className={`text-xs ${pulseDiagnosis.color}`}>{pulseDiagnosis.text}</p>
+                            </div>
+                        ))}
+                        {[
+                            ["systolic", "Sytolic Pressure"],
+                            ["diastolic", "Diastolic Pressure"],
+                        ].map(([key, label]) => (
+                            <div>
+                                <input
+                                    type="number"
+                                    key={key}
+                                    placeholder={label}
+                                    className={`bg-gray-900 p-2 rounded text-xs w-full focus:outline-none ${bpDiagnosis.border}`}
+                                    value={renewalForm[key]}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                                />
+                                <p className={`text-xs ${bpDiagnosis.color} ${key === "diastolic" ? ("hidden") : ("")}`}>{bpDiagnosis.text}</p>
+                            </div>
+                        ))}
+                        {[
+                            ["spo2", "SpO2"]
+                        ].map(([key, label]) => (
+                            <div>
+                                <input
+                                    type="number"
+                                    key={key}
+                                    placeholder={label}
+                                    className={`bg-gray-900 p-2 rounded text-xs w-full focus:outline-none ${spo2Diagnosis.border}`}
+                                    value={renewalForm[key]}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                                />
+                                <p className={`text-xs ${spo2Diagnosis.color}`}>{spo2Diagnosis.text}</p>
+                            </div>
+                        ))}
+                        {[
+                            ["height", "Height"],
+                            ["weight", "Weight"]
+                        ].map(([key, label]) => (
+                            <div>
+                                <input
+                                    type="number"
+                                    key={key}
+                                    placeholder={label}
+                                    className={`bg-gray-900 p-2 rounded text-xs w-full focus:outline-none`}
+                                    value={renewalForm[key]}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, [key]: e.target.value })}
+                                />
+                            </div>
+                        ))}
+                        <div>
+                            <input
+                                type="text"
+                                className="bg-gray-900 p-2 rounded w-full text-xs"
+                                placeholder="Remarks"
+                                value={renewalForm.remarks}
+                                onChange={(e) => setRenewalForm({ ...renewalForm, remarks: e.target.value })}
+                            />
+                        </div>
+                        <button
+                            className="border-2 border-blue-900 bg-transparent text-blue-500 p-2 rounded text-xs"
+                            onClick={() => {
+                                if (!selectedWorker) {
+                                    alert("Please select a worker first");
+                                    return;
+                                }
+
+                                // fetchWorkerVision(selectedWorker.id);
+                                setOpenVision(true);
+                            }}
+                        >
+                            Vision Examination
+                        </button>
+                    </div>
+
+                    <p className="text-xs text-gray-400 mt-3">Vertigo Test:</p>
+                    <div className="grid grid-cols-4 gap-3 rounded-lg mt-2">
+                        <div className="col-span-4 grid grid-cols-9 flex items-center">
+
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    name="vertigo_test_passed"
+                                    checked={renewalForm.vertigo_test_passed === "Passed"}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Passed" })}
+                                />
+                                <p className="text-xs">Passed</p>
+                            </label>
+                            <label className="flex items-center gap-2">
+                                <input
+                                    name="vertigo_test_passed"
+                                    type="radio"
+                                    checked={renewalForm.vertigo_test_passed === "Failed"}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Failed" })}
+                                />
+                                <p className="text-xs">Not Passed</p>
+                            </label>
+                            <label className="flex items-center gap-2">
+                                <input
+                                    name="vertigo_test_passed"
+                                    type="radio"
+                                    checked={renewalForm.vertigo_test_passed === "Not Done"}
+                                    onChange={(e) => setRenewalForm({ ...renewalForm, vertigo_test_passed: "Not Done" })}
+                                />
+                                <p className="text-xs">Not Done</p>
+                            </label>
+                        </div>
+                        <div className="col-span-4 grid grid-cols-4">
+                            <div className="flex justify-end col-start-4">
+                                <button
+                                    className="bg-green-700 w-1/2 p-2 flex items-center justify-center gap-2 rounded"
+                                    disabled={saveLoading}
+                                    onClick={async () => {
+                                        try {
+
+                                            if (!selectedWorker && !isNewWorker) {
+                                                alert("Please Select a Worker or Add New Worker for Renewal");
+                                                return;
+                                            }
+
+                                            if (!renewalForm.previous_renewal_date || renewalForm.previous_renewal_date === null) {
+                                                alert("'Last Date of Renewal' cannot be empty");
+                                                return;
+                                            }
+
+                                            if (renewalForm.pulse > 104) {
+                                                alert("Elevated Heart Rate. Candidate not eligible for ID Renewal");
+                                                return;
+                                            }
+
+                                            if (renewalForm.systolic > 140 || renewalForm.diastolic > 90) {
+                                                alert("Elevated Blood Pressure. Candidate not eligible for ID Renewal");
+                                                return;
+                                            }
+
+                                            if (renewalForm.spo2 && renewalForm.spo2 < 95) {
+                                                alert("Low Oxygen Saturation. Candidate not eligible for ID Renewal");
+                                                return;
+                                            }
+
+                                            // const payload = {
+                                            //     ...renewalForm,
+                                            //     opthalmic_examination: visionForm
+                                            // };
+
+                                            // setSaveLoading(true);
+
+                                            // // Existing worker
+                                            // if (selectedWorker) {
+                                            //     payload.worker_id = selectedWorker.id;
+                                            // }
+
+                                            // // New worker
+                                            // if (isNewWorker) {
+                                            //     payload.worker_data = workerForm;
+                                            // }
+
+                                            // const res = await api.post("/api/id-renewal/renew", payload);
+
+
+                                            // alert("ID renewed successfully");
+
+                                            // setSelectedWorker(null);
+                                            // setRenewalForm({
+                                            //     previous_renewal_date: "",
+                                            //     blood_group: "",
+                                            //     general_condition: "",
+                                            //     pulse: "",
+                                            //     systolic: "",
+                                            //     diastolic: "",
+                                            //     spo2: "",
+                                            //     height: "",
+                                            //     weight: "",
+                                            //     remarks: "",
+                                            //     vertigo_test_passed: true,
+                                            // });
+                                            // setIsNewWorker(false);
+                                            const payload = {
+                                                ...renewalForm,
+                                                opthalmic_examination: visionForm,
+                                                worker_id: selectedWorker?.id,
+                                                ...(isNewWorker && { worker_data: workerForm })
+                                            };
+
+                                            setFinalPayload(payload);   // 🔥 store it
+                                            setOpenReport(true);       // 🔥 open modal
+
+                                        } catch (err) {
+                                            console.error(err);
+                                            console.log(err);
+                                            alert("Failed to renew ID");
+                                        } finally {
+                                            setSaveLoading(false);
+                                        }
+                                    }}
+                                >
+                                    {saveLoading ? (
+                                        "Loading"
+                                    ) : (
+                                        <>
+                                            <FaIdCardClip />
+                                            Renew ID</>)}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {openVision && (
+                        <VisionCheckModal
+                            vision={visionForm}
+                            worker={selectedWorker}
+                            instance={"id-renewal"}
+                            onClose={() => {
+                                setOpenVision(false);
+                            }}
+                            onSave={(data) => {
+                                setVisionForm(data.opthalmic_examination);
+                            }}
+                        />
+                    )}
+                    {openReport && (
+                        <IdRenewalReportModal
+                            data={{
+                                ...finalPayload,
+                                date_of_renewal: new Date().toISOString(),
+                                name: selectedWorker?.name || workerForm.name,
+                                designation: selectedWorker?.designation || workerForm.designation,
+                                employee_id: selectedWorker?.employee_id || workerForm.employee_id,
+                                contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
+                            }}
+                            onClose={() => setOpenReport(false)}
+                            onConfirm={async () => {
+                                try {
+                                    setSaveLoading(true);
+
+                                    await api.post("/api/id-renewal/renew", finalPayload);
+
+                                    alert("ID renewed successfully ✅");
+
+                                    setOpenReport(false);
+                                    setSelectedWorker(null);
+                                    setVisionForm(null);
+                                    setRenewalForm({
+                                        previous_renewal_date: "",
+                                        blood_group: "",
+                                        general_condition: "",
+                                        pulse: "",
+                                        systolic: "",
+                                        diastolic: "",
+                                        spo2: "",
+                                        height: "",
+                                        weight: "",
+                                        remarks: "",
+                                        vertigo_test_passed: true,
+                                    });
 
                                 } catch (err) {
                                     console.error(err);
-                                    console.log(err);
-                                    alert("Failed to renew ID");
+                                    alert("Failed to renew ID ❌");
                                 } finally {
                                     setSaveLoading(false);
                                 }
                             }}
-                        >
-                            {saveLoading ? (
-                                "Loading"
-                            ) : (
-                                <>
-                                    <FaIdCardClip />
-                                    Renew ID</>)}
-                        </button>
-                    </div>
+                        />
+                    )}
                 </div>
-            </div>
-            {openVision && (
-                <VisionCheckModal
-                    vision={visionForm}
-                    worker={selectedWorker}
-                    instance={"id-renewal"}
-                    onClose={() => {
-                        setOpenVision(false);
-                    }}
-                    onSave={(data) => {
-                        setVisionForm(data.opthalmic_examination);
-                    }}
-                />
             )}
-            {openReport && (
-                <IdRenewalReportModal
-                    data={{
-                        ...finalPayload,
-                        date_of_renewal: new Date().toISOString(),
-                        name: selectedWorker?.name || workerForm.name,
-                        designation: selectedWorker?.designation || workerForm.designation,
-                        employee_id: selectedWorker?.employee_id || workerForm.employee_id,
-                        contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
-                    }}
-                    onClose={() => setOpenReport(false)}
-                    onConfirm={async () => {
-                        try {
-                            setSaveLoading(true);
-
-                            await api.post("/api/id-renewal/renew", finalPayload);
-
-                            alert("ID renewed successfully ✅");
-
-                            setOpenReport(false);
-                            setSelectedWorker(null);
-                            setVisionForm(null);
-                            setRenewalForm({
-                                previous_renewal_date: "",
-                                blood_group: "",
-                                general_condition: "",
-                                pulse: "",
-                                systolic: "",
-                                diastolic: "",
-                                spo2: "",
-                                height: "",
-                                weight: "",
-                                remarks: "",
-                                vertigo_test_passed: true,
-                            });
-
-                        } catch (err) {
-                            console.error(err);
-                            alert("Failed to renew ID ❌");
-                        } finally {
-                            setSaveLoading(false);
-                        }
-                    }}
-                />
+            {tab === "list" && (
+                <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
+                    <h2 className="text-sm font-bold mb-3">LIST OF RENEWED IDs</h2>
+                </div>
             )}
         </div>
     );
