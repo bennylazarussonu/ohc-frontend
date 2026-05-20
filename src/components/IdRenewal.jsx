@@ -21,6 +21,9 @@ function IdRenewal() {
     const [visionForm, setVisionForm] = useState(null);
     const [renewedIds, setRenewedIds] = useState([]);
     const [renewedIdsLoading, setRenewedIdsLoading] = useState(false);
+    const [renewedSearch, setRenewedSearch] = useState("");
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -311,6 +314,40 @@ function IdRenewal() {
             setRenewedIdsLoading(false);
         }
     };
+
+    const filteredRenewedIds = renewedIds.filter((item) => {
+
+    const search = renewedSearch.toLowerCase();
+
+    const matchesSearch =
+        item.worker?.name?.toLowerCase().includes(search) ||
+        item.worker?.employee_id?.toLowerCase().includes(search) ||
+        item.worker?.fathers_name?.toLowerCase().includes(search);
+
+    const renewalDate = new Date(item.date_of_renewal);
+
+    let matchesFromDate = true;
+    let matchesToDate = true;
+
+    if (fromDate) {
+        matchesFromDate =
+            renewalDate >= new Date(fromDate);
+    }
+
+    if (toDate) {
+        const endDate = new Date(toDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        matchesToDate =
+            renewalDate <= endDate;
+    }
+
+    return (
+        matchesSearch &&
+        matchesFromDate &&
+        matchesToDate
+    );
+});
 
     return (
         <div className="">
@@ -918,7 +955,71 @@ function IdRenewal() {
             {tab === "list" && (
                 <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
                     <h2 className="text-sm font-bold mb-3">LIST OF RENEWED IDs</h2>
-                    <div className="h-[420px]">
+                    <div className="flex gap-3 mb-4 items-end">
+
+    <div className="w-1/2">
+        <p className="text-xs text-gray-400 mb-1">
+            Search
+        </p>
+
+        <div className="flex items-center gap-2 bg-gray-900 rounded px-2">
+            <FaMagnifyingGlass className="text-gray-400 text-xs" />
+
+            <input
+                type="text"
+                placeholder="Search Name, Employee ID, Father Name"
+                className="bg-transparent outline-none p-2 text-xs w-full"
+                value={renewedSearch}
+                onChange={(e) =>
+                    setRenewedSearch(e.target.value)
+                }
+            />
+        </div>
+    </div>
+
+    <div>
+        <p className="text-xs text-gray-400 mb-1">
+            From
+        </p>
+
+        <input
+            type="date"
+            className="bg-gray-900 rounded p-2 text-xs"
+            value={fromDate}
+            onChange={(e) =>
+                setFromDate(e.target.value)
+            }
+        />
+    </div>
+
+    <div>
+        <p className="text-xs text-gray-400 mb-1">
+            To
+        </p>
+
+        <input
+            type="date"
+            className="bg-gray-900 rounded p-2 text-xs"
+            value={toDate}
+            onChange={(e) =>
+                setToDate(e.target.value)
+            }
+        />
+    </div>
+
+    <button
+        className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-xs"
+        onClick={() => {
+            setRenewedSearch("");
+            setFromDate("");
+            setToDate("");
+        }}
+    >
+        Clear
+    </button>
+
+</div>
+                    <div className="h-[350px] overflow-scroll no-scrollbar">
                         <table className="w-full text-sm border">
                             <thead className="bg-gray-900">
                                 <tr>
@@ -940,7 +1041,7 @@ function IdRenewal() {
                                             Loading...
                                         </td>
                                     </tr>
-                                ) : renewedIds.length === 0 ? (
+                                ) : filteredRenewedIds.length === 0 ? (
                                     <tr>
                                         <td
                                             colSpan={6}
@@ -950,7 +1051,7 @@ function IdRenewal() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    renewedIds.map((item) => (
+                                    filteredRenewedIds.map((item) => (
                                         <tr
                                             key={item.id}
                                             className="hover:bg-gray-700"
