@@ -1,4 +1,4 @@
-import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaUserPlus, FaUser, FaPenToSquare, FaIdCardClip, FaFloppyDisk, FaEye } from "react-icons/fa6";
 import api from "../api/axios";
 import { useState, useRef, useEffect } from "react";
 import VisionCheckModal from "./VisionCheckModal.jsx";
@@ -19,6 +19,8 @@ function IdRenewal() {
     const [openReport, setOpenReport] = useState(false);
     const [finalPayload, setFinalPayload] = useState(null);
     const [visionForm, setVisionForm] = useState(null);
+    const [renewedIds, setRenewedIds] = useState([]);
+    const [renewedIdsLoading, setRenewedIdsLoading] = useState(false);
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -152,6 +154,12 @@ function IdRenewal() {
             alert("Failed to fetch previous renewal");
         }
     };
+
+    useEffect(() => {
+        if (tab === "list") {
+            fetchRenewedIds();
+        }
+    }, [tab]);
 
     useEffect(() => {
         const pulse = renewalForm.pulse;
@@ -288,13 +296,29 @@ function IdRenewal() {
     //   }
     // };
 
+    const fetchRenewedIds = async () => {
+        try {
+            setRenewedIdsLoading(true);
+
+            const res = await api.get("/api/id-renewal/list");
+
+            setRenewedIds(res.data || []);
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to fetch renewed IDs");
+        } finally {
+            setRenewedIdsLoading(false);
+        }
+    };
+
     return (
         <div className="">
             <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
-                <div onClick={() => { setTab("renewal") }} className="cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center">
+                <div onClick={() => { setTab("renewal") }} className={`cursor-pointer w-1/2 ${tab === "renewal" ? ("bg-blue-600") : ("bg-gray-700")} rounded p-1 font-semibold text-sm text-center`}>
                     ID Renewal
                 </div>
-                <div onClick={() => { setTab("list") }} className="cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center">
+                <div onClick={() => { setTab("list") }} className={`cursor-pointer w-1/2 ${tab === "list" ? ("bg-blue-600") : ("bg-gray-700")} rounded p-1 font-semibold text-sm text-center`}>
                     List of Renewed IDs
                 </div>
             </div>
@@ -894,6 +918,82 @@ function IdRenewal() {
             {tab === "list" && (
                 <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
                     <h2 className="text-sm font-bold mb-3">LIST OF RENEWED IDs</h2>
+                    <div className="h-[420px]">
+                        <table className="w-full text-sm border">
+                            <thead className="bg-gray-900">
+                                <tr>
+                                    <th className="p-2 border">Worker Name</th>
+                                    <th className="p-2 border">Fathers Name</th>
+                                    <th className="p-2 border">Employee ID</th>
+                                    <th className="p-2 border">General Condition</th>
+                                    <th className="p-2 border">Renewal Date</th>
+                                    <th className="p-2 border">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {renewedIdsLoading ? (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="text-center p-4 text-gray-400"
+                                        >
+                                            Loading...
+                                        </td>
+                                    </tr>
+                                ) : renewedIds.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="text-center p-4 text-gray-400"
+                                        >
+                                            No Renewed IDs Found
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    renewedIds.map((item) => (
+                                        <tr
+                                            key={item.id}
+                                            className="hover:bg-gray-700"
+                                        >
+                                            <td className="p-2 border text-xs">
+                                                {item.worker?.name || "-"}
+                                            </td>
+
+                                            <td className="p-2 border text-xs">
+                                                {item.worker?.fathers_name || "-"}
+                                            </td>
+
+                                            <td className="p-2 border text-xs">
+                                                {item.worker?.employee_id || "-"}
+                                            </td>
+
+                                            <td className="p-2 border text-xs">
+                                                {item.general_condition || "-"}
+                                            </td>
+
+                                            <td className="p-2 border text-xs">
+                                                {formatDateDMY(item.date_of_renewal)}
+                                            </td>
+
+                                            <td className="p-2 border text-xs flex justify-between">
+                                                <button
+                                                    className="text-blue-400 hover:text-blue-700 px-2 py-1 rounded"
+                                                    onClick={() => {
+                                                        console.log(item);
+                                                    }}
+                                                >
+                                                    <FaEye/>
+                                                </button>
+                                                <button className="text-green-500 hover:text-green-700 px-2 py-2 rounded">
+                                                    <FaPenToSquare/>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>
