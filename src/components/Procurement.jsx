@@ -364,25 +364,33 @@ function Procurement() {
 
             const brandCell = worksheet.getCell(`C${rowNumber}`);
 
-            // 🔥 DROPDOWN + CUSTOM TYPING
-            brandCell.dataValidation = {
+            // SAFELY CLEAN BRANDS
+            const safeBrands = (item.brands || [])
+                .filter(Boolean)
+                .map(b =>
+                    String(b)
+                        .replace(/"/g, '""')
+                        .replace(/,/g, '')
+                        .replace(/&/g, 'and')
+                        .trim()
+                )
+                .filter(Boolean);
 
-                type: "list",
-
-                allowBlank: true,
-
-                formulae: [
-                    `"${item.brands.join(",")}"`
-                ],
-
-                showInputMessage: true,
-
-                promptTitle: "Available Brands",
-
-                prompt: item.brands.join(", "),
-
-                showErrorMessage: false
-            };
+            // ONLY APPLY VALIDATION IF SAFE
+            if (
+                safeBrands.length &&
+                safeBrands.join(",").length < 250
+            ) {
+                brandCell.dataValidation = {
+                    type: "list",
+                    allowBlank: true,
+                    formulae: [`"${safeBrands.join(",")}"`],
+                    showInputMessage: true,
+                    promptTitle: "Available Brands",
+                    prompt: safeBrands.join(", "),
+                    showErrorMessage: false
+                };
+            }
         });
 
         // BORDERS
