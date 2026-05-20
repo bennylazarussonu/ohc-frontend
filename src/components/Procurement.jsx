@@ -897,7 +897,7 @@ function Procurement() {
                 </div>
             </div>
             {editModal && editingItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[90]">
                     <div className="bg-gray-800 p-4 rounded w-1/3">
                         <h2 className="text-sm font-semibold mb-3">Edit Medicine</h2>
                         {console.log(editingItem)}
