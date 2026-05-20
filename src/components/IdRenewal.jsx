@@ -6,8 +6,10 @@ import { useState, useRef, useEffect } from "react";
 import VisionCheckModal from "./VisionCheckModal.jsx";
 import IdRenewalReportModal from "./IdRenewalReportModal.jsx";
 import { formatDateDMY } from "../utils/date.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function IdRenewal() {
+    const {user, loading} = useAuth();
     const [tab, setTab] = useState("renewal");
     const [workerSearch, setWorkerSearch] = useState("");
     const [workerResults, setWorkerResults] = useState([]);
@@ -26,6 +28,7 @@ function IdRenewal() {
     const [renewedSearch, setRenewedSearch] = useState("");
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
+    const [viewReportData, setViewReportData] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -963,51 +966,7 @@ function IdRenewal() {
                             }}
                         />
                     )}
-                    {openReport && (
-                        <IdRenewalReportModal
-                            data={{
-                                ...finalPayload,
-                                date_of_renewal: new Date().toISOString(),
-                                name: selectedWorker?.name || workerForm.name,
-                                designation: selectedWorker?.designation || workerForm.designation,
-                                employee_id: selectedWorker?.employee_id || workerForm.employee_id,
-                                contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name
-                            }}
-                            onClose={() => setOpenReport(false)}
-                            onConfirm={async () => {
-                                try {
-                                    setSaveLoading(true);
-
-                                    await api.post("/api/id-renewal/renew", finalPayload);
-
-                                    alert("ID renewed successfully ✅");
-
-                                    setOpenReport(false);
-                                    setSelectedWorker(null);
-                                    setVisionForm(null);
-                                    setRenewalForm({
-                                        previous_renewal_date: "",
-                                        blood_group: "",
-                                        general_condition: "",
-                                        pulse: "",
-                                        systolic: "",
-                                        diastolic: "",
-                                        spo2: "",
-                                        height: "",
-                                        weight: "",
-                                        remarks: "",
-                                        vertigo_test_passed: true,
-                                    });
-
-                                } catch (err) {
-                                    console.error(err);
-                                    alert("Failed to renew ID ❌");
-                                } finally {
-                                    setSaveLoading(false);
-                                }
-                            }}
-                        />
-                    )}
+                    
                 </div>
             )}
             {tab === "list" && (
@@ -1089,12 +1048,12 @@ function IdRenewal() {
                         </button>
 
                     </div>
-                    
+
                     <div className="flex w-full justify-between mb-2">
-                        
+
                         <div>
                             <p className="text-xs text-gray-400">Showing: <b className="font-semibold text-xs text-white">{filteredRenewedIds.length} Records</b></p>
-                            
+
                         </div>
                         <div>
                             <p className="text-xs text-gray-400">Total Records: <b className="text-white font-semibold">{renewedIds.length}</b></p>
@@ -1161,7 +1120,20 @@ function IdRenewal() {
                                                 <button
                                                     className="text-blue-400 hover:text-blue-700 px-2 py-1 rounded"
                                                     onClick={() => {
-                                                        console.log(item);
+
+                                                        setViewReportData({
+                                                            ...item,
+
+                                                            name: item.worker?.name,
+                                                            designation: item.worker?.designation,
+                                                            employee_id: item.worker?.employee_id,
+                                                            contractor_name: item.worker?.contractor_name,
+
+                                                            systolic: item.blood_pressure?.systolic,
+                                                            diastolic: item.blood_pressure?.diastolic,
+                                                        });
+
+                                                        setOpenReport(true);
                                                     }}
                                                 >
                                                     <FaEye />
@@ -1178,6 +1150,85 @@ function IdRenewal() {
                     </div>
                 </div>
             )}
+            {openReport && (
+                        <IdRenewalReportModal
+                            data={
+                                viewReportData
+                                    ? viewReportData
+                                    : {
+                                        ...finalPayload,
+                                        date_of_renewal: new Date().toISOString(),
+                                        name: selectedWorker?.name || workerForm.name,
+                                        designation: selectedWorker?.designation || workerForm.designation,
+                                        employee_id: selectedWorker?.employee_id || workerForm.employee_id,
+                                        contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name,
+                                        test_done_by: {
+                                            id: user.id,
+                                            role: user.role,
+                                            userId: user.userId,
+                                        }
+                                    }
+                            }
+
+                            viewOnly={!!viewReportData}
+
+                            onClose={() => {
+                                setOpenReport(false);
+                                setViewReportData(null);
+                            }}
+
+                            onConfirm={async () => {
+
+                                try {
+
+
+                                    setSaveLoading(true);
+
+                                    await api.post(
+                                        "/api/id-renewal/renew",
+                                        {...finalPayload, test_done_by: {id: user.id,
+                                            role: user.role,
+                                            userId: user.userId,} }
+                                    );
+
+                                    alert("ID renewed successfully ✅");
+
+                                    setOpenReport(false);
+
+                                    setViewReportData(null);
+
+                                    setSelectedWorker(null);
+
+                                    setVisionForm(null);
+
+                                    setRenewalForm({
+                                        previous_renewal_date: "",
+                                        blood_group: "",
+                                        general_condition: "",
+                                        pulse: "",
+                                        systolic: "",
+                                        diastolic: "",
+                                        spo2: "",
+                                        height: "",
+                                        weight: "",
+                                        remarks: "",
+                                        vertigo_test_passed: true,
+                                    });
+
+                                } catch (err) {
+
+                                    console.error(err);
+
+                                    alert("Failed to renew ID ❌");
+
+                                } finally {
+
+                                    setSaveLoading(false);
+
+                                }
+                            }}
+                        />
+                    )}
         </div>
     );
 }

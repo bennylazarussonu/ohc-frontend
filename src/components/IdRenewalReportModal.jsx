@@ -2,7 +2,7 @@ import { FaX, FaPrint } from "react-icons/fa6";
 import letterhead from "../assets/preemp_banner.png";
 import { formatDateDMY } from "../utils/date";
 
-function IdRenewalReportModal({ data, onClose, onConfirm }) {
+function IdRenewalReportModal({ data, onClose, onConfirm, viewOnly = false }) {
   console.log(data);
   const printReport = () => {
     const element = document.getElementById("print-area");
@@ -116,10 +116,17 @@ function IdRenewalReportModal({ data, onClose, onConfirm }) {
   }
 
   const calculateExpiredDate = (prevRenewalDate) => {
-    if (!prevRenewalDate) return "—";
-    const prev_renewal_date = new Date(prevRenewalDate);
-    return prev_renewal_date.setMonth(prev_renewal_date.getMonth() + 3);
-  }
+
+    if (!prevRenewalDate) return null;
+
+    const expiryDate = new Date(prevRenewalDate);
+
+    expiryDate.setMonth(
+      expiryDate.getMonth() + 3
+    );
+
+    return expiryDate;
+  };
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-start overflow-auto">
       <div className="w-[95%] max-w-5xl">
@@ -132,14 +139,16 @@ function IdRenewalReportModal({ data, onClose, onConfirm }) {
             className="bg-green-600 px-4 py-2 rounded flex items-center gap-2"
           >
             <FaPrint />
-            Print
+            {viewOnly ? "Print Report" : "Print Preview"}
           </button>
-          <button
-            onClick={onConfirm}
-            className="bg-green-600 px-4 py-2 rounded"
-          >
-            Confirm & Save
-          </button>
+          {!viewOnly && (
+            <button
+              onClick={onConfirm}
+              className="bg-green-600 px-4 py-2 rounded"
+            >
+              Confirm & Save
+            </button>
+          )}
         </div>
 
         {/* REPORT */}
@@ -352,12 +361,12 @@ function IdRenewalReportModal({ data, onClose, onConfirm }) {
 
           <div className="flex mt-20 w-full justify-end">
             <div className="w-1/5 text-center font-semibold">
-            <p>
-              DR P S SUNDAR RAJ
-            </p>
-            <p>CHIEF MEDICAL OFFICER</p>
-            <p>M.B.B.S, A.F.I.H, M.B.A</p>
-            <p>Regn No: 36928</p>
+              <p>
+                DR P S SUNDAR RAJ
+              </p>
+              <p>CHIEF MEDICAL OFFICER</p>
+              <p>M.B.B.S, A.F.I.H, M.B.A</p>
+              <p>Regn No: 36928</p>
             </div>
           </div>
 
