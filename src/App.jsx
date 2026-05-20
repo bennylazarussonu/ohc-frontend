@@ -1,7 +1,7 @@
 import BulkUpload from './components/Workers.jsx';
 import BulkMedicineUpload from './components/Medicines.jsx';
 import { FaPenToSquare, FaRegFloppyDisk, FaUser, FaUserDoctor, FaUserPlus } from 'react-icons/fa6'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef} from 'react';
 import api from './api/axios';
 import WorkerSection from './components/WorkerSection';
 import OPDSection from './components/OPDSection';
@@ -56,6 +56,7 @@ function App() {
   const [OPDHistoryModalOpen, setOPDHistoryModalOpen] = useState(false);
   const isEditing = !!editingOpdId;
   const hasDoctorInRecord = !!opd?.treating_doctor_id;
+  const timerRef = useRef(null);
   // const [forConsultation, setForConsultation] = useState(false);
   console.log(user);
 
@@ -103,28 +104,32 @@ function App() {
     });
   }, [user, opdTab, editingFromConsultation]);
 
+  
 
-  let timer;
   const searchWorkers = (value) => {
-    setWorkerSearch(value);
-    clearTimeout(timer);
+  setWorkerSearch(value);
 
-    if (value.trim().length < 2) {
-      setWorkerResults([]);
-      return;
-    }
+  if (timerRef.current) {
+    clearTimeout(timerRef.current);
+  }
 
+  if (value.trim().length < 2) {
+    setWorkerResults([]);
+    return;
+  }
+
+  timerRef.current = setTimeout(async () => {
     try {
-      timer = setTimeout(async () => {
-        const res = await api.get("/api/workers/search", {
-          params: { q: value }
-        });
-        setWorkerResults(res.data);
-      }, 300);
+      const res = await api.get("/api/workers/search", {
+        params: { q: value }
+      });
+
+      setWorkerResults(res.data);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, 300);
+};
 
 
 
@@ -479,6 +484,12 @@ function App() {
     };
     fetchMsg();
   }, []);
+  
+  useEffect(() => {
+  if (user?.role === "EMPLOYEE") {
+    setOpdTab("new");
+  }
+}, [user]);
 
   if (loading) return <p>Loading...</p>;
   if (!user) return <Login />;
@@ -486,6 +497,8 @@ function App() {
   const isDoctor = user?.role === "DOCTOR";
   const isAdmin = user?.role === "ADMIN";
   const isEmployee = user?.role === "EMPLOYEE";
+
+  
 
   const isNew = opdTab === "new" && !editingOpdId;
   const isReportsEdit = editingFromReports;
@@ -512,7 +525,7 @@ function App() {
 
     // EMPLOYEE rules
     if (isEmployee) {
-      return isNew;
+      return true;
     }
 
     return false;
@@ -523,7 +536,7 @@ function App() {
     <div className="flex flex-row-reverse items-center gap-2 w-full mt-2">
       <select
         className="w-2/8 p-1 bg-gray-700 rounded text-[12.5px]"
-        value={effectiveDoctorId}
+        value={effectiveDoctorId || ""}
         disabled={!isDoctorSelectable}
         onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
       >
@@ -809,6 +822,7 @@ function App() {
                           onSelect={async (worker) => {
                             const workerOPDHistoryRes = await api.get(`/api/workers/${worker.id}/opds`);
                             setWorkerOPDHistory(workerOPDHistoryRes.data);
+                            console.log("Selected Worker: ", worker);
                             setSelectedWorker(worker);
                             setIsNewWorker(false);
                             setWorkerForm({
@@ -825,8 +839,11 @@ function App() {
                                 ? worker.date_of_joining.split("T")[0]
                                 : ""
                             });
-                            setWorkerSearch("");
-                            setWorkerResults([]);
+
+setTimeout(() => {
+  setWorkerSearch("");
+  setWorkerResults([]);
+}, 0);
                           }}
                         />
 

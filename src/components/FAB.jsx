@@ -1,4 +1,4 @@
-import { FaCalendarCheck, FaEye, FaFileExcel, FaHandHoldingMedical, FaList, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
+import { FaCalendarCheck, FaClockRotateLeft, FaEye, FaFileExcel, FaHandHoldingMedical, FaList, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
@@ -85,6 +85,13 @@ function FAB() {
     const [zoneLocation, setZoneLocation] = useState("");
     const [consumptionModal, setConsumptionModal] = useState(false);
     const [consumptionLogs, setConsumptionLogs] = useState([]);
+    const [historyModal,
+        setHistoryModal]
+        = useState(false);
+
+    const [visitHistory,
+        setVisitHistory]
+        = useState([]);
 
     console.log(consumptionLogs);
 
@@ -775,6 +782,224 @@ function FAB() {
             );
         }
     };
+
+    const openHistory = async (
+        zone
+    ) => {
+
+        try {
+
+            const res =
+                await api.get(
+
+                    `/api/fab/inventory/${zone.id}/history`
+                );
+
+            setVisitHistory(
+                res.data
+            );
+
+            setSelectedZone(zone);
+
+            setHistoryModal(true);
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Failed to load history"
+            );
+        }
+    };
+    const downloadHistoryExcel = () => {
+
+    const workbook =
+        XLSX.utils.book_new();
+
+    const rows = [];
+
+    visitHistory.forEach(
+        (entry) => {
+
+            rows.push({
+
+                "Type":
+                    "VISIT",
+
+                "Visit ID":
+                    entry.visit.id,
+
+                "Date":
+                    entry.visit.visit_date
+                        ?.slice(0, 10),
+
+                "Zone":
+                    selectedZone?.zone_name,
+
+                "Location":
+                    selectedZone?.location,
+
+                "Status":
+                    entry.visit.is_closed
+                        ? "Closed"
+                        : "Active",
+
+                "Medicine":
+                    "",
+
+                "Brand":
+                    "",
+
+                "Quantity":
+                    "",
+
+                "Action":
+                    ""
+            });
+
+            entry.consumptions
+                .forEach((item) => {
+
+                    rows.push({
+
+                        "Type":
+                            "CONSUMPTION",
+
+                        "Visit ID":
+                            entry.visit.id,
+
+                        "Date":
+                            entry.visit.visit_date
+                                ?.slice(0, 10),
+
+                        "Zone":
+                            "",
+
+                        "Location":
+                            "",
+
+                        "Status":
+                            "",
+
+                        "Medicine":
+                            item.item_name,
+
+                        "Brand":
+                            item.brand,
+
+                        "Quantity":
+                            item.quantity,
+
+                        "Action":
+                            "USED"
+                    });
+
+                });
+
+            entry.allocations
+                .forEach((item) => {
+
+                    rows.push({
+
+                        "Type":
+                            "REPLACEMENT",
+
+                        "Visit ID":
+                            entry.visit.id,
+
+                        "Date":
+                            entry.visit.visit_date
+                                ?.slice(0, 10),
+
+                        "Zone":
+                            "",
+
+                        "Location":
+                            "",
+
+                        "Status":
+                            "",
+
+                        "Medicine":
+                            item.item_name,
+
+                        "Brand":
+                            item.brand,
+
+                        "Quantity":
+                            item.quantity,
+
+                        "Action":
+                            "ALLOCATED"
+                    });
+
+                });
+
+            rows.push({});
+        }
+    );
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(
+            rows
+        );
+
+    worksheet["!cols"] = [
+
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 25 },
+        { wch: 25 },
+        { wch: 12 },
+        { wch: 40 },
+        { wch: 25 },
+        { wch: 12 },
+        { wch: 15 }
+    ];
+
+    XLSX.utils.book_append_sheet(
+
+        workbook,
+
+        worksheet,
+
+        "Inspection History"
+    );
+
+    const excelBuffer =
+        XLSX.write(workbook, {
+
+            bookType: "xlsx",
+
+            type: "array"
+        });
+
+    const blob = new Blob(
+
+        [excelBuffer],
+
+        {
+
+            type:
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        }
+    );
+
+    const safeDate =
+        new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace(/:/g, "-");
+
+    saveAs(
+
+        blob,
+
+        `${selectedZone?.zone_name}_Inspection_History_${safeDate}.xlsx`
+    );
+};
     return (
         <div className="w-full bg-gray-800 p-6 rounded-xl">
             <h3 className="text-lg font-bold">FIRST AID BOX - FAB</h3>
@@ -870,6 +1095,7 @@ function FAB() {
                                 <th className="p-2 border">Location</th>
                                 <th className="p-2 border">Inspection</th>
                                 <th className="p-2 border">View</th>
+                                <th className="p-2 border">History</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -915,71 +1141,6 @@ function FAB() {
                                         </div>
 
                                     </td>
-                                    {/* <td className="p-2 border">
-                                        <button
-
-                                            onClick={() => {
-
-                                                setVisitZone(zone);
-
-                                                setVisitConfirmModal(true);
-                                            }}
-
-                                            className="p-1 bg-blue-600 flex text-xs items-center gap-2 text-white rounded"
-                                        >
-                                            <FaCalendarCheck />
-
-                                            Start Inspection
-                                        </button>
-
-                                        <button
-                                            onClick={() => openZone(zone)}
-                                            className="p-2 text-sm bg-blue-600 flex items-center gap-2 font-semibold text-white rounded"
-                                        >
-                                            <FaEye />
-                                            Manage Consumption
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-
-                                                try {
-
-                                                    const templateRes =
-                                                        await api.get(
-                                                            `/api/fab/templates/${zone.id}/template-items`
-                                                        );
-
-                                                    const inventoryRes =
-                                                        await api.get(
-                                                            `/api/fab/inventory/${zone.id}/inventory`
-                                                        );
-
-                                                    setTemplateItems(
-                                                        templateRes.data
-                                                    );
-
-                                                    setInventoryBatches(
-                                                        inventoryRes.data
-                                                    );
-
-                                                    setSelectedZone(zone);
-
-                                                    setTemplateViewModal(true);
-
-                                                } catch (err) {
-
-                                                    console.error(err);
-
-                                                    alert("Failed to open template");
-
-                                                }
-
-                                            }}
-                                            className="text-sm bg-purple-600 flex items-center gap-2 p-2 font-semibold text-white rounded">
-                                            <FaList />
-                                            Template & Allocation
-                                        </button>
-                                    </td> */}
 
                                     <td className="p-2 border">
                                         <button
@@ -992,6 +1153,12 @@ function FAB() {
                                         >
                                             <FaEye />
                                             View Details
+                                        </button>
+                                    </td>
+                                    <td className="p-2 border">
+                                        <button onClick={() => openHistory(zone)} className="flex items-center gap-2 rounded bg-orange-400 text-white text-xs p-1">
+                                            <FaClockRotateLeft />
+                                            History
                                         </button>
                                     </td>
                                 </tr>
@@ -1392,7 +1559,7 @@ function FAB() {
 
                                 <p className="text-sm text-gray-400">
 
-                                    {selectedZone?.zone_name}
+                                    {selectedZone?.zone_name} - {selectedZone.location}
                                 </p>
 
                             </div>
@@ -1510,7 +1677,7 @@ function FAB() {
                                             {inventoryBatches.length}
 
                                         </p>
-                                        <div className="h-[300px] overflow-scroll no-scrollbar">
+                                        <div className="h-[245px] overflow-scroll no-scrollbar">
 
 
                                             <table className="w-full border text-sm ">
@@ -1616,8 +1783,7 @@ function FAB() {
 
                                             </table>
                                         </div>
-                                    </div>
-                                    <div className="flex justify-end mt-4">
+                                        <div className="flex justify-end mt-2">
 
                                         <button
 
@@ -1638,6 +1804,8 @@ function FAB() {
                                         </button>
 
                                     </div>
+                                    </div>
+                                    
                                 </div>
                             )}
 
@@ -1662,7 +1830,7 @@ function FAB() {
                                                     </th>
 
                                                     <th className="border p-1">
-                                                        Required Qty
+                                                        Default Quantity
                                                     </th>
 
                                                     <th className="border p-1">
@@ -1670,11 +1838,11 @@ function FAB() {
                                                     </th>
 
                                                     <th className="border p-1">
-                                                        Consumed
+                                                        Deficit
                                                     </th>
 
                                                     <th className="border p-1">
-                                                        Allocate
+                                                        Replace
                                                     </th>
                                                     <th className="border p-1">
                                                         Actions
@@ -1754,7 +1922,7 @@ function FAB() {
                                                                         }
             `}
                                                                 >
-                                                                    Allocate
+                                                                    Replace
                                                                 </button>
 
                                                             </td>
@@ -1819,146 +1987,327 @@ function FAB() {
             )}
             {viewInventoryModal && (
 
-    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-40">
+                <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-40">
 
-        <div className="w-4/5 h-[85vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
+                    <div className="w-4/5 h-[85vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
 
-            <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-between items-center mb-4">
 
-                <div>
+                            <div>
 
-                    <h2 className="text-xl font-bold">
+                                <h2 className="text-xl font-bold">
 
-                        Zone Inventory
+                                    Zone Inventory
 
-                    </h2>
+                                </h2>
 
-                    <p className="text-sm text-gray-400">
+                                <p className="text-sm text-gray-400">
 
-                        {selectedZone?.zone_name}
+                                    {selectedZone?.zone_name}
 
-                    </p>
+                                </p>
 
-                    <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500">
 
-                        Last Inspection:
-                        {" "}
-
-                        {
-                            lastVisit?.visit_date
-                                ?.slice(0, 10)
-
-                            ||
-
-                            "No Visit Yet"
-                        }
-
-                    </p>
-
-                </div>
-
-                <div className="flex gap-2">
-
-                    <button
-                        onClick={downloadExcel}
-                        className="bg-green-700 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
-                    >
-                        <FaFileExcel />
-
-                        Download Excel
-                    </button>
-
-                    <button
-                        onClick={() =>
-                            setViewInventoryModal(false)
-                        }
-                        className="bg-red-600 px-3 py-2 rounded text-sm font-semibold"
-                    >
-                        Close
-                    </button>
-
-                </div>
-
-            </div>
-
-            <div className="h-[calc(100%-80px)] overflow-auto no-scrollbar">
-
-                <table className="w-full border text-sm">
-
-                    <thead className="bg-gray-800 sticky top-0">
-
-                        <tr>
-
-                            <th className="border p-2">
-                                Medicine
-                            </th>
-
-                            <th className="border p-2">
-                                Brand
-                            </th>
-
-                            <th className="border p-2">
-                                Expiry
-                            </th>
-
-                            <th className="border p-2">
-                                Quantity
-                            </th>
-
-                            <th className="border p-2">
-                                Cost
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        {inventoryBatches.map((batch, index) => (
-
-                            <tr key={index}>
-
-                                <td className="border p-2">
-                                    {batch.item_name}
-                                </td>
-
-                                <td className="border p-2">
-                                    {batch.brand}
-                                </td>
-
-                                <td className="border p-2">
+                                    Last Inspection:
+                                    {" "}
 
                                     {
-                                        batch.expiry_date
+                                        lastVisit?.visit_date
                                             ?.slice(0, 10)
+
+                                        ||
+
+                                        "No Visit Yet"
                                     }
 
-                                </td>
+                                </p>
 
-                                <td className="border p-2">
-                                    {batch.quantity}
-                                </td>
+                            </div>
 
-                                <td className="border p-2">
-                                    {batch.per_unit_cost}
-                                </td>
+                            <div className="flex gap-2">
 
-                            </tr>
+                                <button
+                                    onClick={downloadExcel}
+                                    className="bg-green-700 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                                >
+                                    <FaFileExcel />
 
-                        ))}
+                                    Download Excel
+                                </button>
 
-                    </tbody>
+                                <button
+                                    onClick={() =>
+                                        setViewInventoryModal(false)
+                                    }
+                                    className="bg-red-600 px-3 py-2 rounded text-sm font-semibold"
+                                >
+                                    Close
+                                </button>
 
-                </table>
+                            </div>
 
-            </div>
+                        </div>
 
-        </div>
+                        <div className="h-[calc(100%-80px)] overflow-auto no-scrollbar">
 
-    </div>
+                            <table className="w-full border text-sm">
 
-)}
+                                <thead className="bg-gray-800 sticky top-0">
+
+                                    <tr>
+
+                                        <th className="border p-2">
+                                            Medicine
+                                        </th>
+
+                                        <th className="border p-2">
+                                            Brand
+                                        </th>
+
+                                        <th className="border p-2">
+                                            Expiry
+                                        </th>
+
+                                        <th className="border p-2">
+                                            Quantity
+                                        </th>
+
+                                        <th className="border p-2">
+                                            Cost
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {inventoryBatches.map((batch, index) => (
+
+                                        <tr key={index}>
+
+                                            <td className="border p-2">
+                                                {batch.item_name}
+                                            </td>
+
+                                            <td className="border p-2">
+                                                {batch.brand}
+                                            </td>
+
+                                            <td className="border p-2">
+
+                                                {
+                                                    batch.expiry_date
+                                                        ?.slice(0, 10)
+                                                }
+
+                                            </td>
+
+                                            <td className="border p-2">
+                                                {batch.quantity}
+                                            </td>
+
+                                            <td className="border p-2">
+                                                {batch.per_unit_cost}
+                                            </td>
+
+                                        </tr>
+
+                                    ))}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
+            {historyModal && (
+
+                <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-[60]">
+
+                    <div className="w-4/5 h-[85vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
+
+                        <div className="flex justify-between items-center mb-4">
+
+                            <div>
+
+                                <h2 className="text-xl font-bold">
+
+                                    Inspection History
+
+                                </h2>
+
+                                <p className="text-sm text-gray-400">
+
+                                    {selectedZone?.zone_name}
+
+                                </p>
+
+                            </div>
+
+                            <div className="flex gap-2">
+
+    <button
+
+        onClick={downloadHistoryExcel}
+
+        className="bg-green-700 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
+    >
+        <FaFileExcel />
+
+        Download Excel
+    </button>
+
+    <button
+        onClick={() =>
+            setHistoryModal(false)
+        }
+        className="bg-red-600 px-3 py-2 rounded text-sm"
+    >
+        Close
+    </button>
+
+</div>
+
+                        </div>
+
+                        <div className="h-[calc(100%-80px)] overflow-auto no-scrollbar flex flex-col gap-4">
+
+                            {visitHistory.map((entry, index) => (
+
+                                <div
+                                    key={index}
+                                    className="bg-gray-800 rounded p-4"
+                                >
+
+                                    <div className="flex justify-between items-center">
+
+                                        <div>
+
+                                            <h3 className="font-bold">
+
+                                                Visit #{entry.visit.id}
+
+                                            </h3>
+
+                                            <p className="text-sm text-gray-400">
+
+                                                {
+                                                    entry.visit.visit_date
+                                                        ?.slice(0, 10)
+                                                }
+
+                                            </p>
+
+                                        </div>
+
+                                        <div className="text-sm">
+
+                                            {
+                                                entry.visit.is_closed
+                                                    ? "Closed"
+                                                    : "Active"
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-8">
+                                        
+                                    
+                                    <div className="mt-4">
+
+                                        <h4 className="font-semibold text-red-400 mb-2">
+
+                                            Consumption
+
+                                        </h4>
+
+                                        {
+                                            entry.consumptions.length === 0
+
+                                                ?
+
+                                                <p className="text-sm text-gray-500">
+
+                                                    No consumption
+
+                                                </p>
+
+                                                :
+
+                                                entry.consumptions.map((item, idx) => (
+
+                                                    <div
+                                                        key={idx}
+                                                        className="flex justify-between w-full text-sm border-b border-gray-700 py-1"
+                                                    >
+                                                        <p>{item.item_name}</p>
+                                                        {/* {" - "} */}
+                                                        <p className="text-red-500 font-bold ">- {item.quantity}</p>
+                                                    </div>
+
+                                                ))
+                                        }
+
+                                    </div>
+
+                                    <div className="mt-4">
+
+                                        <h4 className="font-semibold text-green-400 mb-2">
+
+                                            Replacements
+
+                                        </h4>
+
+                                        {
+                                            entry.allocations.length === 0
+
+                                                ?
+
+                                                <p className="text-sm text-gray-500">
+
+                                                    No allocations
+
+                                                </p>
+
+                                                :
+
+                                                entry.allocations.map((item, idx) => (
+
+                                                    <div
+                                                        key={idx}
+                                                        className="flex justify-between text-sm border-b border-gray-700 py-1"
+                                                    >
+                                                        <p>{item.item_name}</p>
+                                                        {/* {" - "} */}
+                                                        <p className="font-bold text-green-400">+ {item.quantity}</p>
+                                                    </div>
+
+                                                ))
+                                        }
+
+                                    </div>
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
             {editTemplateModal && (
 
                 <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[90]">

@@ -1,6 +1,6 @@
 import { FaMagnifyingGlass } from "react-icons/fa6";
 
-function WorkerSection({ search, results, onSearch, onSelect }) {
+function WorkerSection({ search, results, onSearch, onSelect, disabled = false }) {
   function formatISTDate(date) {
     return new Date(date).toLocaleDateString("en-GB", {
       timeZone: "Asia/Kolkata"
@@ -30,6 +30,7 @@ function WorkerSection({ search, results, onSearch, onSelect }) {
               key={w.id}
               className="p-2 hover:bg-gray-700 cursor-pointer flex justify-between"
               onClick={() => {
+                if(disabled) return ;
                 onSelect(w);
               }}
             >
