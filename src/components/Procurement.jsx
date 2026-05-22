@@ -1,8 +1,81 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { FaDownload, FaMagnifyingGlass, FaPenToSquare, FaPlus, FaX, FaTrashCan } from "react-icons/fa6";
+import { FaDownload, FaMagnifyingGlass, FaPenToSquare, FaPlus, FaX, FaTrashCan, FaGripVertical, FaAnglesUp, FaAnglesDown } from "react-icons/fa6";
 import * as XLSX from "xlsx-js-style";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
 import { saveAs } from "file-saver";
+
+function SortableRow({ row, index, children, moveRowToTop, moveRowToBottom }) {
+
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition
+    } = useSortable({
+        id: row.row_id
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition
+    };
+
+    return (
+        <tr
+            ref={setNodeRef}
+            style={style}
+            className="border hover:bg-gray-700/40 transition-colors"
+        >
+            {/* DRAG HANDLE */}
+            <td className="sticky left-0 z-20 bg-gray-800 border text-center p-1 w-[80px]">
+                {/* DRAG */}
+                <button
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-white"
+                    title="Drag"
+                >
+                    <FaGripVertical />
+                </button>
+            </td>
+            <td className="sticky left-0 z-20 bg-gray-800 border text-center p-3 w-[80px]">
+
+                <div className="flex items-center gap-1 justify-between">
+
+
+
+                    {/* MOVE TOP */}
+                    <button
+                        onClick={() => moveRowToTop(row.row_id)}
+                        className="text-xs text-blue-400 hover:text-blue-300"
+                        title="Move To Top"
+                    >
+                        <FaAnglesUp />
+                    </button>
+
+                    {/* MOVE BOTTOM */}
+                    <button
+                        onClick={() => moveRowToBottom(row.row_id)}
+                        className="text-xs text-yellow-400 hover:text-yellow-300"
+                        title="Move To Bottom"
+                    >
+                        <FaAnglesDown />
+                    </button>
+
+                </div>
+
+            </td>
+
+            {children}
+        </tr>
+    );
+}
 
 function Procurement() {
     const [procured_from, set_procured_from] = useState("");
@@ -122,6 +195,7 @@ function Procurement() {
 
         // build procurement rows from BUList
         const rows = res.data.map(item => ({
+            row_id: crypto.randomUUID(),
             bulist_id: item.id,
             item_name: item.item_name,
             category: item.category ? item.category : "",
@@ -186,11 +260,70 @@ function Procurement() {
 
     }, [editingItem?.item_name, editingItem?.medicine_id]);
 
-    const filteredRows = procurementRows
-        .map((row, originalIndex) => ({ ...row, originalIndex }))
-        .filter(r =>
-            r.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredRows = procurementRows.filter(r =>
+        r.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const updateRow = (row_id, updater) => {
+
+        setProcurementRows(prev =>
+            prev.map(row =>
+                row.row_id === row_id
+                    ? updater(row)
+                    : row
+            )
         );
+    };
+
+    const handleDragEnd = (event) => {
+
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) return;
+
+        setProcurementRows(items => {
+
+            const oldIndex = items.findIndex(
+                item => item.row_id === active.id
+            );
+
+            const newIndex = items.findIndex(
+                item => item.row_id === over.id
+            );
+
+            return arrayMove(items, oldIndex, newIndex);
+        });
+    };
+
+    const moveRowToTop = (row_id) => {
+
+        setProcurementRows(prev => {
+
+            const row = prev.find(r => r.row_id === row_id);
+
+            if (!row) return prev;
+
+            return [
+                row,
+                ...prev.filter(r => r.row_id !== row_id)
+            ];
+        });
+    };
+
+    const moveRowToBottom = (row_id) => {
+
+        setProcurementRows(prev => {
+
+            const row = prev.find(r => r.row_id === row_id);
+
+            if (!row) return prev;
+
+            return [
+                ...prev.filter(r => r.row_id !== row_id),
+                row
+            ];
+        });
+    };
 
     const handleSubmit = async () => {
         if (procured_from === "" || procured_from === null) {
@@ -345,7 +478,7 @@ function Procurement() {
         ];
 
         // DATA ROWS
-        buList.forEach((item, index) => {
+        procurementRows.forEach((item, index) => {
 
             const rowNumber = index + 2;
 
@@ -523,21 +656,47 @@ function Procurement() {
         });
 
         // 🔥 RECALCULATE IMPORTED ROWS
+        // 🔥 RECALCULATE IMPORTED ROWS
         const recalculatedRows = updatedRows.map(row => {
 
-            // amount entered
-            if (row.amount && Number(row.amount) > 0) {
+            const hasUnits =
+                row.units !== "" &&
+                !isNaN(Number(row.units)) &&
+                Number(row.units) > 0;
+
+            const hasAmount =
+                row.amount !== "" &&
+                !isNaN(Number(row.amount)) &&
+                Number(row.amount) > 0;
+
+            const hasCPU =
+                row.cost_per_unit !== "" &&
+                !isNaN(Number(row.cost_per_unit)) &&
+                Number(row.cost_per_unit) > 0;
+
+            const hasIncl =
+                row.rate_incl_gst !== "" &&
+                !isNaN(Number(row.rate_incl_gst)) &&
+                Number(row.rate_incl_gst) > 0;
+
+            // PRIORITY 1 → amount + units
+            if (hasAmount && hasUnits) {
                 return recalcRow(row, "amount");
             }
 
-            // cost per unit entered
-            if (row.cost_per_unit && Number(row.cost_per_unit) > 0) {
+            // PRIORITY 2 → cost/unit
+            if (hasCPU) {
                 return recalcRow(row, "cost_per_unit");
             }
 
-            // rate incl gst entered
-            if (row.rate_incl_gst && Number(row.rate_incl_gst) > 0) {
+            // PRIORITY 3 → rate incl gst
+            if (hasIncl) {
                 return recalcRow(row, "rate_incl_gst");
+            }
+
+            // PRIORITY 4 → units recalc
+            if (hasUnits && hasCPU) {
+                return recalcRow(row, "units");
             }
 
             return row;
@@ -642,7 +801,13 @@ function Procurement() {
                         <table className="border text-sm border-collapse min-w-max">
                             <thead className="border bg-gray-900 sticky top-0 z-10">
                                 <tr className="border text-xs">
-                                    <th className="sticky left-0 z-30 bg-gray-900 border border-white w-[60px] p-2">S.No.</th>
+                                    <th className="border w-[80px] p-2">
+                                        Drag
+                                    </th>
+                                    <th className="border w-[80px] p-2">
+                                        Move
+                                    </th>
+                                    {/* <th className="sticky left-0 z-30 bg-gray-900 border border-white w-[60px] p-2">S.No.</th> */}
 
                                     <th className="sticky left-[60px] z-30 bg-gray-900 border border-white min-w-[260px] w-[260px] max-w-[260px] p-2">
                                         Item
@@ -685,203 +850,244 @@ function Procurement() {
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="border">
-                                {filteredRows.map((row, index) => (
-                                    <tr key={row.bulist_id} className="border hover:bg-gray-700/40 transition-colors">
-                                        <td className="sticky border border-white left-0 z-20 bg-gray-800 text-center p-1">
-                                            {row.originalIndex + 1}
-                                        </td>
-
-                                        {/* ITEM NAME (read-only) */}
-                                        <td className="sticky left-[60px] z-20 bg-gray-800 border border-white min-w-[260px] w-[260px] max-w-[260px] p-2 text-xs whitespace-normal break-words">
-                                            {row.item_name}
-                                        </td>
-
-                                        {/* BRAND SELECT */}
-                                        <td className="sticky left-[320px] z-20 bg-gray-800 border border-r-black min-w-[180px] w-[180px] max-w-[180px] p-1 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.5)]">
-
-                                            <input
-                                                type="text"
-                                                list={`brands-${row.bulist_id}`}
-                                                value={row.selected_brand || ""}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex].selected_brand = e.target.value.toUpperCase();
-                                                    setProcurementRows(updated);
-                                                }}
-                                                placeholder="Enter Brand"
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-
-                                            <datalist id={`brands-${row.bulist_id}`}>
-                                                {row.brands.map((b, i) => (
-                                                    <option key={i} value={b} />
-                                                ))}
-                                            </datalist>
-
-                                        </td>
-
-                                        <td className="border text-center">
-                                            <button
-                                                className="text-blue-400 text-xs"
-                                                onClick={() => openEditModal(row)}
+                            <DndContext
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={filteredRows.map(row => row.row_id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <tbody className="border">
+                                        {filteredRows.map((row, index) => (
+                                            <SortableRow
+                                                key={row.row_id}
+                                                row={row}
+                                                index={index}
+                                                moveRowToTop={moveRowToTop}
+                                                moveRowToBottom={moveRowToBottom}
                                             >
-                                                <FaPenToSquare />
-                                            </button>
-                                        </td>
+                                                {/* <td className="sticky border border-white left-0 z-20 bg-gray-800 text-center p-1">
+                                            {index + 1}
+                                        </td> */}
 
-                                        {/* UNITS */}
-                                        <td className="border p-1">
-                                            <input
-                                                type="number"
-                                                value={row.units}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex] = recalcRow(
-                                                        { ...row, units: e.target.value },
-                                                        "units"
-                                                    );
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
+                                                {/* ITEM NAME (read-only) */}
+                                                <td className="sticky left-[60px] z-20 bg-gray-800 border border-white min-w-[260px] w-[260px] max-w-[260px] p-2 text-xs whitespace-normal break-words">
+                                                    {row.item_name}
+                                                </td>
 
-                                        {/* RATE EXCL GST */}
-                                        <td className="border p-1">
-                                            <input
-                                                type="number"
-                                                value={row.rate_excl_gst}
-                                                onChange={e => {
-                                                    const value = e.target.value;
+                                                {/* BRAND SELECT */}
+                                                <td className="sticky left-[320px] z-20 bg-gray-800 border border-r-black min-w-[180px] w-[180px] max-w-[180px] p-1 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.5)]">
 
-                                                    const updated = [...procurementRows];
+                                                    <input
+                                                        type="text"
+                                                        list={`brands-${row.bulist_id}`}
+                                                        value={row.selected_brand || ""}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old => ({
+                                                                ...old,
+                                                                selected_brand: e.target.value.toUpperCase()
+                                                            }));
+                                                        }}
 
-                                                    if (value === "") {
-                                                        updated[row.originalIndex] = {
-                                                            ...row,
-                                                            rate_excl_gst: "",
-                                                            cost_per_unit: "",
-                                                            rate_incl_gst: "",
-                                                            amount: ""
-                                                        };
-                                                    } else {
-                                                        const gst = row.gst_rate || 5;
-                                                        const incl = value * (1 + gst / 100);
+                                                        placeholder="Enter Brand"
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
 
-                                                        updated[row.originalIndex] = recalcRow(
-                                                            { ...row, cost_per_unit: incl },
-                                                            "cost_per_unit"
-                                                        );
-                                                    }
+                                                    <datalist id={`brands-${row.bulist_id}`}>
+                                                        {row.brands.map((b, i) => (
+                                                            <option key={i} value={b} />
+                                                        ))}
+                                                    </datalist>
 
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
+                                                </td>
 
-                                        {/* GST RATE */}
-                                        <td className="border p-1">
-                                            <input
-                                                type="number"
-                                                value={row.gst_rate}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex] = recalcRow(
-                                                        { ...row, gst_rate: e.target.value },
-                                                        "gst_rate"
-                                                    );
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
+                                                <td className="border text-center">
+                                                    <button
+                                                        className="text-blue-400 text-xs"
+                                                        onClick={() => openEditModal(row)}
+                                                    >
+                                                        <FaPenToSquare />
+                                                    </button>
+                                                </td>
 
-                                        {/* RATE INCL GST (optional calc later) */}
-                                        <td className="border p-1">
-                                            <input
-                                                type="number"
-                                                value={row.rate_incl_gst}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex] = recalcRow(
-                                                        { ...row, rate_incl_gst: e.target.value },
-                                                        "rate_incl_gst"
-                                                    );
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
+                                                {/* UNITS */}
+                                                <td className="border p-1">
+                                                    <input
+                                                        type="number"
+                                                        value={row.units}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old =>
+                                                                recalcRow(
+                                                                    {
+                                                                        ...old,
+                                                                        units: e.target.value
+                                                                    },
+                                                                    "units"
+                                                                )
+                                                            );
 
-                                        <td className="border text-center p-1">
-                                            <input
-                                                type="number"
-                                                value={row.cost_per_unit}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex] = recalcRow(
-                                                        { ...row, cost_per_unit: e.target.value },
-                                                        "cost_per_unit"
-                                                    );
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
 
-                                        {/* EXPIRY DATE */}
-                                        <td className="border p-1">
-                                            <input
-                                                type="date"
-                                                value={row.expiry_date || ""}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex].expiry_date = e.target.value;
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
+                                                {/* RATE EXCL GST */}
+                                                <td className="border p-1">
+                                                    <input
+                                                        type="number"
+                                                        value={row.rate_excl_gst}
+                                                        onChange={e => {
 
-                                        {/* AMOUNT */}
-                                        <td className="border p-1">
-                                            <input
-                                                type="number"
-                                                value={row.amount}
-                                                onChange={e => {
-                                                    const updated = [...procurementRows];
-                                                    updated[row.originalIndex] = recalcRow(
-                                                        { ...row, amount: e.target.value },
-                                                        "amount"
-                                                    );
-                                                    setProcurementRows(updated);
-                                                }}
-                                                className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                                <tr className="border">
-                                    <td className="row-span-9"></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td className="border text-center p-1">
-                                        <input
-                                            readOnly
-                                            type="number"
-                                            className="bg-gray-700 rounded text-xs px-2 py-1 w-full focus:outline-none focus:border focus:border-blue-400"
-                                            placeholder="Total"
-                                        />
-                                    </td>
-                                </tr>
-                            </tbody>
+                                                            const value = e.target.value;
+
+                                                            updateRow(row.row_id, old => {
+
+                                                                if (value === "") {
+                                                                    return {
+                                                                        ...old,
+                                                                        rate_excl_gst: "",
+                                                                        cost_per_unit: "",
+                                                                        rate_incl_gst: "",
+                                                                        amount: ""
+                                                                    };
+                                                                }
+
+                                                                const gst = old.gst_rate || 5;
+
+                                                                const incl = value * (1 + gst / 100);
+
+                                                                return recalcRow(
+                                                                    {
+                                                                        ...old,
+                                                                        cost_per_unit: incl
+                                                                    },
+                                                                    "cost_per_unit"
+                                                                );
+                                                            });
+
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
+
+                                                {/* GST RATE */}
+                                                <td className="border p-1">
+                                                    <input
+                                                        type="number"
+                                                        value={row.gst_rate}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old =>
+                                                                recalcRow(
+                                                                    {
+                                                                        ...old,
+                                                                        gst_rate: e.target.value
+                                                                    },
+                                                                    "gst_rate"
+                                                                )
+                                                            );
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
+
+                                                {/* RATE INCL GST (optional calc later) */}
+                                                <td className="border p-1">
+                                                    <input
+                                                        type="number"
+                                                        value={row.rate_incl_gst}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old =>
+                                                                recalcRow(
+                                                                    {
+                                                                        ...old,
+                                                                        rate_incl_gst: e.target.value
+                                                                    },
+                                                                    "rate_incl_gst"
+                                                                )
+                                                            );
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
+
+                                                <td className="border text-center p-1">
+                                                    <input
+                                                        type="number"
+                                                        value={row.cost_per_unit}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old =>
+                                                                recalcRow(
+                                                                    {
+                                                                        ...old,
+                                                                        cost_per_unit: e.target.value
+                                                                    },
+                                                                    "cost_per_unit"
+                                                                )
+                                                            );
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
+
+                                                {/* EXPIRY DATE */}
+                                                <td className="border p-1">
+                                                    <input
+                                                        type="date"
+                                                        value={row.expiry_date || ""}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old => ({
+                                                                ...old,
+                                                                expiry_date: e.target.value
+                                                            }));
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
+
+                                                {/* AMOUNT */}
+                                                <td className="border p-1">
+                                                    <input
+                                                        type="number"
+                                                        value={row.amount}
+                                                        onChange={e => {
+                                                            updateRow(row.row_id, old =>
+                                                                recalcRow(
+                                                                    {
+                                                                        ...old,
+                                                                        amount: e.target.value
+                                                                    },
+                                                                    "amount"
+                                                                )
+                                                            );
+                                                        }}
+                                                        className="bg-gray-700 rounded text-xs px-2 py-1 w-full"
+                                                    />
+                                                </td>
+                                            </SortableRow>
+                                        ))}
+                                        <tr className="border">
+                                            <td className="row-span-9"></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td className="border text-center p-1">
+                                                <input
+                                                    readOnly
+                                                    type="number"
+                                                    className="bg-gray-700 rounded text-xs px-2 py-1 w-full focus:outline-none focus:border focus:border-blue-400"
+                                                    placeholder="Total"
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </SortableContext>
+                            </DndContext>
                         </table>
                     </div>
                     <p className="text-right text-sm">Total: ₹ {grandTotal.toFixed(2)}</p>

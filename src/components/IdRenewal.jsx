@@ -413,10 +413,10 @@ function IdRenewal() {
     return (
         <div className="">
             <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
-                <div onClick={() => { setTab("renewal") }} className={`cursor-pointer w-1/2 ${tab === "renewal" ? ("bg-blue-600") : ("bg-gray-700")} rounded p-1 font-semibold text-sm text-center`}>
+                <div onClick={() => { setTab("renewal") }} className={`cursor-pointer w-1/2 ${tab === "renewal" ? ("bg-blue-600") : ("bg-gray-700")} rounded p-1 font-semibold text-xs text-center`}>
                     ID Renewal
                 </div>
-                <div onClick={() => { setTab("list") }} className={`cursor-pointer w-1/2 ${tab === "list" ? ("bg-blue-600") : ("bg-gray-700")} rounded p-1 font-semibold text-sm text-center`}>
+                <div onClick={() => { setTab("list") }} className={`cursor-pointer w-1/2 ${tab === "list" ? ("bg-blue-600") : ("bg-gray-700")} rounded p-1 font-semibold text-xs text-center`}>
                     List of Renewed IDs
                 </div>
             </div>

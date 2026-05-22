@@ -64,12 +64,12 @@ function ExaminationParameters() {
 
   return (
     <div className="w-full bg-gray-800 p-6 rounded-xl">
-      <h2 className="text-lg font-bold mb-4">EXAMINATION PARAMETERS</h2>
+      <h2 className="text-md font-bold mb-4">EXAMINATION PARAMETERS</h2>
 
       {loading && <p className="text-sm text-gray-400">Loading...</p>}
 
       {!loading && workers.length === 0 && (
-        <p className="text-sm text-gray-400">
+        <p className="text-xs text-gray-400">
           No on-going pre-employment examinations.
         </p>
       )}
@@ -86,7 +86,7 @@ function ExaminationParameters() {
               <th className="p-2 border">Cancel</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="text-xs">
             {workers.map(w => (
               <tr key={w.id} className="odd:bg-gray-700 even:bg-gray-800">
                 <td className="p-2 border">{w.id}</td>

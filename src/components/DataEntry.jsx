@@ -69,13 +69,13 @@ function DataEntry({form, setForm}) {
 
   return (
     <div className="w-full bg-gray-800 p-6 rounded-xl space-y-4">
-      <h2 className="text-lg font-bold">CANDIDATE DATA ENTRY</h2>
+      <h2 className="text-md font-bold">CANDIDATE DATA ENTRY</h2>
 
-      <div className="grid grid-cols-3 gap-3 text-sm">
+      <div className="grid grid-cols-3 gap-3 text-xs">
         <input
           name="name"
           placeholder="Name *"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.name}
           onChange={handleChange}
         />
@@ -83,7 +83,7 @@ function DataEntry({form, setForm}) {
         <input
           name="employee_id"
           placeholder="Employee ID"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.employee_id}
           onChange={handleChange}
         />
@@ -91,7 +91,7 @@ function DataEntry({form, setForm}) {
         <input
           name="fathers_name"
           placeholder="Father's Name"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.fathers_name}
           onChange={handleChange}
         />
@@ -99,14 +99,14 @@ function DataEntry({form, setForm}) {
         <input
           name="aadhar_no"
           placeholder="Aadhar No"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.aadhar_no}
           onChange={handleChange}
         />
 
         <select
           name="gender"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.gender}
           onChange={handleChange}
         >
@@ -119,7 +119,7 @@ function DataEntry({form, setForm}) {
   type={dobFocus ? "date" : "text"}
   name="dob"
   placeholder="Date of Birth"
-  className="p-2 bg-gray-700 rounded text-white"
+  className="p-2 bg-gray-900 rounded text-white"
   value={form.dob}
   onFocus={() => setDobFocus(true)}
   // onBlur={() => setDobFocus(false)}
@@ -130,7 +130,7 @@ function DataEntry({form, setForm}) {
         <input
           name="phone_no"
           placeholder="Phone No"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.phone_no}
           onChange={handleChange}
         />
@@ -138,7 +138,7 @@ function DataEntry({form, setForm}) {
         <input
           name="designation"
           placeholder="Designation"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.designation}
           onChange={handleChange}
         />
@@ -146,7 +146,7 @@ function DataEntry({form, setForm}) {
         <input
           name="contractor_name"
           placeholder="Contractor Name"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.contractor_name}
           onChange={handleChange}
         />
@@ -155,7 +155,7 @@ function DataEntry({form, setForm}) {
         type={dojFocus ? "date" : "text"}
           name="date_of_joining"
           placeholder="Date of Joining"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.date_of_joining}
           onFocus={() => setDojFocus(true)}
   // onBlur={() => setDojFocus(false)}
@@ -166,7 +166,7 @@ function DataEntry({form, setForm}) {
           name="residence"
           placeholder="Residence"
           type="text"
-          className="p-2 bg-gray-700 rounded"
+          className="p-2 bg-gray-900 rounded"
           value={form.residence}
           onChange={handleChange}
         />
@@ -174,7 +174,7 @@ function DataEntry({form, setForm}) {
         <input
           name="identification_marks"
           placeholder="Identification Marks (comma separated)"
-          className="p-2 bg-gray-700 rounded col-span-3"
+          className="p-2 bg-gray-900 rounded col-span-3"
           value={form.identification_marks}
           onChange={handleChange}
         />
@@ -183,7 +183,7 @@ function DataEntry({form, setForm}) {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="mt-4 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm flex items-center gap-2 disabled:opacity-50"
+        className="mt-4 font-semibold bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-xs flex items-center gap-2 disabled:opacity-50"
       >
         <FaFloppyDisk />
         {loading ? "Saving..." : "Save & Start Examination"}
