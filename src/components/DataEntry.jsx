@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import api from "../api/axios";
 import { FaFloppyDisk } from "react-icons/fa6";
 
-function DataEntry({form, setForm}) {
+function DataEntry({ form, setForm }) {
   const dobRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [dobFocus, setDobFocus] = useState(false);
@@ -10,8 +10,69 @@ function DataEntry({form, setForm}) {
 
   const handleChange = (e) => {
     let { name, value } = e.target;
-  setForm(prev => ({ ...prev, [name]: value }));
+
+    // Age -> DOB
+    if (name === "age") {
+      const age = parseInt(value);
+
+      if (!isNaN(age)) {
+        const currentYear = new Date().getFullYear();
+        const birthYear = currentYear - age;
+
+        setForm((prev) => ({
+          ...prev,
+          age: value,
+          dob: `${birthYear}-01-01`,
+        }));
+      } else {
+        setForm((prev) => ({
+          ...prev,
+          age: value,
+          dob: "",
+        }));
+      }
+
+      return;
+    }
+
+    // DOB -> Age
+    if (name === "dob") {
+      let age = "";
+
+      if (value) {
+        const birthDate = new Date(value);
+        const today = new Date();
+
+        age = today.getFullYear() - birthDate.getFullYear();
+
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        dob: value,
+        age: age >= 0 ? age.toString() : "",
+      }));
+
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
+
+  const ageNumber = Number(form.age);
+  const isAgeInvalid =
+    form.age !== "" && (ageNumber < 18 || ageNumber > 60);
 
   const handleSubmit = async () => {
     if (!form.name) {
@@ -19,13 +80,23 @@ function DataEntry({form, setForm}) {
       return;
     }
 
-    if(!form.designation){
+    if (!form.designation) {
       alert("Designation is required");
       return;
     }
 
-    if(!form.identification_marks){
+    if (!form.identification_marks) {
       alert("Identification Mark is required");
+      return;
+    }
+
+    if (!form.age) {
+  alert("Age is required");
+  return;
+}
+
+    if (isAgeInvalid) {
+      alert("Age must be between 18 and 60 years");
       return;
     }
 
@@ -51,6 +122,7 @@ function DataEntry({form, setForm}) {
         aadhar_no: "",
         gender: "MALE",
         dob: "",
+        age: "",
         phone_no: "",
         designation: "",
         contractor_name: "",
@@ -115,16 +187,35 @@ function DataEntry({form, setForm}) {
           <option value="OTHER">Other</option>
         </select>
 
+        <div>
+          <input
+            name="age"
+            type="number"
+            placeholder="Age"
+            value={form.age}
+            onChange={handleChange}
+            className={`w-full p-2 bg-gray-900 rounded ${isAgeInvalid
+                ? "border-2 border-red-500 focus:border-red-500"
+                : "border border-transparent"
+              }`}
+          />
+
+          {isAgeInvalid && (
+            <p className="text-red-400 text-[10px] mt-1">
+              Age must be between 18 and 60 years
+            </p>
+          )}
+        </div>
+
         <input
-  type={dobFocus ? "date" : "text"}
-  name="dob"
-  placeholder="Date of Birth"
-  className="p-2 bg-gray-900 rounded text-white"
-  value={form.dob}
-  onFocus={() => setDobFocus(true)}
-  // onBlur={() => setDobFocus(false)}
-  onChange={handleChange}
-/>
+          type={dobFocus ? "date" : "text"}
+          name="dob"
+          placeholder="Date of Birth"
+          className="p-2 bg-gray-900 rounded text-white"
+          value={form.dob}
+          onFocus={() => setDobFocus(true)}
+          onChange={handleChange}
+        />
 
 
         <input
@@ -152,17 +243,17 @@ function DataEntry({form, setForm}) {
         />
 
         <input
-        type={dojFocus ? "date" : "text"}
+          type={dojFocus ? "date" : "text"}
           name="date_of_joining"
           placeholder="Date of Joining"
           className="p-2 bg-gray-900 rounded"
           value={form.date_of_joining}
           onFocus={() => setDojFocus(true)}
-  // onBlur={() => setDojFocus(false)}
+          // onBlur={() => setDojFocus(false)}
           onChange={handleChange}
         />
 
-        <input 
+        <input
           name="residence"
           placeholder="Residence"
           type="text"
@@ -182,8 +273,8 @@ function DataEntry({form, setForm}) {
 
       <button
         onClick={handleSubmit}
-        disabled={loading}
-        className="mt-4 font-semibold bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-xs flex items-center gap-2 disabled:opacity-50"
+        disabled={loading || isAgeInvalid}
+        className="mt-4 font-semibold bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-xs flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <FaFloppyDisk />
         {loading ? "Saving..." : "Save & Start Examination"}
