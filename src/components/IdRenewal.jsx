@@ -9,7 +9,7 @@ import { formatDateDMY } from "../utils/date.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 function IdRenewal() {
-    const {user, loading} = useAuth();
+    const { user, loading } = useAuth();
     const [tab, setTab] = useState("renewal");
     const [workerSearch, setWorkerSearch] = useState("");
     const [workerResults, setWorkerResults] = useState([]);
@@ -105,9 +105,33 @@ function IdRenewal() {
     };
 
     const handleSelectWorker = async (worker) => {
-        if (worker.id_status === "Active") {
-            alert("Worker's ID is Active. Cannot be Renewed.");
-            return;
+        const today = new Date();
+
+        if (
+            worker.id_status === "Active" &&
+            worker.last_id_renewal_date
+        ) {
+            const expiryDate = new Date(
+                worker.last_id_renewal_date
+            );
+
+            // ID valid for 3 months
+            expiryDate.setMonth(
+                expiryDate.getMonth() + 3
+            );
+
+            const daysLeft = Math.ceil(
+                (expiryDate - today) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            // Allow renewal only within 5 days before expiry
+            if (daysLeft > 5) {
+                alert(
+                    `ID renewal is allowed only within 5 days before expiry.\nExpiry Date: ${expiryDate.toLocaleDateString()}`
+                );
+                return;
+            }
         }
 
         try {
@@ -503,11 +527,43 @@ function IdRenewal() {
                                                 </div>
                                                 <div className="text-xs">
                                                     <p className="text-gray-400 text-xs">Status:</p>
-                                                    {(worker.id_status && worker.id_status === "Active") ? (
-                                                        <p className="text-green-400 text-xs">ID Renewed</p>
-                                                    ) : (worker.id_status && worker.id_status === "Expired") ? (
-                                                        <p className="text-red-400 text-xs">ID Requires Renewal</p>
-                                                    ) : ("")}
+                                                    {(() => {
+    if (!worker.id_status) return null;
+
+    let daysLeft = null;
+
+    if (worker.last_id_renewal_date) {
+        const expiryDate = new Date(worker.last_id_renewal_date);
+        expiryDate.setMonth(expiryDate.getMonth() + 3);
+
+        daysLeft = Math.ceil(
+            (expiryDate - new Date()) /
+            (1000 * 60 * 60 * 24)
+        );
+    }
+
+    if (worker.id_status === "Active") {
+        return (
+            <p className="text-green-400 text-xs">
+                ID Renewed
+                {daysLeft !== null &&
+                    ` (Expires in ${Math.max(daysLeft, 0)} days)`}
+            </p>
+        );
+    }
+
+    if (worker.id_status === "Expired") {
+        return (
+            <p className="text-red-400 text-xs">
+                ID Requires Renewal
+                {daysLeft !== null &&
+                    ` (Expired ${Math.abs(daysLeft)} days ago)`}
+            </p>
+        );
+    }
+
+    return null;
+})()}
                                                 </div>
                                             </div>
 
@@ -966,7 +1022,7 @@ function IdRenewal() {
                             }}
                         />
                     )}
-                    
+
                 </div>
             )}
             {tab === "list" && (
@@ -1151,84 +1207,88 @@ function IdRenewal() {
                 </div>
             )}
             {openReport && (
-                        <IdRenewalReportModal
-                            data={
-                                viewReportData
-                                    ? viewReportData
-                                    : {
-                                        ...finalPayload,
-                                        date_of_renewal: new Date().toISOString(),
-                                        name: selectedWorker?.name || workerForm.name,
-                                        designation: selectedWorker?.designation || workerForm.designation,
-                                        employee_id: selectedWorker?.employee_id || workerForm.employee_id,
-                                        contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name,
-                                        test_done_by: {
-                                            id: user.id,
-                                            role: user.role,
-                                            userId: user.userId,
-                                        }
-                                    }
-                            }
-
-                            viewOnly={!!viewReportData}
-
-                            onClose={() => {
-                                setOpenReport(false);
-                                setViewReportData(null);
-                            }}
-
-                            onConfirm={async () => {
-
-                                try {
-
-
-                                    setSaveLoading(true);
-
-                                    await api.post(
-                                        "/api/id-renewal/renew",
-                                        {...finalPayload, test_done_by: {id: user.id,
-                                            role: user.role,
-                                            userId: user.userId,} }
-                                    );
-
-                                    alert("ID renewed successfully ✅");
-
-                                    setOpenReport(false);
-
-                                    setViewReportData(null);
-
-                                    setSelectedWorker(null);
-
-                                    setVisionForm(null);
-
-                                    setRenewalForm({
-                                        previous_renewal_date: "",
-                                        blood_group: "",
-                                        general_condition: "",
-                                        pulse: "",
-                                        systolic: "",
-                                        diastolic: "",
-                                        spo2: "",
-                                        height: "",
-                                        weight: "",
-                                        remarks: "",
-                                        vertigo_test_passed: true,
-                                    });
-
-                                } catch (err) {
-
-                                    console.error(err);
-
-                                    alert("Failed to renew ID ❌");
-
-                                } finally {
-
-                                    setSaveLoading(false);
-
+                <IdRenewalReportModal
+                    data={
+                        viewReportData
+                            ? viewReportData
+                            : {
+                                ...finalPayload,
+                                date_of_renewal: new Date().toISOString(),
+                                name: selectedWorker?.name || workerForm.name,
+                                designation: selectedWorker?.designation || workerForm.designation,
+                                employee_id: selectedWorker?.employee_id || workerForm.employee_id,
+                                contractor_name: selectedWorker?.contractor_name || workerForm.contractor_name,
+                                test_done_by: {
+                                    id: user.id,
+                                    role: user.role,
+                                    userId: user.userId,
                                 }
-                            }}
-                        />
-                    )}
+                            }
+                    }
+
+                    viewOnly={!!viewReportData}
+
+                    onClose={() => {
+                        setOpenReport(false);
+                        setViewReportData(null);
+                    }}
+
+                    onConfirm={async () => {
+
+                        try {
+
+
+                            setSaveLoading(true);
+
+                            await api.post(
+                                "/api/id-renewal/renew",
+                                {
+                                    ...finalPayload, test_done_by: {
+                                        id: user.id,
+                                        role: user.role,
+                                        userId: user.userId,
+                                    }
+                                }
+                            );
+
+                            alert("ID renewed successfully ✅");
+
+                            setOpenReport(false);
+
+                            setViewReportData(null);
+
+                            setSelectedWorker(null);
+
+                            setVisionForm(null);
+
+                            setRenewalForm({
+                                previous_renewal_date: "",
+                                blood_group: "",
+                                general_condition: "",
+                                pulse: "",
+                                systolic: "",
+                                diastolic: "",
+                                spo2: "",
+                                height: "",
+                                weight: "",
+                                remarks: "",
+                                vertigo_test_passed: true,
+                            });
+
+                        } catch (err) {
+
+                            console.error(err);
+
+                            alert("Failed to renew ID ❌");
+
+                        } finally {
+
+                            setSaveLoading(false);
+
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }
