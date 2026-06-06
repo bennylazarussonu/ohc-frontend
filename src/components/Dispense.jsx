@@ -790,6 +790,16 @@ function Dispense() {
                         />
 
                         <button
+                            className="bg-red-600 px-3 py-1 rounded text-xs"
+                            onClick={() => {
+                                setHistoryFromDate("");
+                                setHistoryToDate("");
+                            }}
+                        >
+                            Clear Dates
+                        </button>
+
+                        <button
                             className="bg-gray-600 px-3 py-1 rounded text-xs"
                             onClick={() => {
                                 setHistorySearch("");
