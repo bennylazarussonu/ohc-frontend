@@ -80,7 +80,7 @@ function Dispense() {
         const workerName =
             dispense.worker?.[0]?.name?.toLowerCase() || "";
 
-        const dispensedBy = dispense.dispensed_by?.userId || "";
+        const dispensedBy = dispense.dispensed_by?.userId?.toLowerCase() || "";
 
         const itemNames =
             dispense.stocks
