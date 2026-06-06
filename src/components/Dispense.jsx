@@ -7,12 +7,17 @@ import FillPrescriptionModal from "./FillPrescriptionModal.jsx";
 function Dispense() {
     const [opdData, setOpdData] = useState([]);
     const [selectedOpd, setSelectedOpd] = useState({});
+    const [history, setHistory] = useState([]);
     const [fillPrescriptionModalOpen, setFillPrescriptionModalOpen] = useState(false);
     // console.log(opdData);
     const [nameFilter, setNameFilter] = useState("");
     const [complaintFilter, setComplaintFilter] = useState("");
     const [tab, setTab] = useState("dispense");
     const today = new Date().toISOString().split("T")[0];
+
+    const [historySearch, setHistorySearch] = useState("");
+    const [historyFromDate, setHistoryFromDate] = useState(today);
+    const [historyToDate, setHistoryToDate] = useState(today);
 
     const [fromDate, setFromDate] = useState(today);
     const [toDate, setToDate] = useState(today);
@@ -27,15 +32,28 @@ function Dispense() {
     const medicineTimeout = useRef(null);
     const [submitting, setSubmitting] = useState(false);
 
+    console.log(history);
+
 
     const fetchOPDs = async () => {
         const res = await api.get("/api/dispense/opds");
         setOpdData(res.data.data);
     }
 
+    const fetchHistory = async () => {
+        const res = await api.get("/api/dispense/history");
+        setHistory(res.data.data);
+    };
+
     useEffect(() => {
         fetchOPDs();
     }, []);
+
+    useEffect(() => {
+        if (tab === "history") {
+            fetchHistory();
+        }
+    }, [tab]);
 
     const filteredOpds = opdData.filter(opd => {
         const workerNameMatch =
@@ -57,15 +75,49 @@ function Dispense() {
         return workerNameMatch && complaintMatch && dateMatch;
     });
 
+    const filteredHistory = history.filter((dispense) => {
+
+        const workerName =
+            dispense.worker?.[0]?.name?.toLowerCase() || "";
+
+        const dispensedBy = dispense.dispensed_by?.userId || "";
+
+        const itemNames =
+            dispense.stocks
+                ?.map(item => item.item_name)
+                .join(" ")
+                .toLowerCase() || "";
+
+        const search =
+            historySearch.toLowerCase();
+
+        const searchMatch =
+            workerName.includes(search) ||
+            itemNames.includes(search) ||
+            dispensedBy.includes(search);
+
+        const dispenseDate = new Date(
+            dispense.dispensed_on
+        ).toLocaleDateString("en-CA");
+
+        const dateMatch =
+            (!historyFromDate || dispenseDate >= historyFromDate) &&
+            (!historyToDate || dispenseDate <= historyToDate);
+
+        return searchMatch && dateMatch;
+    });
 
     return (
         <div className="w-full my-3">
             <div className="w-full bg-gray-800 p-2 rounded text-sm flex justify-center items-center gap-2">
-                <div onClick={() => setTab("dispense")} className={`cursor-pointer flex w-1/2 rounded p-1 justify-center font-semibold ${tab === "dispense" ? "bg-blue-600" : "bg-gray-700"}`}>
+                <div onClick={() => setTab("dispense")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "dispense" ? "bg-blue-600" : "bg-gray-700"}`}>
                     <p>Dispense Medicine</p>
                 </div>
-                <div onClick={() => setTab("fill-prescription")} className={`cursor-pointer flex w-1/2 rounded p-1 justify-center font-semibold ${tab === "fill-prescription" ? "bg-blue-600" : "bg-gray-700"}`}>
+                <div onClick={() => setTab("fill-prescription")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "fill-prescription" ? "bg-blue-600" : "bg-gray-700"}`}>
                     <p>Fill Prescription</p>
+                </div>
+                <div onClick={() => setTab("history")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "history" ? "bg-blue-600" : "bg-gray-700"}`}>
+                    <p>History</p>
                 </div>
             </div>
             {tab === "dispense" && (
@@ -704,6 +756,77 @@ function Dispense() {
                     {/* {opdData.map((opd) => (
                     <></>
                 ))} */}
+                </div>
+            )}
+            {tab === "history" && (
+                <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
+                    <p className="font-semibold mb-2 text-xs">DISPENSE HISTORY</p>
+                    <div className="flex flex-wrap gap-3 mb-3">
+
+                        <input
+                            type="text"
+                            placeholder="Search Worker / Medicine"
+                            value={historySearch}
+                            onChange={(e) => setHistorySearch(e.target.value)}
+                            className="bg-gray-900  w-4/5 rounded px-2 py-1 text-xs w-64"
+                        />
+
+                        <input
+                            type="date"
+                            value={historyFromDate}
+                            onChange={(e) => setHistoryFromDate(e.target.value)}
+                            className="bg-gray-900 rounded px-2 py-1 text-xs"
+                        />
+
+                        <span className="text-xs text-gray-400 self-center">
+                            to
+                        </span>
+
+                        <input
+                            type="date"
+                            value={historyToDate}
+                            onChange={(e) => setHistoryToDate(e.target.value)}
+                            className="bg-gray-900 rounded px-2 py-1 text-xs"
+                        />
+
+                        <button
+                            className="bg-gray-600 px-3 py-1 rounded text-xs"
+                            onClick={() => {
+                                setHistorySearch("");
+                                setHistoryFromDate(today);
+                                setHistoryToDate(today);
+                            }}
+                        >
+                            Reset
+                        </button>
+
+                    </div>
+                    <div className="w-full">
+                        <table className="border w-full text-sm">
+                            <thead className="border bg-gray-900">
+                                <tr className="border">
+                                    <th className="border">Dispensed To</th>
+                                    <th className="border">Items Dispensed</th>
+                                    <th className="border">Dispensed Quantity</th>
+                                    <th className="border">Dispensed On</th>
+                                    <th className="border">Dispensed By</th>
+                                    <th className="border">Type</th>
+                                </tr>
+                            </thead>
+                            <tbody className="border">
+                                {filteredHistory.map((dispense) => (
+                                    <tr key={dispense._id} className="border">
+                                        <td className="border p-1">{dispense.worker[0]?.name === "TEST WORKER" ? "-" : dispense.worker[0]?.name}</td>
+                                        <td className="border p-1">{dispense.stocks.map((item) => item.item_name).join(", ")}</td>
+                                        <td className="border p-1">{dispense.stocks.map((item) => item.dispensed_units).join(", ")}</td>
+                                        <td className="border p-1">{formatDateDMY(dispense.dispensed_on)}</td>
+                                        <td className="border p-1">{dispense.dispensed_by.userId}</td>
+                                        <td className="border p-1">{dispense.adjustment ? "Adjustment" : (dispense.opd_id ? "OPD Prescription Fill" : "Regular")}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
             {fillPrescriptionModalOpen && (
