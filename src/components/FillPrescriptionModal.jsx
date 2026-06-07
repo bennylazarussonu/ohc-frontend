@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { FaXmark } from "react-icons/fa6";
 
-function FillPrescriptionModal({ record, onClose }) {
+function FillPrescriptionModal({ record, onClose, onSuccess }) {
     const [opd, setOpd] = useState(record);
     const [stock, setStock] = useState([]);
     const [selectedStockIndex, setSelectedStockIndex] = useState({});
@@ -92,6 +92,11 @@ function FillPrescriptionModal({ record, onClose }) {
             });
 
             alert("Medicines dispensed successfully");
+
+            if (onSuccess) {
+                onSuccess();
+            }
+
             onClose();
         } catch (err) {
             console.error(err);

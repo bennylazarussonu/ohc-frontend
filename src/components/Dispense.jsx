@@ -840,10 +840,16 @@ function Dispense() {
                 </div>
             )}
             {fillPrescriptionModalOpen && (
-                <FillPrescriptionModal record={selectedOpd} onClose={() => {
-                    setSelectedOpd({});
-                    setFillPrescriptionModalOpen(false);
-                }} />
+                <FillPrescriptionModal
+                    record={selectedOpd}
+                    onSuccess={() => {
+                        fetchOPDs(); // reload pending prescriptions
+                    }}
+                    onClose={() => {
+                        setSelectedOpd({});
+                        setFillPrescriptionModalOpen(false);
+                    }}
+                />
             )}
         </div>
     );
