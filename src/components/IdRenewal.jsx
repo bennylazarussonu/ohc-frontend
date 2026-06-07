@@ -5,6 +5,7 @@ import { saveAs } from "file-saver";
 import { useState, useRef, useEffect } from "react";
 import VisionCheckModal from "./VisionCheckModal.jsx";
 import IdRenewalReportModal from "./IdRenewalReportModal.jsx";
+import IdRenewalEditModal from "./IdRenewalEditModal.jsx";
 import { formatDateDMY } from "../utils/date.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -57,6 +58,8 @@ function IdRenewal() {
     const [pulseDiagnosis, setPulseDiagnosis] = useState({ text: "", color: "", border: "" })
     const [bpDiagnosis, setBpDiagnosis] = useState({ text: "", color: "", border: "" })
     const [spo2Diagnosis, setSpo2Diagnosis] = useState({ text: "", color: "", border: "" })
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [selectedRenewal, setSelectedRenewal] = useState(null);
 
     const mapWorkerToForm = (worker) => ({
         name: worker.name || "",
@@ -528,42 +531,42 @@ function IdRenewal() {
                                                 <div className="text-xs">
                                                     <p className="text-gray-400 text-xs">Status:</p>
                                                     {(() => {
-    if (!worker.id_status) return null;
+                                                        if (!worker.id_status) return null;
 
-    let daysLeft = null;
+                                                        let daysLeft = null;
 
-    if (worker.last_id_renewal_date) {
-        const expiryDate = new Date(worker.last_id_renewal_date);
-        expiryDate.setMonth(expiryDate.getMonth() + 3);
+                                                        if (worker.last_id_renewal_date) {
+                                                            const expiryDate = new Date(worker.last_id_renewal_date);
+                                                            expiryDate.setMonth(expiryDate.getMonth() + 3);
 
-        daysLeft = Math.ceil(
-            (expiryDate - new Date()) /
-            (1000 * 60 * 60 * 24)
-        );
-    }
+                                                            daysLeft = Math.ceil(
+                                                                (expiryDate - new Date()) /
+                                                                (1000 * 60 * 60 * 24)
+                                                            );
+                                                        }
 
-    if (worker.id_status === "Active") {
-        return (
-            <p className="text-green-400 text-xs">
-                ID Renewed
-                {daysLeft !== null &&
-                    ` (Expires in ${Math.max(daysLeft, 0)} days)`}
-            </p>
-        );
-    }
+                                                        if (worker.id_status === "Active") {
+                                                            return (
+                                                                <p className="text-green-400 text-xs">
+                                                                    ID Renewed
+                                                                    {daysLeft !== null &&
+                                                                        ` (Expires in ${Math.max(daysLeft, 0)} days)`}
+                                                                </p>
+                                                            );
+                                                        }
 
-    if (worker.id_status === "Expired") {
-        return (
-            <p className="text-red-400 text-xs">
-                ID Requires Renewal
-                {daysLeft !== null &&
-                    ` (Expired ${Math.abs(daysLeft)} days ago)`}
-            </p>
-        );
-    }
+                                                        if (worker.id_status === "Expired") {
+                                                            return (
+                                                                <p className="text-red-400 text-xs">
+                                                                    ID Requires Renewal
+                                                                    {daysLeft !== null &&
+                                                                        ` (Expired ${Math.abs(daysLeft)} days ago)`}
+                                                                </p>
+                                                            );
+                                                        }
 
-    return null;
-})()}
+                                                        return null;
+                                                    })()}
                                                 </div>
                                             </div>
 
@@ -1194,7 +1197,13 @@ function IdRenewal() {
                                                 >
                                                     <FaEye />
                                                 </button>
-                                                <button className="text-green-500 hover:text-green-700 px-2 py-2 rounded">
+                                                <button
+                                                    className="text-green-500 hover:text-green-700 px-2 py-2 rounded"
+                                                    onClick={() => {
+                                                        setSelectedRenewal(item);
+                                                        setOpenEditModal(true);
+                                                    }}
+                                                >
                                                     <FaPenToSquare />
                                                 </button>
                                             </td>
@@ -1289,6 +1298,37 @@ function IdRenewal() {
                     }}
                 />
             )}
+            {
+    openEditModal && (
+        <IdRenewalEditModal
+            renewal={selectedRenewal}
+            worker={selectedRenewal?.worker}
+            onClose={() => {
+                setOpenEditModal(false);
+                setSelectedRenewal(null);
+            }}
+            onSave={async (updatedData) => {
+                try {
+                    await api.put(
+                        `/api/id-renewal/${selectedRenewal.id}`,
+                        updatedData
+                    );
+
+                    alert("Renewal updated successfully");
+
+                    fetchRenewedIds();
+
+                    setOpenEditModal(false);
+                    setSelectedRenewal(null);
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to update renewal");
+                }
+            }}
+        />
+    )
+}
         </div>
     );
 }

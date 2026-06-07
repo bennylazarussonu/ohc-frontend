@@ -80,25 +80,25 @@ function VisionCheckModal({ vision, worker, onClose, onSave, instance }) {
 
 
 
-  //   useEffect(() => {
-  //   if (!vision) return;
+    useEffect(() => {
+    if (!vision) return;
 
-  //   setForm({
-  //     far_left_wo: vision.far_vision?.without_glasses?.left || "",
-  //     far_right_wo: vision.far_vision?.without_glasses?.right || "",
-  //     far_left_w: vision.far_vision?.with_glasses?.left || "",
-  //     far_right_w: vision.far_vision?.with_glasses?.right || "",
+    setForm({
+      far_left_wo: vision.far_vision?.without_glasses?.left || "",
+      far_right_wo: vision.far_vision?.without_glasses?.right || "",
+      far_left_w: vision.far_vision?.with_glasses?.left || "",
+      far_right_w: vision.far_vision?.with_glasses?.right || "",
 
-  //     near_left_wo: vision.near_vision?.without_glasses?.left || "",
-  //     near_right_wo: vision.near_vision?.without_glasses?.right || "",
-  //     near_left_w: vision.near_vision?.with_glasses?.left || "",
-  //     near_right_w: vision.near_vision?.with_glasses?.right || "",
+      near_left_wo: vision.near_vision?.without_glasses?.left || "",
+      near_right_wo: vision.near_vision?.without_glasses?.right || "",
+      near_left_w: vision.near_vision?.with_glasses?.left || "",
+      near_right_w: vision.near_vision?.with_glasses?.right || "",
 
-  //     color_perception: vision.color_perception || "",
-  //     without_glasses_diagnosis: vision.without_glasses_diagnosis || "",
-  //     with_glasses_diagnosis: vision.with_glasses_diagnosis || ""
-  //   });
-  // }, [vision]);
+      color_perception: vision.color_perception || "",
+      without_glasses_diagnosis: vision.without_glasses_diagnosis || "",
+      with_glasses_diagnosis: vision.with_glasses_diagnosis || ""
+    });
+  }, [vision]);
 
   useEffect(() => {
     const inputs = {
