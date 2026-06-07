@@ -1,4 +1,4 @@
-import { FaMagnifyingGlass, FaUserPlus } from "react-icons/fa6";
+import { FaEye, FaFileExcel, FaMagnifyingGlass, FaPenToSquare, FaUserPlus } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import api from "../api/axios";
 import * as XLSX from "xlsx";
@@ -24,6 +24,7 @@ function FCACC({ tab }) {
     const [editData, setEditData] = useState(null);
     const [editId, setEditId] = useState(null);
     const [visionForm, setVisionForm] = useState(null);
+    const [viewRecord, setViewRecord] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -620,16 +621,29 @@ function FCACC({ tab }) {
     } else {
         return (
             <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
-                <h2 className="text-lg font-bold mb-3">List of FCACCs</h2>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-bold">List of FCACCs</h2>
+                    <button
+                        className="bg-green-600 flex items-center gap-2 px-3 py-2 rounded text-sm"
+                        onClick={downloadExcel}
+                    >
+                        <FaFileExcel />
+                        Download Excel
+                    </button>
+                </div>
 
                 <div className="flex gap-3 w-full mb-4">
 
-                    <input
-                        placeholder="Search Worker Name..."
-                        className="p-2 rounded bg-gray-900 text-sm"
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                    />
+                    <div className="w-2/4">
+                        <span className="text-xs text-gray-400">Search</span>
+                        <input
+                            placeholder="Search Worker Name..."
+                            className="p-2 rounded bg-gray-900 w-full text-sm block"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                        />
+                    </div>
+                    
 
                     <div>
                         <span className="text-xs text-gray-400">From</span>
@@ -651,13 +665,6 @@ function FCACC({ tab }) {
                         />
                     </div>
 
-                    <button
-                        className="bg-green-600 px-3 py-2 rounded text-sm"
-                        onClick={downloadExcel}
-                    >
-                        Download Excel
-                    </button>
-
                 </div>
                 <table className="w-full text-sm border">
                     <thead className="bg-gray-900">
@@ -678,12 +685,18 @@ function FCACC({ tab }) {
                                 <td className="p-2 border">{formatDateDMY(record.date_of_medical_examination)}</td>
                                 <td className="p-2 border">{record.competency_assessment_by}</td>
                                 <td className="p-2 border">{record.examination_findings.general_examination}</td>
-                                <td className="p-2 border">
+                                <td className="p-2 border flex justify-evenly items-center">
                                     <button
-                                        className="bg-blue-600 text-white px-2 py-1 rounded"
+                                        className="text-green-500"
+                                        onClick={() => {setViewRecord(record)}}
+                                    >
+                                        <FaEye />
+                                    </button>
+                                    <button
+                                        className="text-yellow-500 text-xs px-2 py-1 rounded"
                                         onClick={() => handleEditFCACC(record._id)}
                                     >
-                                        Edit
+                                        <FaPenToSquare/>
                                     </button>
                                 </td>
                             </tr>
@@ -816,6 +829,61 @@ function FCACC({ tab }) {
                         </div>
                     </div>
                 )}
+                {viewRecord && (
+    <FCACCReportModal
+        data={{
+            fcaccForm: {
+                date_of_issuance_of_certificate_for_competency_clearance:
+                    viewRecord.date_of_issuance_of_certificate_for_competency_clearance,
+
+                competency_assessment_by:
+                    viewRecord.competency_assessment_by,
+
+                general_examination:
+                    viewRecord.examination_findings?.general_examination,
+
+                pulse:
+                    viewRecord.examination_findings?.pulse,
+
+                systolic:
+                    viewRecord.examination_findings?.blood_pressure?.systolic,
+
+                diastolic:
+                    viewRecord.examination_findings?.blood_pressure?.diastolic,
+
+                spo2:
+                    viewRecord.examination_findings?.spo2,
+
+                height:
+                    viewRecord.examination_findings?.height,
+
+                weight:
+                    viewRecord.examination_findings?.weight,
+
+                vertigo_test_passed:
+                    viewRecord.examination_findings?.vertigo_test_passed
+            },
+
+            opthalmic_examination:
+                viewRecord.opthalmic_examination,
+
+            name:
+                viewRecord.worker_details?.name,
+
+            designation:
+                viewRecord.worker_details?.designation,
+
+            employee_id:
+                viewRecord.worker_details?.employee_id,
+
+            contractor_name:
+                viewRecord.worker_details?.contractor_name
+        }}
+        viewOnly={true}
+        onClose={() => setViewRecord(null)}
+        onConfirm={() => {}}
+    />
+)}
                 
             </div>
         );

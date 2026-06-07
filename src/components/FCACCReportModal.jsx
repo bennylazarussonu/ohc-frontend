@@ -2,7 +2,7 @@ import { FaX, FaPrint } from "react-icons/fa6";
 import letterhead from "../assets/preemp_banner.png";
 import { formatDateDMY } from "../utils/date";
 
-function FCACCReportModal({ data, onClose, onConfirm }) {
+function FCACCReportModal({ data, onClose, onConfirm, viewOnly = false }) {
     console.log(data);
     const printReport = () => {
     const element = document.getElementById("print-area");
@@ -134,12 +134,14 @@ function FCACCReportModal({ data, onClose, onConfirm }) {
                     <FaPrint />
                     Print
                   </button>
-                  <button
-                    onClick={onConfirm}
-                    className="bg-green-600 px-4 py-2 rounded"
-                  >
-                    Confirm & Save
-                  </button>
+                  {!viewOnly && (
+    <button
+        onClick={onConfirm}
+        className="bg-green-600 px-4 py-2 rounded"
+    >
+        Confirm & Save
+    </button>
+)}
                 </div>
         
                 {/* REPORT */}
