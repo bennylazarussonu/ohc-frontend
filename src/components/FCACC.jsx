@@ -643,7 +643,7 @@ function FCACC({ tab }) {
                             onChange={(e) => setSearchText(e.target.value)}
                         />
                     </div>
-                    
+
 
                     <div>
                         <span className="text-xs text-gray-400">From</span>
@@ -688,7 +688,7 @@ function FCACC({ tab }) {
                                 <td className="p-2 border flex justify-evenly items-center">
                                     <button
                                         className="text-green-500"
-                                        onClick={() => {setViewRecord(record)}}
+                                        onClick={() => { setViewRecord(record) }}
                                     >
                                         <FaEye />
                                     </button>
@@ -696,7 +696,7 @@ function FCACC({ tab }) {
                                         className="text-yellow-500 text-xs px-2 py-1 rounded"
                                         onClick={() => handleEditFCACC(record._id)}
                                     >
-                                        <FaPenToSquare/>
+                                        <FaPenToSquare />
                                     </button>
                                 </td>
                             </tr>
@@ -830,61 +830,61 @@ function FCACC({ tab }) {
                     </div>
                 )}
                 {viewRecord && (
-    <FCACCReportModal
-        data={{
-            fcaccForm: {
-                date_of_issuance_of_certificate_for_competency_clearance:
-                    viewRecord.date_of_issuance_of_certificate_for_competency_clearance,
+                    <FCACCReportModal
+                        data={{
+                            fcaccForm: {
+                                date_of_issuance_of_certificate_for_competency_clearance:
+                                    viewRecord.date_of_issuance_of_certificate_for_competency_clearance,
 
-                competency_assessment_by:
-                    viewRecord.competency_assessment_by,
+                                competency_assessment_by:
+                                    viewRecord.competency_assessment_by,
 
-                general_examination:
-                    viewRecord.examination_findings?.general_examination,
+                                general_examination:
+                                    viewRecord.examination_findings?.general_examination,
 
-                pulse:
-                    viewRecord.examination_findings?.pulse,
+                                pulse:
+                                    viewRecord.examination_findings?.pulse,
 
-                systolic:
-                    viewRecord.examination_findings?.blood_pressure?.systolic,
+                                systolic:
+                                    viewRecord.examination_findings?.blood_pressure?.systolic,
 
-                diastolic:
-                    viewRecord.examination_findings?.blood_pressure?.diastolic,
+                                diastolic:
+                                    viewRecord.examination_findings?.blood_pressure?.diastolic,
 
-                spo2:
-                    viewRecord.examination_findings?.spo2,
+                                spo2:
+                                    viewRecord.examination_findings?.spo2,
 
-                height:
-                    viewRecord.examination_findings?.height,
+                                height:
+                                    viewRecord.examination_findings?.height,
 
-                weight:
-                    viewRecord.examination_findings?.weight,
+                                weight:
+                                    viewRecord.examination_findings?.weight,
 
-                vertigo_test_passed:
-                    viewRecord.examination_findings?.vertigo_test_passed
-            },
+                                vertigo_test_passed:
+                                    viewRecord.examination_findings?.vertigo_test_passed
+                            },
 
-            opthalmic_examination:
-                viewRecord.opthalmic_examination,
+                            opthalmic_examination:
+                                viewRecord.opthalmic_examination,
 
-            name:
-                viewRecord.worker_details?.name,
+                            name:
+                                viewRecord.worker_details?.name,
 
-            designation:
-                viewRecord.worker_details?.designation,
+                            designation:
+                                viewRecord.worker_details?.designation,
 
-            employee_id:
-                viewRecord.worker_details?.employee_id,
+                            employee_id:
+                                viewRecord.worker_details?.employee_id,
 
-            contractor_name:
-                viewRecord.worker_details?.contractor_name
-        }}
-        viewOnly={true}
-        onClose={() => setViewRecord(null)}
-        onConfirm={() => {}}
-    />
-)}
-                
+                            contractor_name:
+                                viewRecord.worker_details?.contractor_name
+                        }}
+                        viewOnly={true}
+                        onClose={() => setViewRecord(null)}
+                        onConfirm={() => { }}
+                    />
+                )}
+
             </div>
         );
     }
