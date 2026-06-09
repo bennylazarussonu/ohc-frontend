@@ -442,7 +442,7 @@ function VitalsCheckModal({ vitals, worker, onClose }) {
       <div className="bg-gray-900 w-[600px] max-h-[90vh] overflow-scroll no-scrollbar rounded-xl p-6 text-white">
 
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Vitals Check – {worker.name}</h2>
+          <h2 className="text-md font-bold">Vitals Check – {worker.name}</h2>
           <button onClick={onClose}>
             <FaXmark />
           </button>
@@ -472,42 +472,59 @@ function VitalsCheckModal({ vitals, worker, onClose }) {
               onChange={e => handleChange(key, e.target.value)}
             />
           ))} */}
-          <p className="text-sm col-span-6 text-gray-400 font-bold m-0">Basic Details</p>
-          <input
-            type="number"
-            placeholder="Height (cm)"
-            className="p-2 bg-gray-800 rounded col-span-3 focus:outline-none"
-            value={form.height}
-            onChange={e => handleChange("height", e.target.value)}
-          />
-
-          <input
-            type="number"
-            placeholder="Weight (kg)"
-            className="p-2 bg-gray-800 rounded col-span-3 focus:outline-none"
-            value={form.weight}
-            onChange={e => handleChange("weight", e.target.value)}
-          />
-
-          <div className="col-span-6">
+          <p className="text-sm text-gray-400 col-span-6 mb-1">Basic Details</p>
+          <div className="col-span-3 text-xs">
+            <p className="text-xs text-gray-400 mb-1">Height (in cm)</p>
             <input
-              readOnly
-              placeholder="BMI"
-              className={`p-2 bg-gray-700 rounded col-span-6 w-full focus:outline-none ${bmiDiagnosis.border}`}
-              value={calculateBMI()}
+              type="number"
+              placeholder="Height (cm)"
+              className="p-2 bg-gray-800 w-full rounded focus:outline-none"
+              value={form.height}
+              onChange={e => handleChange("height", e.target.value)}
             />
-            <span className={`text-xs w-full col-span-6 ${bmiDiagnosis.color}`}>{bmiDiagnosis.text}</span>
+          </div>
+
+          <div className="col-span-3 text-xs">
+            <p className="text-xs text-gray-400 mb-1">Weight (in Kg)</p>
+            <input
+              type="number"
+              placeholder="Weight (kg)"
+              className="p-2 bg-gray-800 rounded w-full focus:outline-none"
+              value={form.weight}
+              onChange={e => handleChange("weight", e.target.value)}
+            />
           </div>
 
           <div className="col-span-6">
-            <input
-              type="number"
-              placeholder="Temperature (°F)"
-              className={`p-2 bg-gray-800 rounded focus:outline-none w-full col-span-6 mb-0 ${temperatureDiagnosis[2]}`}
-              value={form.temperature}
-              onChange={e => handleChange("temperature", e.target.value)}
-            />
-            <span className={`text-xs mb-3 w-full col-span-6 ${temperatureDiagnosis[1]}`}><p className="w-full">{temperatureDiagnosis[0]}</p></span>
+            <p className="text-gray-400 mb-1 text-xs">BMI (auto-calculated)</p>
+            <div className={`flex justify-between items-center pr-2 bg-gray-700 rounded ${bmiDiagnosis.border}`}>
+              <input
+                readOnly
+                placeholder="BMI"
+                className={`p-2 bg-transparent w-3/5 rounded text-xs focus:outline-none`}
+                value={calculateBMI()}
+              />
+              <div className="w-2/5 flex items-center justify-end">
+              <span className={`text-xs ${bmiDiagnosis.color}`}>{bmiDiagnosis.text}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-span-6 text-xs">
+            <p className="text-gray-400 mb-1">Temperature (°F)</p>
+            <div className={`bg-gray-800 flex justify-between pr-2 items-center rounded focus:outline-none ${temperatureDiagnosis[2]}`}>
+              <input
+                type="number"
+                placeholder="Temperature (°F)"
+                className={`p-2 bg-transparent w-3/5 rounded focus:outline-none mb-0`}
+                value={form.temperature}
+                onChange={e => handleChange("temperature", e.target.value)}
+              />
+              <div className="w-2/5 flex items-center justify-end">
+              
+              <span className={`text-xs ${temperatureDiagnosis[1]}`}><p className="w-full">{temperatureDiagnosis[0]}</p></span>
+              </div>
+            </div>
           </div>
 
 
@@ -539,69 +556,134 @@ function VitalsCheckModal({ vitals, worker, onClose }) {
             value={calculateChestExpansion()}
           />
 
-          <div className="col-span-3">
-            <input
-              key="respiratory_rate"
-              type="number"
-              placeholder="Respiratory Rate"
-              className={`p-2 bg-gray-800 rounded w-full ${respDiagnosis.border} focus:outline-none`}
-              value={form.respiratory_rate}
-              onChange={e => handleChange("respiratory_rate", e.target.value)}
-            />
-            <span className={`text-xs mb-3 ${respDiagnosis.color}`}>
-              {respDiagnosis.text}
-            </span>
-          </div>
+          <div className="col-span-3 text-xs">
 
-          <div className="col-span-3">
-            <input
-              key="spo2"
-              type="number"
-              placeholder="SpO2"
-              className={`p-2 bg-gray-800 rounded w-full ${spo2Diagnosis.border} focus:outline-none`}
-              value={form.spo2}
-              onChange={e => handleChange("spo2", e.target.value)}
-            />
-            <span className={`text-xs mb-3 ${spo2Diagnosis.color}`}>{spo2Diagnosis.text}</span>
-          </div>
+  <p className="text-gray-400 mb-1">
+    Respiratory Rate
+  </p>
+
+  <div className={`bg-gray-800 flex justify-between pr-2 items-center rounded ${respDiagnosis.border}`}>
+
+    <input
+      key="respiratory_rate"
+      type="number"
+      placeholder="Respiratory Rate"
+      className="p-2 bg-transparent w-1/2 rounded focus:outline-none"
+      value={form.respiratory_rate}
+      onChange={e => handleChange("respiratory_rate", e.target.value)}
+    />
+
+    <div className="w-1/2 flex justify-end">
+      <span className={`text-[10px] text-right ${respDiagnosis.color}`}>
+        {respDiagnosis.text}
+      </span>
+    </div>
+
+  </div>
+</div>
+
+<div className="col-span-3 text-xs">
+
+  <p className="text-gray-400 mb-1">
+    SpO₂ (%)
+  </p>
+
+  <div className={`bg-gray-800 flex justify-between pr-2 items-center rounded ${spo2Diagnosis.border}`}>
+
+    <input
+      key="spo2"
+      type="number"
+      placeholder="SpO₂"
+      className="p-2 bg-transparent w-1/2 rounded focus:outline-none"
+      value={form.spo2}
+      onChange={e => handleChange("spo2", e.target.value)}
+    />
+
+    <div className="w-1/2 flex justify-end">
+      <span className={`text-[10px] text-right ${spo2Diagnosis.color}`}>
+        {spo2Diagnosis.text}
+      </span>
+    </div>
+
+  </div>
+</div>
 
           <p className="font-bold text-sm col-span-6 text-gray-400">Heart</p>
-          <div className="col-span-6">
-            <input
-              key={"pulse"}
-              type="number"
-              className={`p-2 bg-gray-800 w-full rounded`}
-              placeholder="Pulse"
-              value={form.pulse}
-              onChange={e => handleChange("pulse", e.target.value)}
-            />
-            <span className={`text-xs ${pulseDiagnosis.color}`}>
-              {pulseDiagnosis.text}
-            </span>
-          </div>
+          <div className="col-span-6 text-xs">
+  <p className="text-gray-400 mb-1">
+    Pulse (/min)
+  </p>
 
-          <input
-            type="number"
-            placeholder="Systolic"
-            className={`p-2 bg-gray-800 col-span-3 rounded ${bpDiagnosis.border}`}
-            value={form.blood_pressure.systolic}
-            onChange={e =>
-              handleNestedChange("blood_pressure", "systolic", e.target.value)
-            }
-          />
+  <div className={`bg-gray-800 flex justify-between pr-2 items-center rounded ${pulseDiagnosis.border}`}>
 
-          <input
-            type="number"
-            placeholder="Diastolic"
-            className={`p-2 bg-gray-800 col-span-3 rounded ${bpDiagnosis.border}`}
-            value={form.blood_pressure.diastolic}
-            onChange={e =>
-              handleNestedChange("blood_pressure", "diastolic", e.target.value)
-            }
-          />
-          <span className={`text-xs col-span-6 ${bpDiagnosis.color}`}>
-            {bpDiagnosis.text}
-          </span>
+    <input
+      key={"pulse"}
+      type="number"
+      placeholder="Pulse"
+      className="p-2 bg-transparent w-3/5 rounded focus:outline-none"
+      value={form.pulse}
+      onChange={e => handleChange("pulse", e.target.value)}
+    />
+
+    <div className="w-2/5 flex justify-end">
+      <span className={`text-xs ${pulseDiagnosis.color}`}>
+        {pulseDiagnosis.text}
+      </span>
+    </div>
+
+  </div>
+</div>
+
+          <div className="col-span-6 text-xs">
+
+  <p className="text-gray-400 mb-1">
+    Blood Pressure (mmHg)
+  </p>
+
+  <div className={`bg-gray-800 flex justify-between items-center pr-2 rounded ${bpDiagnosis.border}`}>
+
+    <div className="w-3/5 flex items-center">
+
+      <input
+        type="number"
+        placeholder="Systolic"
+        className="p-2 bg-transparent w-1/6 focus:outline-none"
+        value={form.blood_pressure.systolic}
+        onChange={e =>
+          handleNestedChange(
+            "blood_pressure",
+            "systolic",
+            e.target.value
+          )
+        }
+      />
+
+      <span>/</span>
+
+      <input
+        type="number"
+        placeholder="Diastolic"
+        className="p-2 bg-transparent w-5/6 focus:outline-none"
+        value={form.blood_pressure.diastolic}
+        onChange={e =>
+          handleNestedChange(
+            "blood_pressure",
+            "diastolic",
+            e.target.value
+          )
+        }
+      />
+
+    </div>
+
+    <div className="w-2/5 flex justify-end">
+      <span className={`text-xs ${bpDiagnosis.color}`}>
+        {bpDiagnosis.text}
+      </span>
+    </div>
+
+  </div>
+</div>
           <br />
           <input
             key={"body_surface_area"}
