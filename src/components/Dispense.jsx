@@ -32,7 +32,10 @@ function Dispense() {
     const medicineTimeout = useRef(null);
     const [submitting, setSubmitting] = useState(false);
 
-    console.log(history);
+    const [balanceDate, setBalanceDate] = useState(today);
+    const [balanceData, setBalanceData] = useState([]);
+
+    console.log(balanceData);
 
 
     const fetchOPDs = async () => {
@@ -52,6 +55,9 @@ function Dispense() {
     useEffect(() => {
         if (tab === "history") {
             fetchHistory();
+        }
+        if (tab === "balance-sheet") {
+            fetchBalanceSheet(balanceDate);
         }
     }, [tab]);
 
@@ -107,6 +113,15 @@ function Dispense() {
         return searchMatch && dateMatch;
     });
 
+    const fetchBalanceSheet = async (date) => {
+
+        const res = await api.get(
+            `/api/dispense/balance-sheet?date=${date}`
+        );
+
+        setBalanceData(res.data.data);
+    };
+
     return (
         <div className="w-full my-3">
             <div className="w-full bg-gray-800 p-2 rounded text-sm flex justify-center items-center gap-2">
@@ -118,6 +133,9 @@ function Dispense() {
                 </div>
                 <div onClick={() => setTab("history")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "history" ? "bg-blue-600" : "bg-gray-700"}`}>
                     <p>History</p>
+                </div>
+                <div onClick={() => setTab("balance-sheet")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "balance-sheet" ? "bg-blue-600" : "bg-gray-700"}`}>
+                    <p>Balance Sheet</p>
                 </div>
             </div>
             {tab === "dispense" && (
@@ -839,6 +857,55 @@ function Dispense() {
                     </div>
                 </div>
             )}
+            {tab === "balance-sheet" && (
+    <div className="bg-gray-800 my-3 rounded-lg p-4">
+
+        <div className="flex gap-3 mb-3">
+            <input
+                type="date"
+                value={balanceDate}
+                onChange={(e) =>
+                    setBalanceDate(e.target.value)
+                }
+                className="bg-gray-700 rounded px-2 py-1 text-xs"
+            />
+
+            <button
+                onClick={() =>
+                    fetchBalanceSheet(balanceDate)
+                }
+                className="bg-blue-600 px-3 py-1 rounded text-xs"
+            >
+                Generate
+            </button>
+        </div>
+
+        <table className="w-full border text-sm">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Opening</th>
+                    <th>Procured</th>
+                    <th>Dispensed</th>
+                    <th>Closing</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {balanceData.map(item => (
+                    <tr key={item.medicine_id}>
+                        <td>{item.medicine_name}</td>
+                        <td>{item.opening_units}</td>
+                        <td>{item.procured_units}</td>
+                        <td>{item.dispensed_units}</td>
+                        <td>{item.closing_units}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+
+    </div>
+)}
             {fillPrescriptionModalOpen && (
                 <FillPrescriptionModal
                     record={selectedOpd}
