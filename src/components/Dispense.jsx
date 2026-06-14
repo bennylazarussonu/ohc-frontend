@@ -858,54 +858,58 @@ function Dispense() {
                 </div>
             )}
             {tab === "balance-sheet" && (
-    <div className="bg-gray-800 my-3 rounded-lg p-4">
+                <div className="bg-gray-800 my-3 rounded-lg p-4">
+                    <p className="text-xs font-semibold mb-3">BALANCE SHEET</p>
+                    <div className="flex gap-3 mb-3">
+                        <input
+                            type="date"
+                            value={balanceDate}
+                            onChange={(e) =>
+                                setBalanceDate(e.target.value)
+                            }
+                            className="bg-gray-700 rounded px-2 py-1 text-xs"
+                        />
 
-        <div className="flex gap-3 mb-3">
-            <input
-                type="date"
-                value={balanceDate}
-                onChange={(e) =>
-                    setBalanceDate(e.target.value)
-                }
-                className="bg-gray-700 rounded px-2 py-1 text-xs"
-            />
+                        <button
+                            onClick={() =>
+                                fetchBalanceSheet(balanceDate)
+                            }
+                            className="bg-blue-600 px-3 py-1 rounded text-xs"
+                        >
+                            Generate
+                        </button>
+                    </div>
+                    
+                    
+                    <div className="flex justify-end">
+                        <h2 className="text-xs font-semibold py-1">DATE: {formatDateDMY(balanceDate)}</h2>
+                    </div>
+                    <table className="w-full border text-xs">
+                        <thead className="bg-gray-900">
+                            <tr>
+                                <th className="border p-2">Item Name</th>
+                                <th className="border p-2">Opening Balance</th>
+                                <th className="border p-2">Procured Units</th>
+                                <th className="border p-2">Dispensed Units</th>
+                                <th className="border p-2">Closing Balance</th>
+                            </tr>
+                        </thead>
 
-            <button
-                onClick={() =>
-                    fetchBalanceSheet(balanceDate)
-                }
-                className="bg-blue-600 px-3 py-1 rounded text-xs"
-            >
-                Generate
-            </button>
-        </div>
+                        <tbody>
+                            {balanceData.map(item => (
+                                <tr key={item.medicine_id}>
+                                    <td className="border p-1">{item.medicine_name}</td>
+                                    <td className="border p-1 text-center">{item.opening_units}</td>
+                                    <td className="border p-1 text-center">{item.procured_units}</td>
+                                    <td className="border p-1 text-center">{item.dispensed_units}</td>
+                                    <td className="border p-1 text-center">{item.closing_units}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
 
-        <table className="w-full border text-sm">
-            <thead>
-                <tr>
-                    <th>Medicine</th>
-                    <th>Opening</th>
-                    <th>Procured</th>
-                    <th>Dispensed</th>
-                    <th>Closing</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {balanceData.map(item => (
-                    <tr key={item.medicine_id}>
-                        <td>{item.medicine_name}</td>
-                        <td>{item.opening_units}</td>
-                        <td>{item.procured_units}</td>
-                        <td>{item.dispensed_units}</td>
-                        <td>{item.closing_units}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-
-    </div>
-)}
+                </div>
+            )}
             {fillPrescriptionModalOpen && (
                 <FillPrescriptionModal
                     record={selectedOpd}
