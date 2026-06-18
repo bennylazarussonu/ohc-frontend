@@ -1005,7 +1005,7 @@ function Dispense() {
                                                         key={date}
                                                         className={`
                                                                 border text-center text-white
-                                                                ${item.daily?.[date] === 0 || item.daily?.[date] === undefined ? "bg-gray-900" : item.daily?.[date] <= 5 ? "bg-blue-800" : item.daily?.[date] <= 10 ? "bg-blue-600" : "bg-blue-400"}
+                                                                ${item.daily?.[date] === 0 || item.daily?.[date] === undefined ? "bg-gray-900" : item.daily?.[date] <= 5 ? "bg-blue-400" : item.daily?.[date] <= 10 ? "bg-blue-600" : "bg-blue-800"}
                                                         `}
                                                     >
                                                         {item.daily?.[date] || "-"}
