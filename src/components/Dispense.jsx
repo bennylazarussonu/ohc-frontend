@@ -127,73 +127,73 @@ function Dispense() {
 
     const exportBalanceSheetDateExcel = () => {
 
-    const rows = balanceData.map(item => ({
-        Medicine: item.medicine_name,
-        Opening_Balance: item.opening_units,
-        Procured_Units: item.procured_units,
-        Dispensed_Units: item.dispensed_units,
-        Closing_Balance: item.closing_units
-    }));
-
-    const worksheet =
-        XLSX.utils.json_to_sheet(rows);
-
-    const workbook =
-        XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Balance Sheet"
-    );
-
-    XLSX.writeFile(
-        workbook,
-        `Balance_Sheet_${balanceDate}.xlsx`
-    );
-};
-
-const exportBalanceSheetRangeExcel = () => {
-
-    const rows = filteredBalanceRangeData.map(item => {
-
-        const row = {
+        const rows = balanceData.map(item => ({
             Medicine: item.medicine_name,
-            Opening_Balance: item.opening_balance
-        };
+            Opening_Balance: item.opening_units,
+            Procured_Units: item.procured_units,
+            Dispensed_Units: item.dispensed_units,
+            Closing_Balance: item.closing_units
+        }));
 
-        balanceRangeDates.forEach(date => {
-            row[date] =
-                item.daily?.[date] || 0;
+        const worksheet =
+            XLSX.utils.json_to_sheet(rows);
+
+        const workbook =
+            XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Balance Sheet"
+        );
+
+        XLSX.writeFile(
+            workbook,
+            `Balance_Sheet_${balanceDate}.xlsx`
+        );
+    };
+
+    const exportBalanceSheetRangeExcel = () => {
+
+        const rows = filteredBalanceRangeData.map(item => {
+
+            const row = {
+                Medicine: item.medicine_name,
+                Opening_Balance: item.opening_balance
+            };
+
+            balanceRangeDates.forEach(date => {
+                row[date] =
+                    item.daily?.[date] || 0;
+            });
+
+            row.Total_Dispensed =
+                Object.values(item.daily || {})
+                    .reduce((a, b) => a + b, 0);
+
+            row.Closing_Balance =
+                item.closing_balance;
+
+            return row;
         });
 
-        row.Total_Dispensed =
-            Object.values(item.daily || {})
-                .reduce((a, b) => a + b, 0);
+        const worksheet =
+            XLSX.utils.json_to_sheet(rows);
 
-        row.Closing_Balance =
-            item.closing_balance;
+        const workbook =
+            XLSX.utils.book_new();
 
-        return row;
-    });
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Balance Range"
+        );
 
-    const worksheet =
-        XLSX.utils.json_to_sheet(rows);
-
-    const workbook =
-        XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Balance Range"
-    );
-
-    XLSX.writeFile(
-        workbook,
-        `Balance_Range_${rangeFrom}_to_${rangeTo}.xlsx`
-    );
-};
+        XLSX.writeFile(
+            workbook,
+            `Balance_Range_${rangeFrom}_to_${rangeTo}.xlsx`
+        );
+    };
 
     const fetchBalanceSheet = async (date) => {
 
@@ -243,6 +243,45 @@ const exportBalanceSheetRangeExcel = () => {
                 sum + item.closing_balance,
             0
         );
+
+    const totalProcured =
+        filteredBalanceRangeData.reduce(
+            (sum, item) =>
+                sum + (item.procured_in_range || 0),
+            0
+        );
+
+    const totalDateMedicines =
+        balanceData.length;
+
+    const totalDateOpening =
+        balanceData.reduce(
+            (sum, item) =>
+                sum + item.opening_units,
+            0
+        );
+
+    const totalDateProcured =
+        balanceData.reduce(
+            (sum, item) =>
+                sum + item.procured_units,
+            0
+        );
+
+    const totalDateDispensed =
+        balanceData.reduce(
+            (sum, item) =>
+                sum + item.dispensed_units,
+            0
+        );
+
+    const totalDateClosing =
+        balanceData.reduce(
+            (sum, item) =>
+                sum + item.closing_units,
+            0
+        );
+
 
     return (
         <div className="w-full my-3">
@@ -1006,14 +1045,67 @@ const exportBalanceSheetRangeExcel = () => {
                                     Generate
                                 </button>
                                 <button
-    onClick={exportBalanceSheetDateExcel}
-    className="bg-green-600 px-3 py-1 rounded text-xs flex items-center gap-1"
->
-    <FaFileExcel />
-    Download Excel
-</button>
+                                    onClick={exportBalanceSheetDateExcel}
+                                    className="bg-green-600 px-3 py-1 rounded text-xs flex items-center gap-1"
+                                >
+                                    <FaFileExcel />
+                                    Download Excel
+                                </button>
                             </div><div className="flex justify-end">
                                 <h2 className="text-xs font-semibold py-1">DATE: {formatDateDMY(balanceDate)}</h2>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Medicines
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalDateMedicines.toLocaleString()}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Opening
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalDateOpening.toLocaleString()}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Procured
+                                    </p>
+
+                                    <p className="font-bold text-lg text-green-400">
+                                        {totalDateProcured.toLocaleString()}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Dispensed
+                                    </p>
+
+                                    <p className="font-bold text-lg text-red-400">
+                                        {totalDateDispensed.toLocaleString()}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Closing
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalDateClosing.toLocaleString()}
+                                    </p>
+                                </div>
+
                             </div>
                             <table className="w-full border text-xs">
                                 <thead className="bg-gray-900">
@@ -1073,16 +1165,16 @@ const exportBalanceSheetRangeExcel = () => {
                                     Generate
                                 </button>
                                 <button
-    onClick={exportBalanceSheetRangeExcel}
-    className="bg-green-600 px-3 py-1 rounded text-xs flex items-center gap-1"
->
-    <FaFileExcel />
-    Download Excel
-</button>
+                                    onClick={exportBalanceSheetRangeExcel}
+                                    className="bg-green-600 px-3 py-1 rounded text-xs flex items-center gap-1"
+                                >
+                                    <FaFileExcel />
+                                    Download Excel
+                                </button>
 
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
 
                                 <div className="bg-gray-900 rounded p-3">
                                     <p className="text-gray-400 text-xs">
@@ -1101,6 +1193,16 @@ const exportBalanceSheetRangeExcel = () => {
 
                                     <p className="font-bold text-lg">
                                         {totalOpening}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Procured Units
+                                    </p>
+
+                                    <p className="font-bold text-lg text-green-400">
+                                        {totalProcured.toLocaleString()}
                                     </p>
                                 </div>
 
