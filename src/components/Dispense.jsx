@@ -1003,9 +1003,12 @@ function Dispense() {
                                                 {balanceRangeDates.map(date => (
                                                     <td
                                                         key={date}
-                                                        className="border p-2 text-center"
+                                                        className={`
+                                                                border text-center text-white
+                                                                ${item.daily?.[date] === 0 || item.daily?.[date] === undefined ? "bg-gray-900" : item.daily?.[date] <= 5 ? "bg-blue-700" : item.daily?.[date] <= 10 ? "bg-blue-500" : "bg-blue-300"}
+                                                        `}
                                                     >
-                                                        {item.daily?.[date] || 0}
+                                                        {item.daily?.[date] || "-"}
                                                     </td>
                                                 ))}
 
