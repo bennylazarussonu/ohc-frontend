@@ -44,6 +44,8 @@ function Dispense() {
     const [balanceRangeData, setBalanceRangeData] = useState([]);
     const [balanceRangeDates, setBalanceRangeDates] = useState([]);
 
+    const [balanceMedicineSearch, setBalanceMedicineSearch] = useState("");
+
     console.log(balanceData);
 
 
@@ -138,6 +140,38 @@ function Dispense() {
         setBalanceRangeDates(res.data.dates);
         setBalanceRangeData(res.data.data);
     }
+
+    const filteredBalanceRangeData = balanceRangeData.filter(item =>
+        item.medicine_name
+            ?.toLowerCase()
+            .includes(balanceMedicineSearch.toLowerCase())
+    );
+
+    const totalMedicines =
+        filteredBalanceRangeData.length;
+
+    const totalDispensedUnits =
+        filteredBalanceRangeData.reduce(
+            (sum, item) =>
+                sum +
+                Object.values(item.daily || {})
+                    .reduce((a, b) => a + b, 0),
+            0
+        );
+
+    const totalOpening =
+        filteredBalanceRangeData.reduce(
+            (sum, item) =>
+                sum + item.opening_balance,
+            0
+        );
+
+    const totalClosing =
+        filteredBalanceRangeData.reduce(
+            (sum, item) =>
+                sum + item.closing_balance,
+            0
+        );
 
     return (
         <div className="w-full my-3">
@@ -960,10 +994,68 @@ function Dispense() {
                                 >
                                     Generate
                                 </button>
+
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Medicines
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalMedicines}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Opening Balance
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalOpening}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Dispensed Units
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalDispensedUnits}
+                                    </p>
+                                </div>
+
+                                <div className="bg-gray-900 rounded p-3">
+                                    <p className="text-gray-400 text-xs">
+                                        Closing Balance
+                                    </p>
+
+                                    <p className="font-bold text-lg">
+                                        {totalClosing}
+                                    </p>
+                                </div>
+
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <FaMagnifyingGlass />
+
+                                <input
+                                    type="text"
+                                    placeholder="Search Medicine..."
+                                    value={balanceMedicineSearch}
+                                    onChange={(e) =>
+                                        setBalanceMedicineSearch(e.target.value)
+                                    }
+                                    className="bg-gray-900 rounded px-2 py-1 text-xs w-72"
+                                />
                             </div>
                             <div className="overflow-auto no-scrollbar">
                                 <table className="w-full border text-xs">
-                                    <thead className="bg-gray-900">
+                                    <thead className="bg-gray-900 sticky top-0 z-40">
                                         <tr>
                                             <th className="border p-2 sticky left-0 z-30 bg-gray-900 min-w-[300px]">
                                                 Medicine
@@ -982,6 +1074,10 @@ function Dispense() {
                                                 </th>
                                             ))}
 
+                                            <th className="border p-2 bg-gray-900">
+                                                Total Dispensed
+                                            </th>
+
                                             <th className="border p-2 sticky right-0 z-30 bg-gray-900">
                                                 Closing
                                             </th>
@@ -989,7 +1085,7 @@ function Dispense() {
                                     </thead>
 
                                     <tbody>
-                                        {balanceRangeData.map(item => (
+                                        {filteredBalanceRangeData.map(item => (
                                             <tr key={item.medicine_id}>
 
                                                 <td className="border p-2 font-semibold sticky left-0 z-20 bg-gray-800 min-w-[300px]">
@@ -1011,6 +1107,13 @@ function Dispense() {
                                                         {item.daily?.[date] || "-"}
                                                     </td>
                                                 ))}
+
+                                                <td className="border p-2 text-center bg-gray-900">
+                                                    {
+                                                        Object.values(item.daily || {})
+                                                            .reduce((a, b) => a + b, 0)
+                                                    }
+                                                </td>
 
                                                 <td className="border p-2 text-center sticky right-0 z-20 bg-gray-800">
                                                     {item.closing_balance}
