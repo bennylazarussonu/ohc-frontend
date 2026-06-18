@@ -635,12 +635,12 @@ function FCACC({ tab }) {
         return (
             <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-bold">List of FCACCs</h2>
+                    <h2 className="text-sm font-bold">List of FCACCs</h2>
                     <button
-                        className="bg-green-600 flex items-center gap-2 px-3 py-2 rounded text-sm"
+                        className="bg-green-600 flex items-center gap-2 px-3 py-2 rounded text-xs"
                         onClick={downloadExcel}
                     >
-                        <FaFileExcel />
+                        <FaFileExcel  className="text-sm"/>
                         Download Excel
                     </button>
                 </div>
@@ -649,12 +649,15 @@ function FCACC({ tab }) {
 
                     <div className="w-2/4">
                         <span className="text-xs text-gray-400">Search</span>
-                        <input
+                        <div className="flex items-center gap-2 bg-gray-900 p-2 rounded">
+                            <FaMagnifyingGlass className="text-gray-400" />
+                            <input
                             placeholder="Search Worker Name..."
-                            className="p-2 rounded bg-gray-900 w-full text-sm block"
+                            className="bg-transparent outline-none w-full text-xs block"
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
                         />
+                        </div>
                     </div>
 
 
@@ -662,7 +665,7 @@ function FCACC({ tab }) {
                         <span className="text-xs text-gray-400">From</span>
                         <input
                             type="date"
-                            className="p-2 rounded bg-gray-900 text-sm block"
+                            className="p-2 rounded bg-gray-900 text-xs block"
                             value={fromDate}
                             onChange={(e) => setFromDate(e.target.value)}
                         />
@@ -672,14 +675,14 @@ function FCACC({ tab }) {
                         <span className="text-xs text-gray-400">To</span>
                         <input
                             type="date"
-                            className="p-2 rounded bg-gray-900 text-sm block"
+                            className="p-2 rounded bg-gray-900 text-xs block"
                             value={toDate}
                             onChange={(e) => setToDate(e.target.value)}
                         />
                     </div>
 
                 </div>
-                <table className="w-full text-sm border">
+                <table className="w-full text-xs border">
                     <thead className="bg-gray-900">
                         <tr>
                             <th className="p-2 border">ID</th>
