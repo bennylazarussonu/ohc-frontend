@@ -1121,11 +1121,11 @@ function App() {
           )}
           {activeMenu === "fcacc" && (
             <div className='w-full'>
-              <div className="bg-gray-800 rounded p-2 flex justify-center gap-2">
-                <div onClick={() => setFcaccTab("fcacc")} className={fcaccTab === "fcacc" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
+              <div className="bg-gray-800 rounded p-2 text-xs flex justify-center gap-2">
+                <div onClick={() => setFcaccTab("fcacc")} className={fcaccTab === "fcacc" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-xs text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-xs text-center"}>
                   FCACCs
                 </div>
-                <div onClick={() => setFcaccTab("list")} className={fcaccTab === "list" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-sm text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-sm text-center"}>
+                <div onClick={() => setFcaccTab("list")} className={fcaccTab === "list" ? "cursor-pointer w-1/2 bg-blue-600 rounded p-1 font-semibold text-xs text-center" : "cursor-pointer w-1/2 bg-gray-700 rounded p-1 font-semibold text-xs text-center"}>
                   List of FCACCs
                 </div>
               </div>

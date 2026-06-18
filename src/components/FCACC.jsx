@@ -1,4 +1,4 @@
-import { FaEye, FaFileExcel, FaMagnifyingGlass, FaPenToSquare, FaUserPlus } from "react-icons/fa6";
+import { FaEye, FaFileExcel, FaFloppyDisk, FaMagnifyingGlass, FaPenToSquare, FaUser, FaUserPlus } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import api from "../api/axios";
 import * as XLSX from "xlsx";
@@ -24,7 +24,7 @@ function FCACC({ tab }) {
     const [visionForm, setVisionForm] = useState(null);
     const [viewRecord, setViewRecord] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
-const [selectedFCACC, setSelectedFCACC] = useState(null);
+    const [selectedFCACC, setSelectedFCACC] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -121,34 +121,34 @@ const [selectedFCACC, setSelectedFCACC] = useState(null);
     }, [query, selectedWorker]);
 
     const handleEditFCACC = (record) => {
-    setSelectedFCACC(record);
-    setOpenEditModal(true);
-};
+        setSelectedFCACC(record);
+        setOpenEditModal(true);
+    };
 
-const handleUpdateFCACC = async (data) => {
-    try {
+    const handleUpdateFCACC = async (data) => {
+        try {
 
-        await api.put(
-            `/api/fcacc/fitness-clearance/${selectedFCACC._id}`,
-            data
-        );
+            await api.put(
+                `/api/fcacc/fitness-clearance/${selectedFCACC._id}`,
+                data
+            );
 
-        const res = await api.get(
-            "/api/fcacc/fitness-clearance"
-        );
+            const res = await api.get(
+                "/api/fcacc/fitness-clearance"
+            );
 
-        setFcaccResults(res.data.records);
+            setFcaccResults(res.data.records);
 
-        setOpenEditModal(false);
-        setSelectedFCACC(null);
+            setOpenEditModal(false);
+            setSelectedFCACC(null);
 
-        alert("FCACC Updated Successfully");
+            alert("FCACC Updated Successfully");
 
-    } catch (err) {
-        console.error(err);
-        alert("Failed to update FCACC");
-    }
-};
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update FCACC");
+        }
+    };
 
     const submitFCACC = async () => {
         if (!selectedWorker) {
@@ -240,7 +240,7 @@ const handleUpdateFCACC = async (data) => {
     if (tab === "fcacc") {
         return (
             <div className="bg-gray-800 p-6 w-full rounded-xl mt-4 overflow-auto no-scrollbar">
-                <h2 className="text-lg font-bold mb-3">FITNESS CLEARANCE AGAINST COMPETENCY CERTIFICATE - FCACC</h2>
+                <h2 className="text-sm font-bold mb-3">FITNESS CLEARANCE AGAINST COMPETENCY CERTIFICATE - FCACC</h2>
 
                 <div className="flex items-center gap-2">
                     <div className="w-4/5 flex items-center gap-2">
@@ -251,7 +251,7 @@ const handleUpdateFCACC = async (data) => {
                             value={query}
                             disabled={newWorkerFormDisplay}
                             onChange={(e) => setQuery(e.target.value)}
-                            className={`p-2 rounded text-white text-sm w-full ${newWorkerFormDisplay
+                            className={`p-2 rounded text-white text-xs w-full ${newWorkerFormDisplay
                                 ? "bg-gray-600 cursor-not-allowed"
                                 : "bg-gray-700"
                                 }`}
@@ -290,7 +290,7 @@ const handleUpdateFCACC = async (data) => {
                         )}
                     </div>
                     <button
-                        className="w-1/5 bg-blue-600 p-2 rounded flex items-center text-sm gap-2"
+                        className="w-1/5 bg-blue-600 p-2 rounded flex items-center text-xs gap-2"
                         onClick={() => {
 
                             const nextState = !newWorkerFormDisplay;
@@ -311,7 +311,7 @@ const handleUpdateFCACC = async (data) => {
                 </div>
                 {newWorkerFormDisplay && (
 
-                    <div className="bg-gray-900 p-4 rounded mt-3">
+                    <div className="bg-gray-900 p-4 rounded mt-4">
 
                         <h3 className="font-semibold mb-2">Add New Worker</h3>
 
@@ -320,42 +320,42 @@ const handleUpdateFCACC = async (data) => {
                             <input
                                 placeholder="Name"
                                 value={workerForm.name}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, name: e.target.value })}
                             />
 
                             <input
                                 placeholder="Employee ID"
                                 value={workerForm.employee_id}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, employee_id: e.target.value })}
                             />
 
                             <input
                                 placeholder="Father Name"
                                 value={workerForm.fathers_name}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, fathers_name: e.target.value })}
                             />
 
                             <input
                                 placeholder="Phone"
                                 value={workerForm.phone_no}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, phone_no: e.target.value })}
                             />
 
                             <input
                                 placeholder="Designation"
                                 value={workerForm.designation}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, designation: e.target.value })}
                             />
 
                             <input
                                 placeholder="Contractor Name"
                                 value={workerForm.contractor_name}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, contractor_name: e.target.value })}
                             />
 
@@ -364,14 +364,14 @@ const handleUpdateFCACC = async (data) => {
                             <input
                                 placeholder="Aadhaar No"
                                 value={workerForm.aadhar_no}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, aadhar_no: e.target.value })}
                             />
 
                             <select
                                 placeholder="Gender"
                                 value={workerForm.gender}
-                                className="w-full p-2 text-sm rounded bg-gray-800"
+                                className="w-full p-2 text-xs rounded bg-gray-800"
                                 onChange={(e) => setWorkerForm({ ...workerForm, gender: e.target.value })}
                             >
                                 <option value="Male">Male</option>
@@ -385,7 +385,7 @@ const handleUpdateFCACC = async (data) => {
                                 <input
                                     type="date"
                                     value={workerForm.dob}
-                                    className="w-full p-2 text-sm rounded bg-gray-800"
+                                    className="w-full p-2 text-xs rounded bg-gray-800"
                                     onChange={(e) => setWorkerForm({ ...workerForm, dob: e.target.value })}
                                 />
                                 <span className="text-xs text-gray-300">Date of Birth</span>
@@ -395,7 +395,7 @@ const handleUpdateFCACC = async (data) => {
                                 <input
                                     type="date"
                                     value={workerForm.date_of_joining}
-                                    className="w-full p-2 text-sm rounded bg-gray-800"
+                                    className="w-full p-2 text-xs rounded bg-gray-800"
                                     onChange={(e) => setWorkerForm({ ...workerForm, date_of_joining: e.target.value })}
                                 />
                                 <span className="text-xs text-gray-300">Date of Joining</span>
@@ -404,7 +404,7 @@ const handleUpdateFCACC = async (data) => {
                         </div>
 
                         <button
-                            className="mt-3 bg-green-600 px-3 py-1 rounded"
+                            className="mt-3 bg-green-600 px-3 text-xs py-1 rounded"
                             onClick={() => {
 
                                 setSelectedWorker(workerForm);
@@ -420,159 +420,186 @@ const handleUpdateFCACC = async (data) => {
                 )}
                 {selectedWorker && (
 
-                    <div className="bg-gray-900 p-3 rounded mt-3">
+                    <div className="bg-gray-900 p-3 rounded mt-4">
 
-                        <h3 className="font-semibold">Selected Worker</h3>
+                        {/* <h3 className="font-semibold text-sm flex items-center gap-2">
+                            <FaUser /> Selected Worker</h3> */}
 
-                        <div className="text-sm mt-1">
-
-                            <div>{selectedWorker.name}</div>
-                            <div className="text-gray-400">
-                                {selectedWorker.designation} • {selectedWorker.contractor_name}
+                        <div className="flex justify-between mb-2">
+                            <div>
+                                <p className="text-xs text-gray-400 flex items-center gap-2"><FaUser className="text-xs" /> Selected Worker</p>
+                                <p className="font-bold text-sm">{selectedWorker.name}</p>
                             </div>
-
+                            <button className="flex items-center gap-2 text-xs text-green-400">
+                                <FaPenToSquare />
+                                Edit
+                            </button>
                         </div>
-
+                        <div className="grid grid-cols-4 w-full gap-x-16 gap-y-2">
+                            <div className="text-xs">
+                                <p className="text-gray-400">Father Name:</p>
+                                <p className="font-semibold text-xs">{selectedWorker.fathers_name}</p>
+                            </div>
+                            <div className="text-xs">
+                                <p className="text-gray-400">Employee ID:</p>
+                                <p className="font-semibold text-xs">{selectedWorker.employee_id}</p>
+                            </div>
+                            <div className="text-xs">
+                                <p className="text-gray-400">Phone No.:</p>
+                                <p className="font-semibold text-xs">{selectedWorker.phone_no}</p>
+                            </div>
+                            <div className="text-xs">
+                                <p className="text-gray-400">Aadhar No.:</p>
+                                <p className="font-semibold text-xs">{selectedWorker.aadhar_no}</p>
+                            </div>
+                            <div className="text-xs">
+                                <p className="text-gray-400">Date of Joining:</p>
+                                <p className="font-semibold text-xs">{formatDateDMY(selectedWorker.date_of_joining)}</p>
+                            </div>
+                            <div className="text-xs">
+                                <p className="text-gray-400">Designation:</p>
+                                <p className="font-semibold text-xs">{selectedWorker.designation}</p>
+                            </div>
+                        </div>
                     </div>
 
                 )}
 
-                {/* <div className="bg-gray-900 p-4 rounded mt-4"> */}
-
-                <div className="bg-gray-900 p-4 rounded mt-4">
-
-                    {/* <h3 className="font-semibold mb-3">FCACC Examination</h3> */}
-
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="col-span-2">
-                            <span className="text-xs text-gray-300">Competency Assessment By</span>
-                            <input
-                                placeholder="Competency Assessment By"
-                                value={fcaccForm.competency_assessment_by}
-                                className="p-2 text-sm rounded w-full bg-gray-800"
-                                onChange={(e) => setFcaccForm({ ...fcaccForm, competency_assessment_by: e.target.value })}
-                            />
-                        </div>
-
-                        <div>
-                            <span className="text-xs text-gray-300">Date of Issuance</span>
-                            <input type="date"
-                                value={fcaccForm.date_of_issuance_of_certificate_for_competency_clearance}
-                                className="p-2 text-sm w-full rounded bg-gray-800"
-                                onChange={(e) => setFcaccForm({ ...fcaccForm, date_of_issuance_of_certificate_for_competency_clearance: e.target.value })}
-                            />
-                        </div>
-
-                        <div className="col-span-3"></div>
-
+                <div className="grid grid-cols-4 gap-3 mt-3">
+                    <div className="col-start-1">
+                        <span className="text-xs text-gray-300">Competency Assessment By</span>
                         <input
-                            placeholder="General Examination"
-                            value={fcaccForm.general_examination}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, general_examination: e.target.value })}
+                            placeholder="Competency Assessment By"
+                            value={fcaccForm.competency_assessment_by}
+                            className="p-2 text-xs rounded w-full bg-gray-900"
+                            onChange={(e) => setFcaccForm({ ...fcaccForm, competency_assessment_by: e.target.value })}
                         />
-
-                        <input
-                            placeholder="Pulse"
-                            value={fcaccForm.pulse}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, pulse: e.target.value })}
-                        />
-
-                        <input
-                            placeholder="Systolic"
-                            value={fcaccForm.systolic}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, systolic: e.target.value })}
-                        />
-
-                        <input
-                            placeholder="Diastolic"
-                            value={fcaccForm.diastolic}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, diastolic: e.target.value })}
-                        />
-
-                        <input
-                            placeholder="SpO2"
-                            value={fcaccForm.spo2}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, spo2: e.target.value })}
-                        />
-
-                        <input
-                            placeholder="Height"
-                            value={fcaccForm.height}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, height: e.target.value })}
-                        />
-
-                        <input
-                            placeholder="Weight"
-                            value={fcaccForm.weight}
-                            className="p-2 text-sm rounded bg-gray-800"
-                            onChange={(e) => setFcaccForm({ ...fcaccForm, weight: e.target.value })}
-                        />
-
-                        <button
-                            className="border-2 border-blue-900 bg-transparent text-blue-500 p-2 rounded"
-                            onClick={() => {
-                                if (!selectedWorker) {
-                                    alert("Please select a worker first");
-                                    return;
-                                }
-
-                                setOpenVision(true);
-                            }}
-                        >
-                            Vision Examination
-                        </button>
-
-                        <div className="col-span-2 flex items-center gap-4">
-                            <p className="text-sm text-gray-400 font-semibold">Vertigo Test: </p>
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    name="vertigo_test_passed"
-                                    checked={fcaccForm.vertigo_test_passed === "Passed"}
-                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Passed" })}
-                                />
-                                <p>Passed</p>
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    name="vertigo_test_passed"
-                                    checked={fcaccForm.vertigo_test_passed === "Failed"}
-                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Failed" })}
-                                />
-                                <p>Failed</p>
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    name="vertigo_test_passed"
-                                    checked={fcaccForm.vertigo_test_passed === "Not Done"}
-                                    onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Not Done" })}
-                                />
-                                <p>Not Done</p>
-                            </label>
-                        </div>
-
                     </div>
 
-                    <button
-                        disabled={!selectedWorker}
-                        className={`mt-4 px-4 py-2 rounded ${selectedWorker
-                            ? "bg-blue-600"
-                            : "bg-gray-600 cursor-not-allowed"
-                            }`}
-                        onClick={() => setOpenReport(true)}
-                    >
-                        Save FCACC
-                    </button>
-
+                    <div className="col-start-4">
+                        <span className=" text-xs text-gray-300">Date of Issuance</span>
+                        <input type="date"
+                            value={fcaccForm.date_of_issuance_of_certificate_for_competency_clearance}
+                            className="p-2 text-xs rounded w-full bg-gray-900"
+                            onChange={(e) => setFcaccForm({ ...fcaccForm, date_of_issuance_of_certificate_for_competency_clearance: e.target.value })}
+                        />
+                    </div>
                 </div>
+
+
+                <div className="col-span-4 text-sm text-gray-400 mt-4 mb-2">Parameters</div>
+
+                {/* <div className="col-span-3"></div> */}
+                <div className="grid grid-cols-4 gap-3 rounded-lg">
+                    <input
+                        placeholder="General Examination"
+                        value={fcaccForm.general_examination}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, general_examination: e.target.value })}
+                    />
+
+                    <input
+                        placeholder="Pulse"
+                        value={fcaccForm.pulse}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, pulse: e.target.value })}
+                    />
+
+                    <input
+                        placeholder="Systolic"
+                        value={fcaccForm.systolic}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, systolic: e.target.value })}
+                    />
+
+                    <input
+                        placeholder="Diastolic"
+                        value={fcaccForm.diastolic}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, diastolic: e.target.value })}
+                    />
+
+                    <input
+                        placeholder="SpO2"
+                        value={fcaccForm.spo2}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, spo2: e.target.value })}
+                    />
+
+                    <input
+                        placeholder="Height"
+                        value={fcaccForm.height}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, height: e.target.value })}
+                    />
+
+                    <input
+                        placeholder="Weight"
+                        value={fcaccForm.weight}
+                        className="p-2 text-xs rounded bg-gray-900"
+                        onChange={(e) => setFcaccForm({ ...fcaccForm, weight: e.target.value })}
+                    />
+
+                    <button
+                        className="border-2 border-blue-900 bg-transparent text-blue-500 p-2 rounded text-xs"
+                        onClick={() => {
+                            if (!selectedWorker) {
+                                alert("Please select a worker first");
+                                return;
+                            }
+
+                            setOpenVision(true);
+                        }}
+                    >
+                        Vision Examination
+                    </button>
+                </div>
+
+
+                <p className="text-xs text-gray-400 mt-3">Vertigo Test: </p>
+                <div className="grid grid-cols-4 gap-3 rounded-lg mt-2">
+                    <div className="col-span-4 grid grid-cols-9 flex items-center">
+                        <label className="flex items-center text-xs gap-2">
+                            <input
+                                type="radio"
+                                name="vertigo_test_passed"
+                                checked={fcaccForm.vertigo_test_passed === "Passed"}
+                                onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Passed" })}
+                            />
+                            <p>Passed</p>
+                        </label>
+                        <label className="flex items-center text-xs gap-2">
+                            <input
+                                type="radio"
+                                name="vertigo_test_passed"
+                                checked={fcaccForm.vertigo_test_passed === "Failed"}
+                                onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Failed" })}
+                            />
+                            <p>Failed</p>
+                        </label>
+                        <label className="flex items-center text-xs gap-2">
+                            <input
+                                type="radio"
+                                name="vertigo_test_passed"
+                                checked={fcaccForm.vertigo_test_passed === "Not Done"}
+                                onChange={() => setFcaccForm({ ...fcaccForm, vertigo_test_passed: "Not Done" })}
+                            />
+                            <p>Not Done</p>
+                        </label>
+                    </div>
+                </div>
+
+                <button
+                    disabled={!selectedWorker}
+                    className={`mt-4 px-4 text-xs flex items-center gap-2 py-2 rounded ${selectedWorker
+                        ? "bg-blue-600"
+                        : "bg-gray-600 cursor-not-allowed"
+                        }`}
+                    onClick={() => setOpenReport(true)}
+                >
+                    <FaFloppyDisk className="text-sm" />
+                    Save FCACC
+                </button>
 
                 {/* </div> */}
                 {openVision && (
@@ -852,8 +879,8 @@ const handleUpdateFCACC = async (data) => {
                             },
 
                             opthalmic_examination:
-    viewRecord.opthalmic_examination ||
-    viewRecord.examination_findings?.opthalmic_examination,
+                                viewRecord.opthalmic_examination ||
+                                viewRecord.examination_findings?.opthalmic_examination,
 
                             name:
                                 viewRecord.worker_details?.name,
@@ -871,18 +898,18 @@ const handleUpdateFCACC = async (data) => {
                         onClose={() => setViewRecord(null)}
                         onConfirm={() => { }}
                     />
-                )} 
+                )}
                 {openEditModal && selectedFCACC && (
-    <FCACCEditModal
-        fcacc={selectedFCACC}
-        worker={selectedFCACC.worker_details}
-        onClose={() => {
-            setOpenEditModal(false);
-            setSelectedFCACC(null);
-        }}
-        onSave={handleUpdateFCACC}
-    />
-)}
+                    <FCACCEditModal
+                        fcacc={selectedFCACC}
+                        worker={selectedFCACC.worker_details}
+                        onClose={() => {
+                            setOpenEditModal(false);
+                            setSelectedFCACC(null);
+                        }}
+                        onSave={handleUpdateFCACC}
+                    />
+                )}
 
             </div>
         );
