@@ -35,6 +35,15 @@ function Dispense() {
     const [balanceDate, setBalanceDate] = useState(today);
     const [balanceData, setBalanceData] = useState([]);
 
+
+    const [filterBy, setFilterBy] = useState("date");
+
+    const [rangeFrom, setRangeFrom] = useState(today);
+    const [rangeTo, setRangeTo] = useState(today);
+
+    const [balanceRangeData, setBalanceRangeData] = useState([]);
+    const [balanceRangeDates, setBalanceRangeDates] = useState([]);
+
     console.log(balanceData);
 
 
@@ -121,6 +130,14 @@ function Dispense() {
 
         setBalanceData(res.data.data);
     };
+
+    const fetchBalanceSheetRange = async (from, to) => {
+        const res = await api.get(
+            `/api/dispense/balance-sheet-range?from=${from}&to=${to}`
+        );
+        setBalanceRangeDates(res.data.dates);
+        setBalanceRangeData(res.data.data);
+    }
 
     return (
         <div className="w-full my-3">
@@ -860,53 +877,149 @@ function Dispense() {
             {tab === "balance-sheet" && (
                 <div className="bg-gray-800 my-3 rounded-lg p-4">
                     <p className="text-xs font-semibold mb-3">BALANCE SHEET</p>
-                    <div className="flex gap-3 mb-3">
-                        <input
-                            type="date"
-                            value={balanceDate}
-                            onChange={(e) =>
-                                setBalanceDate(e.target.value)
-                            }
-                            className="bg-gray-700 rounded px-2 py-1 text-xs"
-                        />
-
-                        <button
-                            onClick={() =>
-                                fetchBalanceSheet(balanceDate)
-                            }
-                            className="bg-blue-600 px-3 py-1 rounded text-xs"
-                        >
-                            Generate
-                        </button>
+                    <div className="mb-2">
+                        <p className="text-xs text-gray-400">Filter By: <span className={`p-1 mx-2 cursor-pointer underline ${filterBy === "date" ? "text-blue-600 font-semibold" : "text-white"}`} onClick={() => setFilterBy("date")}>Date</span> <span onClick={() => setFilterBy("range")} className={` p-1 cursor-pointer underline ${filterBy === "range" ? "text-blue-600 font-semibold" : "text-white"}`}>Range</span></p>
                     </div>
-                    
-                    
-                    <div className="flex justify-end">
-                        <h2 className="text-xs font-semibold py-1">DATE: {formatDateDMY(balanceDate)}</h2>
-                    </div>
-                    <table className="w-full border text-xs">
-                        <thead className="bg-gray-900">
-                            <tr>
-                                <th className="border p-2">Item Name</th>
-                                <th className="border p-2">Opening Balance</th>
-                                <th className="border p-2">Procured Units</th>
-                                <th className="border p-2">Dispensed Units</th>
-                                <th className="border p-2">Closing Balance</th>
-                            </tr>
-                        </thead>
+                    {filterBy === "date" && (
+                        <>
+                            <div className="flex gap-3 mb-3">
+                                <input
+                                    type="date"
+                                    value={balanceDate}
+                                    onChange={(e) =>
+                                        setBalanceDate(e.target.value)
+                                    }
+                                    className="bg-gray-900 rounded px-2 py-1 text-xs"
+                                />
 
-                        <tbody>
-                            {balanceData.map(item => (
-                                <tr key={item.medicine_id}>
-                                    <td className="border p-1">{item.medicine_name}</td>
-                                    <td className="border p-1 text-center">{item.opening_units}</td>
-                                    <td className="border p-1 text-center">{item.procured_units}</td>
-                                    <td className="border p-1 text-center">{item.dispensed_units}</td>
-                                    <td className="border p-1 text-center">{item.closing_units}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                <button
+                                    onClick={() =>
+                                        fetchBalanceSheet(balanceDate)
+                                    }
+                                    className="bg-blue-600 px-3 py-1 rounded text-xs"
+                                >
+                                    Generate
+                                </button>
+                            </div><div className="flex justify-end">
+                                <h2 className="text-xs font-semibold py-1">DATE: {formatDateDMY(balanceDate)}</h2>
+                            </div>
+                            <table className="w-full border text-xs">
+                                <thead className="bg-gray-900">
+                                    <tr>
+                                        <th className="border p-2">Item Name</th>
+                                        <th className="border p-2">Opening Balance</th>
+                                        <th className="border p-2">Procured Units</th>
+                                        <th className="border p-2">Dispensed Units</th>
+                                        <th className="border p-2">Closing Balance</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {balanceData.map(item => (
+                                        <tr key={item.medicine_id}>
+                                            <td className="border p-1">{item.medicine_name}</td>
+                                            <td className="border p-1 text-center">{item.opening_units}</td>
+                                            <td className="border p-1 text-center">{item.procured_units}</td>
+                                            <td className="border p-1 text-center">{item.dispensed_units}</td>
+                                            <td className="border p-1 text-center">{item.closing_units}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
+                    )}
+
+
+
+
+
+                    {filterBy === "range" && (
+                        <>
+                            <div className="flex items-center gap-3 mb-3">
+                                <input
+                                    type="date"
+                                    value={rangeFrom}
+                                    onChange={(e) =>
+                                        setRangeFrom(e.target.value)
+                                    }
+                                    className="bg-gray-900 rounded px-2 py-1 text-xs"
+                                />
+                                <input
+                                    type="date"
+                                    value={rangeTo}
+                                    onChange={(e) =>
+                                        setRangeTo(e.target.value)
+                                    }
+                                    className="bg-gray-900 rounded px-2 py-1 text-xs"
+                                />
+                                <button
+                                    onClick={() =>
+                                        fetchBalanceSheetRange(rangeFrom, rangeTo)
+                                    }
+                                    className="bg-blue-600 px-3 py-1 rounded text-xs"
+                                >
+                                    Generate
+                                </button>
+                            </div>
+                            <div className="overflow-auto no-scrollbar">
+                                <table className="w-full border text-xs">
+                                    <thead className="bg-gray-900">
+                                        <tr>
+                                            <th className="border p-2 sticky left-0 z-30 bg-gray-900 min-w-[300px]">
+                                                Medicine
+                                            </th>
+
+                                            <th className="border p-2 sticky left-[300px] z-30 bg-gray-900">
+                                                Opening
+                                            </th>
+
+                                            {balanceRangeDates.map(date => (
+                                                <th
+                                                    key={date}
+                                                    className="border p-2 whitespace-nowrap"
+                                                >
+                                                    {formatDateDMY(date)}
+                                                </th>
+                                            ))}
+
+                                            <th className="border p-2 sticky right-0 z-30 bg-gray-900">
+                                                Closing
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {balanceRangeData.map(item => (
+                                            <tr key={item.medicine_id}>
+
+                                                <td className="border p-2 font-semibold sticky left-0 z-20 bg-gray-800 min-w-[300px]">
+                                                    {item.medicine_name}
+                                                </td>
+
+                                                <td className="border p-2 text-center sticky left-[300px] z-20 bg-gray-800">
+                                                    {item.opening_balance}
+                                                </td>
+
+                                                {balanceRangeDates.map(date => (
+                                                    <td
+                                                        key={date}
+                                                        className="border p-2 text-center"
+                                                    >
+                                                        {item.daily?.[date] || 0}
+                                                    </td>
+                                                ))}
+
+                                                <td className="border p-2 text-center sticky right-0 z-20 bg-gray-800">
+                                                    {item.closing_balance}
+                                                </td>
+
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
 
                 </div>
             )}
