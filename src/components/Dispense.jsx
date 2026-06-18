@@ -996,7 +996,7 @@ function Dispense() {
                                 </button>
 
                             </div>
-                            
+
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
 
                                 <div className="bg-gray-900 rounded p-3">
@@ -1065,14 +1065,25 @@ function Dispense() {
                                                 Opening
                                             </th>
 
-                                            {balanceRangeDates.map(date => (
-                                                <th
-                                                    key={date}
-                                                    className="border p-2 whitespace-nowrap"
-                                                >
-                                                    {formatDateDMY(date)}
-                                                </th>
-                                            ))}
+                                            {balanceRangeDates.map(date => {
+
+                                                const day = new Date(date).getDay();
+                                                const isWeekend = day === 0;
+
+                                                return (
+                                                    <th
+                                                        key={date}
+                                                        className={`
+                border p-2 whitespace-nowrap
+                ${isWeekend
+                                                                ? "bg-red-900"
+                                                                : "bg-gray-900"}
+            `}
+                                                    >
+                                                        {formatDateDMY(date)}
+                                                    </th>
+                                                );
+                                            })}
 
                                             <th className="border p-2 bg-gray-900">
                                                 Total Dispensed
@@ -1096,17 +1107,22 @@ function Dispense() {
                                                     {item.opening_balance}
                                                 </td>
 
-                                                {balanceRangeDates.map(date => (
-                                                    <td
-                                                        key={date}
-                                                        className={`
-                                                                border text-center text-white
-                                                                ${item.daily?.[date] === 0 || item.daily?.[date] === undefined ? "bg-gray-900" : item.daily?.[date] <= 5 ? "bg-blue-400" : item.daily?.[date] <= 10 ? "bg-blue-600" : "bg-blue-800"}
+                                                {balanceRangeDates.map(date => {
+                                                    const day = new Date(date).getDay();
+                                                    const isWeekend = day === 0;
+
+                                                    return (
+                                                        <td
+                                                            key={date}
+                                                            className={`
+                                                                    border text-center text-white ${isWeekend ? "bg-red-900" : "bg-gray-900"}
+                                                                    ${item.daily?.[date] === 0 || item.daily?.[date] === undefined ? "bg-gray-900" : item.daily?.[date] <= 5 ? "bg-blue-400" : item.daily?.[date] <= 10 ? "bg-blue-600" : "bg-blue-800"}
                                                         `}
-                                                    >
-                                                        {item.daily?.[date] || "-"}
-                                                    </td>
-                                                ))}
+                                                        >
+                                                            {item.daily?.[date] || "-"}
+                                                        </td>
+                                                    )
+                                                })}
 
                                                 <td className="border p-2 text-center bg-gray-900">
                                                     {
