@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 import { formatDateDMY } from "../utils/date";
-import { FaMagnifyingGlass, FaPills, FaPlus, FaXmark } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaPills, FaPlus, FaXmark, FaFileExcel } from "react-icons/fa6";
 import FillPrescriptionModal from "./FillPrescriptionModal.jsx";
+import * as XLSX from "xlsx";
 
 function Dispense() {
     const [opdData, setOpdData] = useState([]);
@@ -123,6 +124,76 @@ function Dispense() {
 
         return searchMatch && dateMatch;
     });
+
+    const exportBalanceSheetDateExcel = () => {
+
+    const rows = balanceData.map(item => ({
+        Medicine: item.medicine_name,
+        Opening_Balance: item.opening_units,
+        Procured_Units: item.procured_units,
+        Dispensed_Units: item.dispensed_units,
+        Closing_Balance: item.closing_units
+    }));
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(rows);
+
+    const workbook =
+        XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Balance Sheet"
+    );
+
+    XLSX.writeFile(
+        workbook,
+        `Balance_Sheet_${balanceDate}.xlsx`
+    );
+};
+
+const exportBalanceSheetRangeExcel = () => {
+
+    const rows = filteredBalanceRangeData.map(item => {
+
+        const row = {
+            Medicine: item.medicine_name,
+            Opening_Balance: item.opening_balance
+        };
+
+        balanceRangeDates.forEach(date => {
+            row[date] =
+                item.daily?.[date] || 0;
+        });
+
+        row.Total_Dispensed =
+            Object.values(item.daily || {})
+                .reduce((a, b) => a + b, 0);
+
+        row.Closing_Balance =
+            item.closing_balance;
+
+        return row;
+    });
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(rows);
+
+    const workbook =
+        XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Balance Range"
+    );
+
+    XLSX.writeFile(
+        workbook,
+        `Balance_Range_${rangeFrom}_to_${rangeTo}.xlsx`
+    );
+};
 
     const fetchBalanceSheet = async (date) => {
 
@@ -934,6 +1005,13 @@ function Dispense() {
                                 >
                                     Generate
                                 </button>
+                                <button
+    onClick={exportBalanceSheetDateExcel}
+    className="bg-green-600 px-3 py-1 rounded text-xs flex items-center gap-1"
+>
+    <FaFileExcel />
+    Download Excel
+</button>
                             </div><div className="flex justify-end">
                                 <h2 className="text-xs font-semibold py-1">DATE: {formatDateDMY(balanceDate)}</h2>
                             </div>
@@ -994,6 +1072,13 @@ function Dispense() {
                                 >
                                     Generate
                                 </button>
+                                <button
+    onClick={exportBalanceSheetRangeExcel}
+    className="bg-green-600 px-3 py-1 rounded text-xs flex items-center gap-1"
+>
+    <FaFileExcel />
+    Download Excel
+</button>
 
                             </div>
 
@@ -1050,7 +1135,7 @@ function Dispense() {
                                     onChange={(e) =>
                                         setBalanceMedicineSearch(e.target.value)
                                     }
-                                    className="bg-gray-900 rounded px-2 py-1 text-xs w-72"
+                                    className="bg-gray-900 rounded p-2 text-xs w-72"
                                 />
                             </div>
                             <div className="overflow-auto no-scrollbar">
