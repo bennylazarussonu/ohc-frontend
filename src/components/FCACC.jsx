@@ -6,6 +6,7 @@ import { saveAs } from "file-saver";
 import { formatDateDMY } from "../utils/date";
 import VisionCheckModal from "./VisionCheckModal";
 import FCACCReportModal from "./FCACCReportModal";
+import FCACCEditModal from "./FCACCEditModal";
 
 function FCACC({ tab }) {
     const [query, setQuery] = useState("");
@@ -18,13 +19,12 @@ function FCACC({ tab }) {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const [filteredResults, setFilteredResults] = useState([]);
-    const [editModalOpen, setEditModalOpen] = useState(false);
     const [openVision, setOpenVision] = useState(false);
     const [openReport, setOpenReport] = useState(false);
-    const [editData, setEditData] = useState(null);
-    const [editId, setEditId] = useState(null);
     const [visionForm, setVisionForm] = useState(null);
     const [viewRecord, setViewRecord] = useState(null);
+    const [openEditModal, setOpenEditModal] = useState(false);
+const [selectedFCACC, setSelectedFCACC] = useState(null);
     const [workerForm, setWorkerForm] = useState({
         name: "",
         employee_id: "",
@@ -120,49 +120,35 @@ function FCACC({ tab }) {
 
     }, [query, selectedWorker]);
 
-    const handleEditFCACC = (id) => {
-        const record = fcaccResults.find(r => r._id === id);
+    const handleEditFCACC = (record) => {
+    setSelectedFCACC(record);
+    setOpenEditModal(true);
+};
 
-        setEditId(id);
-        setEditData({
-            competency_assessment_by: record.competency_assessment_by,
-            general_examination: record.examination_findings?.general_examination,
-            pulse: record.examination_findings?.pulse,
-            systolic: record.examination_findings?.blood_pressure?.systolic,
-            diastolic: record.examination_findings?.blood_pressure?.diastolic,
-            spo2: record.examination_findings?.spo2,
-            height: record.examination_findings?.height,
-            weight: record.examination_findings?.weight,
-            vertigo_test_passed: record.examination_findings?.vertigo_test_passed
-        });
+const handleUpdateFCACC = async (data) => {
+    try {
 
-        setEditModalOpen(true);
-    };
+        await api.put(
+            `/api/fcacc/fitness-clearance/${selectedFCACC._id}`,
+            data
+        );
 
-    const updateFCACC = async () => {
-        if (!editData.competency_assessment_by) {
-            alert("Assessment By is required");
-            return;
-        }
+        const res = await api.get(
+            "/api/fcacc/fitness-clearance"
+        );
 
-        if (!editData.pulse || !editData.systolic || !editData.diastolic) {
-            alert("Pulse and BP are required");
-            return;
-        }
+        setFcaccResults(res.data.records);
 
-        try {
-            await api.put(`/api/fcacc/fitness-clearance/${editId}`, editData);
+        setOpenEditModal(false);
+        setSelectedFCACC(null);
 
-            const res = await api.get("/api/fcacc/fitness-clearance");
-            setFcaccResults(res.data.records);
+        alert("FCACC Updated Successfully");
 
-            setEditModalOpen(false);
-            alert("Updated successfully");
-
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    } catch (err) {
+        console.error(err);
+        alert("Failed to update FCACC");
+    }
+};
 
     const submitFCACC = async () => {
         if (!selectedWorker) {
@@ -694,7 +680,7 @@ function FCACC({ tab }) {
                                     </button>
                                     <button
                                         className="text-yellow-500 text-xs px-2 py-1 rounded"
-                                        onClick={() => handleEditFCACC(record._id)}
+                                        onClick={() => handleEditFCACC(record)}
                                     >
                                         <FaPenToSquare />
                                     </button>
@@ -703,7 +689,7 @@ function FCACC({ tab }) {
                         ))}
                     </tbody>
                 </table>
-                {editModalOpen && (
+                {/* {editModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                         <div className="bg-gray-900 p-6 rounded w-1/2">
                             <h2 className="text-lg font-bold mb-4">Edit FCACC Record</h2>
@@ -828,8 +814,9 @@ function FCACC({ tab }) {
                             </div>
                         </div>
                     </div>
-                )}
+                )}*/}
                 {viewRecord && (
+                    console.log("VIEW RECORD", viewRecord),
                     <FCACCReportModal
                         data={{
                             fcaccForm: {
@@ -865,7 +852,8 @@ function FCACC({ tab }) {
                             },
 
                             opthalmic_examination:
-                                viewRecord.opthalmic_examination,
+    viewRecord.opthalmic_examination ||
+    viewRecord.examination_findings?.opthalmic_examination,
 
                             name:
                                 viewRecord.worker_details?.name,
@@ -883,7 +871,18 @@ function FCACC({ tab }) {
                         onClose={() => setViewRecord(null)}
                         onConfirm={() => { }}
                     />
-                )}
+                )} 
+                {openEditModal && selectedFCACC && (
+    <FCACCEditModal
+        fcacc={selectedFCACC}
+        worker={selectedFCACC.worker_details}
+        onClose={() => {
+            setOpenEditModal(false);
+            setSelectedFCACC(null);
+        }}
+        onSave={handleUpdateFCACC}
+    />
+)}
 
             </div>
         );
