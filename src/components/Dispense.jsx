@@ -1272,7 +1272,7 @@ function Dispense() {
                                                 );
                                             })}
 
-                                            <th className="border p-2 bg-gray-900">
+                                            <th className="border p-2 bg-gray-900 sticky right-14 z-30">
                                                 Total Dispensed
                                             </th>
 
@@ -1311,7 +1311,7 @@ function Dispense() {
                                                     )
                                                 })}
 
-                                                <td className="border p-2 text-center bg-gray-900">
+                                                <td className="border p-2 text-center sticky right-14 z-20 bg-gray-800">
                                                     {
                                                         Object.values(item.daily || {})
                                                             .reduce((a, b) => a + b, 0)
