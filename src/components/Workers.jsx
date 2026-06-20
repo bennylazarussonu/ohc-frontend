@@ -121,7 +121,7 @@ function BulkUpload() {
 
   const saveEdit = async () => {
     try {
-      await api.put(`/api/workers/${editingWorker._id}`, editForm);
+      await api.put(`/api/workers/${editingWorker.id}`, editForm);
 
       // Update UI without refetching everything
       setWorkers(prev =>
