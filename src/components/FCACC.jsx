@@ -50,6 +50,22 @@ function FCACC({ tab }) {
         weight: "",
         vertigo_test_passed: "Passed"
     });
+    const [isEditingWorker, setIsEditingWorker] = useState(false);
+
+    const mapWorkerToForm = (worker) => ({
+        name: worker.name || "",
+        employee_id: worker.employee_id || "",
+        fathers_name: worker.fathers_name || "",
+        aadhar_no: worker.aadhar_no || "",
+        dob: worker.dob ? worker.dob.split("T")[0] : "",
+        gender: worker.gender || "Male",
+        phone_no: worker.phone_no || "",
+        designation: worker.designation || "",
+        contractor_name: worker.contractor_name || "",
+        date_of_joining: worker.date_of_joining
+            ? worker.date_of_joining.split("T")[0]
+            : ""
+    });
     console.log(fcaccForm);
     console.log(fcaccResults);
 
@@ -249,7 +265,7 @@ function FCACC({ tab }) {
                             type="text"
                             placeholder="Search..."
                             value={query}
-                            disabled={newWorkerFormDisplay}
+                            disabled={newWorkerFormDisplay || isEditingWorker}
                             onChange={(e) => setQuery(e.target.value)}
                             className={`p-2 rounded text-white text-xs w-full ${newWorkerFormDisplay
                                 ? "bg-gray-600 cursor-not-allowed"
@@ -296,6 +312,7 @@ function FCACC({ tab }) {
                             const nextState = !newWorkerFormDisplay;
 
                             setNewWorkerFormDisplay(nextState);
+                            setIsEditingWorker(false);
 
                             if (nextState) {
                                 setSelectedWorker(null);
@@ -309,11 +326,13 @@ function FCACC({ tab }) {
                         Add New Worker
                     </button>
                 </div>
-                {newWorkerFormDisplay && (
+                {(newWorkerFormDisplay || isEditingWorker) && (
 
                     <div className="bg-gray-900 p-4 rounded mt-4">
 
-                        <h3 className="font-semibold mb-2">Add New Worker</h3>
+                        <h3 className="font-semibold mb-2">
+    {isEditingWorker ? "Edit Worker" : "Add New Worker"}
+</h3>
 
                         <div className="grid grid-cols-3 gap-3">
 
@@ -403,22 +422,63 @@ function FCACC({ tab }) {
 
                         </div>
 
-                        <button
-                            className="mt-3 bg-green-600 px-3 text-xs py-1 rounded"
-                            onClick={() => {
-
-                                setSelectedWorker(workerForm);
-                                setNewWorkerFormDisplay(false);
-
-                            }}
-                        >
-                            Use Worker
-                        </button>
+                        {newWorkerFormDisplay && (
+    <button
+        className="mt-3 bg-green-600 px-3 text-xs py-1 rounded"
+        onClick={() => {
+            setSelectedWorker(workerForm);
+            setNewWorkerFormDisplay(false);
+        }}
+    >
+        Use Worker
+    </button>
+)}
 
                     </div>
 
                 )}
-                {selectedWorker && (
+                {isEditingWorker && (
+                    <div className="flex gap-2 mt-3">
+
+                        <button
+                            className="bg-green-600 px-3 py-2 rounded text-xs flex items-center gap-2"
+                            onClick={async () => {
+                                try {
+
+                                    const res = await api.put(
+                                        `/api/workers/${selectedWorker.id}`,
+                                        workerForm
+                                    );
+
+                                    setSelectedWorker(res.data);
+
+                                    setIsEditingWorker(false);
+
+                                    alert("Worker updated successfully");
+
+                                } catch (err) {
+                                    console.error(err);
+                                    alert("Failed to update worker");
+                                }
+                            }}
+                        >
+                            <FaFloppyDisk />
+                            Save Changes
+                        </button>
+
+                        <button
+                            className="bg-gray-600 px-3 py-2 rounded text-xs"
+                            onClick={() => {
+                                setIsEditingWorker(false);
+                                setWorkerForm(mapWorkerToForm(selectedWorker));
+                            }}
+                        >
+                            Cancel
+                        </button>
+
+                    </div>
+                )}
+                {selectedWorker && !isEditingWorker && (
 
                     <div className="bg-gray-900 p-3 rounded mt-4">
 
@@ -430,7 +490,13 @@ function FCACC({ tab }) {
                                 <p className="text-xs text-gray-400 flex items-center gap-2"><FaUser className="text-xs" /> Selected Worker</p>
                                 <p className="font-bold text-sm">{selectedWorker.name}</p>
                             </div>
-                            <button className="flex items-center gap-2 text-xs text-green-400">
+                            <button
+                                className="flex items-center gap-2 text-xs text-green-400"
+                                onClick={() => {
+                                    setIsEditingWorker(true);
+                                    setWorkerForm(mapWorkerToForm(selectedWorker));
+                                }}
+                            >
                                 <FaPenToSquare />
                                 Edit
                             </button>
@@ -640,7 +706,7 @@ function FCACC({ tab }) {
                         className="bg-green-600 flex items-center gap-2 px-3 py-2 rounded text-xs"
                         onClick={downloadExcel}
                     >
-                        <FaFileExcel  className="text-sm"/>
+                        <FaFileExcel className="text-sm" />
                         Download Excel
                     </button>
                 </div>
@@ -652,11 +718,11 @@ function FCACC({ tab }) {
                         <div className="flex items-center gap-2 bg-gray-900 p-2 rounded">
                             <FaMagnifyingGlass className="text-gray-400" />
                             <input
-                            placeholder="Search Worker Name..."
-                            className="bg-transparent outline-none w-full text-xs block"
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                        />
+                                placeholder="Search Worker Name..."
+                                className="bg-transparent outline-none w-full text-xs block"
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                            />
                         </div>
                     </div>
 
