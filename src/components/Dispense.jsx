@@ -47,6 +47,23 @@ function Dispense() {
 
     const [balanceMedicineSearch, setBalanceMedicineSearch] = useState("");
 
+    const [reconciliationData,
+        setReconciliationData] = useState([]);
+
+    const [physicalStocks,
+        setPhysicalStocks] = useState({});
+
+    const [reconciliationSearch,
+        setReconciliationSearch] = useState("");
+
+    const [reconcileFromDate,
+        setReconcileFromDate] =
+        useState(today);
+
+    const [reconcileToDate,
+        setReconcileToDate] =
+        useState(today);
+
     console.log(balanceData);
 
 
@@ -60,6 +77,18 @@ function Dispense() {
         setHistory(res.data.data);
     };
 
+    const fetchReconciliationStocks =
+        async () => {
+
+            const res = await api.get(
+                "/api/adjustment/reconciliation-stock"
+            );
+
+            setReconciliationData(
+                res.data.data
+            );
+        };
+
     useEffect(() => {
         fetchOPDs();
     }, []);
@@ -70,6 +99,9 @@ function Dispense() {
         }
         if (tab === "balance-sheet") {
             fetchBalanceSheet(balanceDate);
+        }
+        if (tab === "stock-reconciliation") {
+            fetchReconciliationStocks();
         }
     }, [tab]);
 
@@ -218,6 +250,18 @@ function Dispense() {
             .includes(balanceMedicineSearch.toLowerCase())
     );
 
+    const filteredReconciliation =
+        reconciliationData.filter(
+            item =>
+                item.item_name
+                    ?.toLowerCase()
+                    .includes(
+                        reconciliationSearch
+                            .toLowerCase()
+                    )
+        );
+
+
     const totalMedicines =
         filteredBalanceRangeData.length;
 
@@ -282,6 +326,66 @@ function Dispense() {
             0
         );
 
+    const saveReconciliation =
+        async () => {
+
+            const items =
+                reconciliationData
+                    .filter(item => {
+
+                        const value =
+                            Number(
+                                physicalStocks[item.id]
+                            );
+
+                        return (
+                            physicalStocks[item.id] !==
+                            undefined &&
+                            !isNaN(value) &&
+                            value >= 0 &&
+                            value <= item.units
+                        );
+                    })
+                    .map(item => ({
+                        stock_id: item.id,
+                        remaining_units:
+                            Number(
+                                physicalStocks[
+                                item.id
+                                ]
+                            ),
+                        remarks: "Consumed"
+                    }));
+
+            if (!items.length) {
+                return alert(
+                    "No entries"
+                );
+            }
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+            await api.post(
+                "/api/adjustment/reconcile-opening",
+                {
+                    from_date: reconcileFromDate,
+                    to_date: reconcileToDate,
+                    items
+                }
+            );
+
+            alert(
+                "Reconciliation Saved"
+            );
+
+            fetchReconciliationStocks();
+
+            setPhysicalStocks({});
+        };
+
 
     return (
         <div className="w-full my-3">
@@ -297,6 +401,9 @@ function Dispense() {
                 </div>
                 <div onClick={() => setTab("balance-sheet")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "balance-sheet" ? "bg-blue-600" : "bg-gray-700"}`}>
                     <p>Balance Sheet</p>
+                </div>
+                <div onClick={() => setTab("stock-reconciliation")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "stock-reconciliation" ? "bg-blue-600" : "bg-gray-700"}`}>
+                    <p>Stock Reconciliation</p>
                 </div>
             </div>
             {tab === "dispense" && (
@@ -1107,29 +1214,64 @@ function Dispense() {
                                 </div>
 
                             </div>
-                            <table className="w-full border text-xs">
-                                <thead className="bg-gray-900">
-                                    <tr>
-                                        <th className="border p-2">Item Name</th>
-                                        <th className="border p-2">Opening Balance</th>
-                                        <th className="border p-2">Procured Units</th>
-                                        <th className="border p-2">Dispensed Units</th>
-                                        <th className="border p-2">Closing Balance</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {balanceData.map(item => (
-                                        <tr key={item.medicine_id}>
-                                            <td className="border p-1">{item.medicine_name}</td>
-                                            <td className="border p-1 text-center">{item.opening_units}</td>
-                                            <td className="border p-1 text-center">{item.procured_units}</td>
-                                            <td className="border p-1 text-center">{item.dispensed_units}</td>
-                                            <td className="border p-1 text-center">{item.closing_units}</td>
+                            <div className="">
+                                <table className="w-full border text-xs">
+                                    <thead className="bg-gray-900">
+                                        <tr>
+                                            <th className="border p-2">Item Name</th>
+                                            <th className="border p-2">Opening Balance</th>
+                                            <th className="border p-2">Procured Units</th>
+                                            <th className="border p-2">Dispensed Units</th>
+                                            <th className="border p-2">Closing Balance</th>
+                                            {/* <th className="border p-2">Physical Balance</th>
+                                            <th className="border p-2">Difference</th> */}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody>
+                                        {balanceData.map(item => (
+                                            <tr key={item.medicine_id}>
+                                                <td className="border p-1">{item.medicine_name}</td>
+                                                <td className="border p-1 text-center">{item.opening_units}</td>
+                                                <td className="border p-1 text-center">{item.procured_units}</td>
+                                                <td className="border p-1 text-center">{item.dispensed_units}</td>
+                                                <td className="border p-1 text-center">{item.closing_units}</td>
+                                                {/* <td>
+                                                    <input
+                                                        type="number"
+                                                        className="bg-gray-700 p-1 w-20"
+                                                        value={
+                                                            adjustments[item.medicine_id] ?? ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            setAdjustments(prev => ({
+                                                                ...prev,
+                                                                [item.medicine_id]:
+                                                                    Number(e.target.value)
+                                                            }))
+                                                        }
+                                                    />
+                                                </td>
+                                                <td>
+                                                    {
+                                                        item.closing_units -
+                                                        (
+                                                            adjustments[item.medicine_id]
+                                                            ?? item.closing_units
+                                                        )
+                                                    }
+                                                </td> */}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {/* <button
+                                onClick={saveAdjustments}
+                                className="bg-red-600 px-4 py-2 rounded"
+                            >
+                                Save Adjustment
+                            </button> */}
                         </>
                     )}
 
@@ -1330,6 +1472,151 @@ function Dispense() {
                         </>
                     )}
 
+                </div>
+            )}
+            {tab === "stock-reconciliation" && (
+                <div className="bg-gray-800 my-3 rounded-lg p-4">
+                    <p className="text-xs font-semibold mb-3">STOCK RECONCILIATION</p>
+                    <div className="flex items-center gap-2 mb-3">
+                        <FaMagnifyingGlass />
+                        <input
+                            type="text"
+                            value={reconciliationSearch}
+                            onChange={(e) =>
+                                setReconciliationSearch(
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Search..."
+                            className="bg-gray-900 rounded p-2 text-xs w-72"
+                        />
+                    </div>
+                    <div className="flex gap-3 mb-3">
+
+                        <input
+                            type="date"
+                            value={reconcileFromDate}
+                            onChange={(e) =>
+                                setReconcileFromDate(
+                                    e.target.value
+                                )
+                            }
+                            className="bg-gray-900 rounded p-2 text-xs"
+                        />
+
+                        <input
+                            type="date"
+                            value={reconcileToDate}
+                            onChange={(e) =>
+                                setReconcileToDate(
+                                    e.target.value
+                                )
+                            }
+                            className="bg-gray-900 rounded p-2 text-xs"
+                        />
+
+                        <button
+                            onClick={saveReconciliation}
+                            className="bg-green-600 px-4 py-2 rounded text-xs"
+                        >
+                            Save Reconciliation
+                        </button>
+
+                    </div>
+
+                    <div className="w-full">
+                        <table className="border w-full text-sm">
+                            <thead className="border bg-gray-900">
+                                <tr className="border">
+                                    <th className="border p-2">Medicine</th>
+                                    <th className="border p-2">Brand</th>
+                                    <th className="border p-2">Expiry</th>
+                                    <th className="border p-2">Cost per Unit</th>
+                                    <th className="border p-2">Balance</th>
+                                    <th className="border p-2">Physical Balance</th>
+                                    {/* <th className="border p-2">Difference</th> */}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredReconciliation.map((item) => {
+
+                                    const physical =
+                                        Number(
+                                            physicalStocks[item.id]
+                                        ) || 0;
+
+                                    const difference =
+                                        item.units - physical;
+
+                                    return (
+                                        <tr
+                                            key={item.id}
+                                            className="border"
+                                        >
+                                            <td className="border p-2">
+                                                {item.item_name}
+                                            </td>
+
+                                            <td className="border p-2">
+                                                {item.brand}
+                                            </td>
+
+                                            <td className="border p-2">
+                                                {
+                                                    item.expiry_date
+                                                        ? formatDateDMY(
+                                                            item.expiry_date
+                                                        )
+                                                        : "-"
+                                                }
+                                            </td>
+
+                                            <td className="border p-2">
+                                                ₹ {item.per_unit_cost}
+                                            </td>
+
+                                            <td className="border p-2 text-center">
+                                                {item.units}
+                                            </td>
+
+                                            <td className="border p-2">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    className="bg-gray-700 p-1 rounded w-24"
+                                                    value={
+                                                        physicalStocks[item.id]
+                                                        ?? ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        setPhysicalStocks(
+                                                            prev => ({
+                                                                ...prev,
+                                                                [item.id]:
+                                                                    e.target.value
+                                                            })
+                                                        )
+                                                    }
+                                                />
+                                            </td>
+
+                                            {/* <td
+                    className={`border p-2 text-center ${
+                        difference > 0
+                            ? "text-red-400"
+                            : difference < 0
+                            ? "text-green-400"
+                            : ""
+                    }`}
+                >
+                    {difference}
+                </td> */}
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
             {fillPrescriptionModalOpen && (
