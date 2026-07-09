@@ -64,6 +64,15 @@ function Dispense() {
         setReconcileToDate] =
         useState(today);
 
+const [verifyStockData, setVerifyStockData] =
+    useState([]);
+
+const [verifyStockSubTab, setVerifyStockSubTab] =
+    useState("unverified");
+
+const [verifyingStockId, setVerifyingStockId] =
+    useState(null);
+
     console.log(balanceData);
 
 
@@ -76,6 +85,24 @@ function Dispense() {
         const res = await api.get("/api/dispense/history");
         setHistory(res.data.data);
     };
+
+    const fetchVerifyStocks = async () => {
+    try {
+        const res = await api.get(
+            "/api/dispense/verify-stock"
+        );
+
+        setVerifyStockData(
+            res.data.data || []
+        );
+
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+            err.message
+        );
+    }
+};
 
     const fetchReconciliationStocks =
         async () => {
@@ -94,16 +121,22 @@ function Dispense() {
     }, []);
 
     useEffect(() => {
-        if (tab === "history") {
-            fetchHistory();
-        }
-        if (tab === "balance-sheet") {
-            fetchBalanceSheet(balanceDate);
-        }
-        if (tab === "stock-reconciliation") {
-            fetchReconciliationStocks();
-        }
-    }, [tab]);
+    if (tab === "history") {
+        fetchHistory();
+    }
+
+    if (tab === "balance-sheet") {
+        fetchBalanceSheet(balanceDate);
+    }
+
+    if (tab === "stock-reconciliation") {
+        fetchReconciliationStocks();
+    }
+
+    if (tab === "verify-stock") {
+        fetchVerifyStocks();
+    }
+}, [tab]);
 
     const filteredOpds = opdData.filter(opd => {
         const workerNameMatch =
@@ -386,6 +419,31 @@ function Dispense() {
             setPhysicalStocks({});
         };
 
+    const unverifiedStocks =
+    verifyStockData.filter(
+        item =>
+            item.status === "UNVERIFIED"
+    );
+
+const verifiedStocks =
+    verifyStockData.filter(
+        item =>
+            item.status === "VERIFIED"
+    );
+
+const disputedStocks =
+    verifyStockData.filter(
+        item =>
+            item.status === "DISPUTE"
+    );
+
+const displayedVerifyStocks =
+    verifyStockSubTab === "unverified"
+        ? unverifiedStocks
+        : verifyStockSubTab === "verified"
+            ? verifiedStocks
+            : disputedStocks;
+
 
     return (
         <div className="w-full my-3">
@@ -399,6 +457,26 @@ function Dispense() {
                 <div onClick={() => setTab("history")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "history" ? "bg-blue-600" : "bg-gray-700"}`}>
                     <p>History</p>
                 </div>
+                <div
+    onClick={() => setTab("verify-stock")}
+    className={`
+        cursor-pointer
+        flex
+        w-1/3
+        rounded
+        p-1
+        justify-center
+        font-semibold
+
+        ${
+            tab === "verify-stock"
+                ? "bg-blue-600"
+                : "bg-gray-700"
+        }
+    `}
+>
+    <p>Verify Stock</p>
+</div>
                 <div onClick={() => setTab("balance-sheet")} className={`cursor-pointer flex w-1/3 rounded p-1 justify-center font-semibold ${tab === "balance-sheet" ? "bg-blue-600" : "bg-gray-700"}`}>
                     <p>Balance Sheet</p>
                 </div>
@@ -1474,6 +1552,487 @@ function Dispense() {
 
                 </div>
             )}
+            {tab === "verify-stock" && (
+    <div className="bg-gray-800 my-3 rounded-lg p-4 w-full">
+
+        {/* HEADER + DATE FILTER */}
+        <div className="flex flex-wrap justify-between items-end gap-3 mb-4">
+
+            <div className="mb-4">
+    <p className="font-semibold text-xs mb-1">
+        VERIFY TODAY'S DISPENSED STOCK
+    </p>
+
+    <p className="text-xs text-gray-400">
+        Verify the actual physical remaining quantity of
+        stock batches dispensed today.
+    </p>
+</div>
+        </div>
+
+
+        {/* SUMMARY CARDS */}
+        <div className="
+            grid
+            grid-cols-1
+            md:grid-cols-3
+            gap-3
+            mb-4
+        ">
+
+            <div className="bg-gray-900 rounded p-3">
+                <p className="text-xs text-gray-400">
+                    Unverified
+                </p>
+
+                <p className="font-bold text-lg">
+                    {unverifiedStocks.length}
+                </p>
+            </div>
+
+            <div className="bg-gray-900 rounded p-3">
+                <p className="text-xs text-gray-400">
+                    Verified
+                </p>
+
+                <p className="
+                    font-bold
+                    text-lg
+                    text-green-400
+                ">
+                    {verifiedStocks.length}
+                </p>
+            </div>
+
+            <div className="bg-gray-900 rounded p-3">
+                <p className="text-xs text-gray-400">
+                    Disputes
+                </p>
+
+                <p className="
+                    font-bold
+                    text-lg
+                    text-red-400
+                ">
+                    {disputedStocks.length}
+                </p>
+            </div>
+
+        </div>
+
+
+        {/* SUB TABS */}
+        <div className="
+            bg-gray-900
+            rounded
+            p-1
+            flex
+            gap-2
+            mb-4
+        ">
+
+            <button
+                onClick={() =>
+                    setVerifyStockSubTab(
+                        "unverified"
+                    )
+                }
+                className={`
+                    flex-1
+                    rounded
+                    px-3
+                    py-2
+                    text-xs
+                    font-semibold
+
+                    ${
+                        verifyStockSubTab ===
+                        "unverified"
+                            ? "bg-blue-600"
+                            : "bg-gray-700"
+                    }
+                `}
+            >
+                Unverified
+                {" "}
+                ({unverifiedStocks.length})
+            </button>
+
+            <button
+                onClick={() =>
+                    setVerifyStockSubTab(
+                        "verified"
+                    )
+                }
+                className={`
+                    flex-1
+                    rounded
+                    px-3
+                    py-2
+                    text-xs
+                    font-semibold
+
+                    ${
+                        verifyStockSubTab ===
+                        "verified"
+                            ? "bg-green-600"
+                            : "bg-gray-700"
+                    }
+                `}
+            >
+                Verified
+                {" "}
+                ({verifiedStocks.length})
+            </button>
+
+            <button
+                onClick={() =>
+                    setVerifyStockSubTab(
+                        "disputes"
+                    )
+                }
+                className={`
+                    flex-1
+                    rounded
+                    px-3
+                    py-2
+                    text-xs
+                    font-semibold
+
+                    ${
+                        verifyStockSubTab ===
+                        "disputes"
+                            ? "bg-red-600"
+                            : "bg-gray-700"
+                    }
+                `}
+            >
+                Disputes
+                {" "}
+                ({disputedStocks.length})
+            </button>
+
+        </div>
+
+
+        {/* TABLE */}
+        <div className="overflow-x-auto">
+
+            <table className="w-full border text-xs">
+
+                <thead className="bg-gray-900">
+                    <tr>
+
+                        <th className="border p-2">
+                            Stock ID
+                        </th>
+
+                        <th className="border p-2">
+                            Medicine
+                        </th>
+
+                        <th className="border p-2">
+                            Brand
+                        </th>
+
+                        <th className="border p-2">
+                            Expiry Date
+                        </th>
+
+                        <th className="border p-2">
+                            Dispensed Units
+                        </th>
+
+                        <th className="border p-2">
+                            Expected Remaining
+                        </th>
+
+                        {verifyStockSubTab !==
+                            "unverified" && (
+                            <>
+                                <th className="border p-2">
+                                    Physical Remaining
+                                </th>
+
+                                <th className="border p-2">
+                                    Difference
+                                </th>
+                            </>
+                        )}
+
+                        <th className="border p-2">
+                            Status
+                        </th>
+
+                        {verifyStockSubTab ===
+                            "unverified" && (
+                            <th className="border p-2">
+                                Action
+                            </th>
+                        )}
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {displayedVerifyStocks.map(
+                        item => (
+                            <tr key={item.stock_id}>
+
+                                <td className="
+                                    border
+                                    p-2
+                                    text-center
+                                ">
+                                    {item.stock_id}
+                                </td>
+
+                                <td className="
+                                    border
+                                    p-2
+                                    font-semibold
+                                ">
+                                    {item.item_name}
+                                </td>
+
+                                <td className="border p-2">
+                                    {item.brand || "-"}
+                                </td>
+
+                                <td className="
+                                    border
+                                    p-2
+                                    text-center
+                                ">
+                                    {item.expiry_date
+                                        ? formatDateDMY(
+                                            item.expiry_date
+                                        )
+                                        : "-"
+                                    }
+                                </td>
+
+                                <td className="
+                                    border
+                                    p-2
+                                    text-center
+                                ">
+                                    {item.dispensed_units}
+                                </td>
+
+                                <td className="
+                                    border
+                                    p-2
+                                    text-center
+                                    font-semibold
+                                ">
+                                    {
+                                        item.verification
+                                            ?.expected_units ??
+                                        item.current_units
+                                    }
+                                </td>
+
+                                {verifyStockSubTab !==
+                                    "unverified" && (
+                                    <>
+                                        <td className="
+                                            border
+                                            p-2
+                                            text-center
+                                        ">
+                                            {
+                                                item.verification
+                                                    ?.physical_units
+                                            }
+                                        </td>
+
+                                        <td
+                                            className={`
+                                                border
+                                                p-2
+                                                text-center
+                                                font-semibold
+
+                                                ${
+                                                    item.verification
+                                                        ?.difference !== 0
+                                                        ? "text-red-400"
+                                                        : "text-green-400"
+                                                }
+                                            `}
+                                        >
+                                            {
+                                                item.verification
+                                                    ?.difference
+                                            }
+                                        </td>
+                                    </>
+                                )}
+
+                                <td className="
+                                    border
+                                    p-2
+                                    text-center
+                                ">
+                                    <span
+                                        className={`
+                                            rounded
+                                            px-2
+                                            py-1
+                                            font-semibold
+
+                                            ${
+                                                item.status ===
+                                                "VERIFIED"
+                                                    ? "bg-green-700"
+                                                    : item.status ===
+                                                    "DISPUTE"
+                                                        ? "bg-red-700"
+                                                        : "bg-yellow-700"
+                                            }
+                                        `}
+                                    >
+                                        {item.status}
+                                    </span>
+                                </td>
+
+                                {verifyStockSubTab ===
+                                    "unverified" && (
+                                    <td className="
+                                        border
+                                        p-2
+                                        text-center
+                                    ">
+
+                                        <button
+                                            disabled={
+                                                verifyingStockId ===
+                                                item.stock_id
+                                            }
+                                            onClick={async () => {
+
+                                                const input =
+                                                    prompt(
+                                                        `Enter actual physical remaining units for ${item.item_name}\n\nExpected remaining: ${item.current_units}`
+                                                    );
+
+                                                if (
+                                                    input === null
+                                                ) {
+                                                    return;
+                                                }
+
+                                                if (
+                                                    input.trim() ===
+                                                    ""
+                                                ) {
+                                                    return alert(
+                                                        "Enter physical remaining units"
+                                                    );
+                                                }
+
+                                                const physicalUnits =
+                                                    Number(input);
+
+                                                if (
+                                                    !Number.isInteger(
+                                                        physicalUnits
+                                                    ) ||
+                                                    physicalUnits < 0
+                                                ) {
+                                                    return alert(
+                                                        "Enter a valid non-negative integer"
+                                                    );
+                                                }
+
+                                                try {
+
+                                                    setVerifyingStockId(
+                                                        item.stock_id
+                                                    );
+
+                                                    const res = await api.post(
+    `/api/dispense/verify-stock/${item.stock_id}`,
+    {
+        physical_units: physicalUnits
+    }
+);
+
+                                                    alert(
+                                                        res.data.message
+                                                    );
+
+                                                    await fetchVerifyStocks();
+
+                                                } catch (err) {
+
+                                                    alert(
+                                                        err.response
+                                                            ?.data
+                                                            ?.message ||
+                                                        err.message
+                                                    );
+
+                                                } finally {
+
+                                                    setVerifyingStockId(
+                                                        null
+                                                    );
+                                                }
+                                            }}
+                                            className="
+                                                bg-blue-600
+                                                hover:bg-blue-700
+                                                disabled:bg-gray-600
+                                                disabled:cursor-not-allowed
+                                                px-3
+                                                py-1
+                                                rounded
+                                                font-semibold
+                                            "
+                                        >
+                                            {
+                                                verifyingStockId ===
+                                                item.stock_id
+                                                    ? "Verifying..."
+                                                    : "Verify"
+                                            }
+                                        </button>
+
+                                    </td>
+                                )}
+
+                            </tr>
+                        )
+                    )}
+
+                    {displayedVerifyStocks.length === 0 && (
+                        <tr>
+                            <td
+                                colSpan={10}
+                                className="
+                                    border
+                                    p-6
+                                    text-center
+                                    text-gray-400
+                                "
+                            >
+                                No stock records found
+                                in this category.
+                            </td>
+                        </tr>
+                    )}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+)}
             {tab === "stock-reconciliation" && (
                 <div className="bg-gray-800 my-3 rounded-lg p-4">
                     <p className="text-xs font-semibold mb-3">STOCK RECONCILIATION</p>
