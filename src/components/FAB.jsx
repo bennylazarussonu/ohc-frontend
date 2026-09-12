@@ -1,2364 +1,1085 @@
-import { FaCalendarCheck, FaClockRotateLeft, FaEye, FaFileExcel, FaHandHoldingMedical, FaList, FaMagnifyingGlass, FaPenToSquare, FaPlus } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
 function FAB() {
     const { user, loading } = useAuth();
-    const [viewInventoryModal,
-        setViewInventoryModal]
-        = useState(false);
+
     const [zones, setZones] = useState([]);
-    const [templateItems, setTemplateItems]
-        = useState([]);
-    const [templateModal, setTemplateModal]
-        = useState(false);
-    const [editTemplateModal,
-        setEditTemplateModal]
-        = useState(false);
-
-    const [editingTemplateItem,
-        setEditingTemplateItem]
-        = useState(null);
-
-    const [editRequiredQty,
-        setEditRequiredQty]
-        = useState(1);
-
-    const [medicineSearch, setMedicineSearch]
-        = useState("");
-
-    const [medicineResults, setMedicineResults]
-        = useState([]);
-
-    const [selectedTemplateMedicine,
-        setSelectedTemplateMedicine]
-        = useState(null);
-
-    const [requiredQty, setRequiredQty]
-        = useState(1);
-
-    const [inventoryBatches, setInventoryBatches]
-        = useState([]);
-
-    const [allocateModal, setAllocateModal]
-        = useState(false);
-
-    const [selectedMedicine, setSelectedMedicine]
-        = useState(null);
-
-    const [availableBatches, setAvailableBatches]
-        = useState([]);
-
-    const [selectedBatch, setSelectedBatch]
-        = useState(null);
-
-    const [allocateQty, setAllocateQty]
-        = useState(1);
-    const [consumeInputs,
-        setConsumeInputs]
-        = useState({});
     const [selectedZone, setSelectedZone] = useState(null);
-    const [activeVisit,
-        setActiveVisit]
-        = useState(null);
-    const [lastVisit,
-        setLastVisit]
-        = useState(null);
-    const [visitConfirmModal,
-        setVisitConfirmModal]
-        = useState(false);
-    const [visitZone,
-        setVisitZone]
-        = useState(null);
-    const [inspectionModal,
-        setInspectionModal]
-        = useState(false);
-
-    const [inspectionTab,
-        setInspectionTab]
-        = useState("consumption");
-    const [addZoneModal, setAddZoneModal] = useState(false);
-    const [zoneName, setZoneName] = useState("");
-    const [zoneLocation, setZoneLocation] = useState("");
-    const [consumptionModal, setConsumptionModal] = useState(false);
-    const [consumptionLogs, setConsumptionLogs] = useState([]);
-    const [historyModal,
-        setHistoryModal]
-        = useState(false);
-
-    const [visitHistory,
-        setVisitHistory]
-        = useState([]);
-
-    console.log(consumptionLogs);
+    const [inventory, setInventory] = useState([]);
+    const [fabLoading, setFabLoading] = useState(false);
+    const [expandedMedicine, setExpandedMedicine] = useState(null);
+    const [openVisit, setOpenVisit] = useState(null);
+    const [showAllocateForm, setShowAllocateForm] = useState(false);
+    const [selectedMedicine, setSelectedMedicine] = useState(null);
+    const [selectedStock, setSelectedStock] = useState(null);
+    const [allocationQuantity, setAllocationQuantity] = useState("");
+    const [centralStock, setCentralStock] = useState([]);
+    const [showConsumeForm, setShowConsumeForm] = useState(false);
+    const [consumptionMedicine, setConsumptionMedicine] = useState(null);
+    const [consumptionQuantity, setConsumptionQuantity] = useState("");
+    const [consumptionReason, setConsumptionReason] = useState("");
+    const [physicalQuantities, setPhysicalQuantities] = useState({});
+    const [medicines, setMedicines] = useState([]);
+    const [templateMedicineSearch, setTemplateMedicineSearch] = useState("");
+    const [showTemplateForm, setShowTemplateForm] = useState(false);
+    const [templateMedicine, setTemplateMedicine] = useState("");
+    const [templateQuantity, setTemplateQuantity] = useState("");
+    const [templateOpeningQuantity, setTemplateOpeningQuantity] = useState("");
+    const [templateOpeningBrand, setTemplateOpeningBrand] = useState("");
+    const [templateOpeningExpiry, setTemplateOpeningExpiry] = useState("");
+    const [templateOpeningCost, setTemplateOpeningCost] = useState("");
 
     useEffect(() => {
-        const fetchZones = async () => {
-            const res = await api.get("/api/fab/zones");
-            const data = res.data;
-            setZones(data);
-        }
-        fetchZones();
+        const loadZones = async () => {
+            try {
+                const response = await api.get("/api/fab/zones");
+
+                setZones(response.data);
+            } catch (error) {
+                console.error("Failed to load zones:", error);
+            }
+        };
+
+        loadZones();
     }, []);
 
-    const searchMedicines = async (
-        text
-    ) => {
+    useEffect(() => {
+        const loadMedicines = async () => {
+            try {
+                const response = await api.get("/api/medicines");
+                console.log(response.data);
 
-        setMedicineSearch(text);
+                setMedicines(response.data || []);
+            } catch (error) {
+                console.error("Failed to load medicines:", error);
+            }
+        };
 
-        if (text.length < 2) {
+        loadMedicines();
+    }, []);
 
-            setMedicineResults([]);
+    useEffect(() => {
+        if (!selectedZone) return;
 
+        const loadFABData = async () => {
+            try {
+                setFabLoading(true);
+
+                const inventoryResponse = await api.get(
+                    `/api/fab/inventory/${selectedZone.id}`
+                );
+
+                setInventory(inventoryResponse.data.inventory || []);
+
+                const visitResponse = await api.get(`/api/fab/visit/open/${selectedZone.id}`);
+
+                setOpenVisit(visitResponse.data.visit || null);
+
+                const stockResponse = await api.get("/api/stock");
+                setCentralStock(stockResponse.data);
+                console.log("Central Stock:", stockResponse.data);
+            } catch (error) {
+                console.error("Failed to load FAB data:", error);
+
+                setInventory([]);
+                setOpenVisit(null);
+            } finally {
+                setFabLoading(false);
+            }
+        };
+
+        loadFABData();
+    }, [selectedZone]);
+
+
+
+    const openFABVisit = async () => {
+        if (!selectedZone) return;
+
+        try {
+            setFabLoading(true);
+
+            const response = await api.post("/api/fab/visit/open", {
+                zone_id: selectedZone.id,
+                started_by: user?.name || user?.username || "Unknown",
+            });
+
+            setOpenVisit(response.data.visit);
+
+        } catch (error) {
+            console.error("Failed to open FAB visit:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to open FAB visit"
+            );
+        } finally {
+            setFabLoading(false);
+        }
+    };
+
+    const closeFABVisit = async () => {
+        if (!selectedZone || !openVisit) return;
+
+        try {
+            setFabLoading(true);
+
+            await api.post("/api/fab/visit/close", {
+                zone_id: selectedZone.id,
+                closed_by: user?.name || user?.username || "Unknown",
+            });
+
+            setOpenVisit(null);
+
+        } catch (error) {
+            console.error("Failed to close FAB visit:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to close FAB visit"
+            );
+        } finally {
+            setFabLoading(false);
+        }
+    };
+
+    const allocateMedicine = async () => {
+        if (!selectedZone || !openVisit || !selectedMedicine || !selectedStock) {
+            alert("Please select a medicine and stock batch.");
+            return;
+        }
+
+        const quantity = Number(allocationQuantity);
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+
+        if (quantity > selectedStock.units) {
+            alert(`Only ${selectedStock.units} units are available in this stock batch.`);
             return;
         }
 
         try {
+            setFabLoading(true);
 
-            const res =
-                await api.get(
+            await api.post("/api/fab/allocate", {
+                visit_id: openVisit._id,
+                zone_id: selectedZone.id,
+                medicine_id: selectedMedicine.medicine_id,
+                stock_id: selectedStock.stock_id,
+                quantity,
+                allocated_by: user?.name || user?.username || "Unknown",
+            });
 
-                    `/api/medicines/fab-search?q=${text}`
-                );
+            alert("Medicine allocated successfully.");
 
-            setMedicineResults(
-                res.data
+            setSelectedMedicine(null);
+            setSelectedStock(null);
+            setAllocationQuantity("");
+            setShowAllocateForm(false);
+
+            const inventoryResponse = await api.get(
+                `/api/fab/inventory/${selectedZone.id}`
             );
 
-        } catch (err) {
+            setInventory(inventoryResponse.data.inventory || []);
 
-            console.error(err);
+            const stockResponse = await api.get("/api/stock");
+            setCentralStock(stockResponse.data);
+        } catch (error) {
+            console.error("Failed to allocate medicine:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to allocate medicine"
+            );
+        } finally {
+            setFabLoading(false);
         }
     };
 
-    const addTemplateItem = async () => {
-
-        try {
-
-            if (!selectedTemplateMedicine) {
-
-                alert("Select medicine");
-
-                return;
-            }
-
-            await api.post(
-
-                `/api/fab/templates/${selectedZone.id}/template-items`,
-
-                {
-                    medicine_id:
-                        selectedTemplateMedicine.id,
-
-                    default_quantity:
-                        requiredQty
-                }
-            );
-
-            const res =
-                await api.get(
-
-                    `/api/fab/templates/${selectedZone.id}/template-items`
-                );
-
-            setTemplateItems(
-                res.data
-            );
-
-            setTemplateModal(false);
-            setMedicineSearch("");
-
-            setMedicineResults([]);
-
-            setSelectedTemplateMedicine(null);
-
-            setRequiredQty(1);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                err?.response?.data?.message
-                || "Failed to add template item"
-            );
-        }
-    };
-
-    const editTemplateItem = (
-        item
-    ) => {
-
-        setEditingTemplateItem(item);
-
-        setEditRequiredQty(
-            item.default_quantity
-        );
-
-        setEditTemplateModal(true);
-    };
-
-    const updateTemplateQty = async () => {
-
-        try {
-
-            await api.put(
-
-                `/api/fab/templates/${selectedZone.id}/template-items/${editingTemplateItem.medicine_id}`,
-
-                {
-                    default_quantity:
-                        editRequiredQty
-                }
-            );
-
-            const res =
-                await api.get(
-
-                    `/api/fab/templates/${selectedZone.id}/template-items`
-                );
-
-            setTemplateItems(
-                res.data
-            );
-
-            setEditTemplateModal(false);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                "Failed to update template"
-            );
-        }
-    };
-
-    const openAllocateModal = async (
-        medicine
-    ) => {
-
-        try {
-
-            const res =
-                await api.get(
-
-                    `/api/fab/inventory/available/${medicine.medicine_id}`
-                );
-
-            setAvailableBatches(
-                res.data
-            );
-
-            setSelectedMedicine(
-                medicine
-            );
-
-            setSelectedBatch(null);
-
-            setAllocateQty(1);
-
-            setAllocateModal(true);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                "Failed to fetch batches"
-            );
-        }
-    };
-
-    const allocateStock = async () => {
-
-        try {
-
-            if (!selectedBatch) {
-
-                alert("Select batch");
-
-                return;
-            }
-
-            if (allocateQty < 1) {
-
-                alert("Invalid quantity");
-
-                return;
-            }
-
-            if (allocateQty > selectedBatch.units) {
-
-                alert("Insufficient stock");
-
-                return;
-            }
-
-            await api.post(
-
-                `/api/fab/inventory/${selectedZone.id}/allocate`,
-
-                {
-                    stock_id:
-                        selectedBatch.id,
-
-                    visit_id:
-                        activeVisit?.id,
-
-                    quantity:
-                        allocateQty
-                }
-            );
-
-            const inventoryRes =
-                await api.get(
-
-                    `/api/fab/inventory/${selectedZone.id}/inventory`
-                );
-
-            setInventoryBatches(
-                inventoryRes.data
-            );
-
-            const updatedAllocated =
-                inventoryRes.data
-                    .filter(
-                        batch =>
-                            batch.medicine_id
-                            === selectedMedicine.medicine_id
-                    )
-                    .reduce(
-                        (sum, batch) =>
-                            sum + batch.quantity,
-                        0
-                    );
-
-            const remaining =
-                selectedMedicine.default_quantity
-                - updatedAllocated;
-
-            if (remaining <= 0) {
-
-                setAllocateModal(false);
-            }
-
-            const batchRes =
-                await api.get(
-
-                    `/api/fab/inventory/available/${selectedMedicine.medicine_id}`
-                );
-
-            setAvailableBatches(
-                batchRes.data
-            );
-            setSelectedBatch(null);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                err?.response?.data?.message
-                || "Allocation failed"
-            );
-        }
-    };
-
-    const startVisit = async (zone) => {
-
-        try {
-
-            const res =
-                await api.post(
-
-                    `/api/fab/inventory/${zone.id}/start-visit`,
-
-                    {
-
-                        visited_by:
-                            user.userId
-                            || "Unknown",
-
-                        remarks:
-                            "Routine inspection"
-                    }
-                );
-
-            setActiveVisit(
-                res.data
-            );
-            setSelectedZone(zone);
-            await loadZoneData(zone);
-            setInspectionTab(
-                "consumption"
-            );
-
-            setInspectionModal(true);
-            setVisitConfirmModal(false);
-
-            setVisitZone(null);
-
-            alert(
-                "Visit started"
-            );
-
-        } catch (err) {
-
-            if (
-                err?.response?.data?.visit
-            ) {
-
-                setActiveVisit(
-
-                    err.response.data.visit
-                );
-                setSelectedZone(zone);
-                await loadZoneData(zone);
-                setInspectionTab(
-                    "consumption"
-                );
-
-                setInspectionModal(true);
-
-                alert(
-                    "Continuing existing visit"
-                );
-
-                return;
-            }
-        }
-    };
-    const closeVisit = async () => {
-
-        try {
-
-            if (!activeVisit) {
-
-                alert(
-                    "No active visit"
-                );
-
-                return;
-            }
-
-            await api.post(
-
-                `/api/fab/inventory/visits/${activeVisit.id}/close`
-            );
-
-            alert(
-                "Visit closed"
-            );
-
-            setActiveVisit(null);
-            setInspectionModal(false);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                err?.response?.data?.message
-                || "Failed to close visit"
-            );
-        }
-    };
-
-    const createZone = async () => {
-
-        if (!zoneName.trim()) {
-            alert("Zone name required");
+    const createTemplate = async () => {
+        if (!selectedZone) {
+            alert("Please select a FAB.");
             return;
         }
 
-        await api.post("/api/fab/zones/", {
-            zone_name: zoneName.trim().toUpperCase(),
-            location: zoneLocation
-        });
+        if (!templateMedicine) {
+            alert("Please select a medicine.");
+            return;
+        }
 
-        const res = await api.get("/api/fab/zones/");
-        setZones(res.data);
+        const quantity = Number(templateQuantity);
+        const openingQuantity = Number(templateOpeningQuantity || 0);
+        const openingCost = Number(templateOpeningCost || 0);
 
-        setZoneName("");
-        setZoneLocation("");
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            alert("Please enter a valid required quantity.");
+            return;
+        }
 
-        setAddZoneModal(false);
-    };
+        if (!Number.isInteger(openingQuantity) || openingQuantity < 0) {
+            alert("Please enter a valid opening quantity.");
+            return;
+        }
 
-    const openZone = async (
-        zone
-    ) => {
+        if (openingCost < 0) {
+            alert("Please enter a valid opening cost.");
+            return;
+        }
 
         try {
+            setFabLoading(true);
 
-            await loadZoneData(zone);
+            await api.post("/api/fab/template", {
+                zone_id: selectedZone.id,
+                medicine_id: Number(templateMedicine),
+                required_quantity: quantity,
 
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                "Failed to open zone"
-            );
-        }
-    };
-
-    const openInventoryView = async (
-        zone
-    ) => {
-
-        try {
-
-            const inventoryRes =
-                await api.get(
-
-                    `/api/fab/inventory/${zone.id}/inventory`
-                );
-
-            const visitRes =
-                await api.get(
-
-                    `/api/fab/inventory/${zone.id}/last-visit`
-                );
-
-            setInventoryBatches(
-                inventoryRes.data
-            );
-
-            setLastVisit(
-                visitRes.data
-            );
-
-            setSelectedZone(zone);
-
-            setViewInventoryModal(true);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                "Failed to load inventory"
-            );
-        }
-    };
-
-    const loadZoneData = async (
-        zone
-    ) => {
-
-        const templateRes =
-            await api.get(
-
-                `/api/fab/templates/${zone.id}/template-items`
-            );
-
-        const inventoryRes =
-            await api.get(
-
-                `/api/fab/inventory/${zone.id}/inventory`
-            );
-
-        const visitRes =
-            await api.get(
-
-                `/api/fab/inventory/${zone.id}/last-visit`
-            );
-
-        const activeVisitRes =
-            await api.get(
-
-                `/api/fab/inventory/${zone.id}/active-visit`
-            );
-
-        setActiveVisit(
-            activeVisitRes.data
-        );
-
-        setTemplateItems(
-            templateRes.data
-        );
-
-        setInventoryBatches(
-            inventoryRes.data
-        );
-
-        setLastVisit(
-            visitRes.data
-        );
-
-        setSelectedZone(zone);
-    };
-
-    const openConsumption = async (zone) => {
-        const res = await api.get(`/api/fab/zones/${zone.id}/consumption`);
-
-        setConsumptionLogs(res.data);
-        setSelectedZone(zone);
-        setConsumptionModal(true);
-    };
-
-    const downloadExcel = () => {
-
-        const generatedDate = new Date()
-            .toLocaleString();
-
-        // table rows
-        const data =
-            inventoryBatches.map(
-
-                (item, index) => ({
-
-                    "S. No.":
-                        index + 1,
-
-                    "Medicine":
-                        item.item_name,
-
-                    "Brand":
-                        item.brand,
-
-                    "Expiry":
-                        item.expiry_date
-                            ?.slice(0, 10),
-
-                    "Quantity":
-                        item.quantity,
-
-                    "Cost":
-                        item.per_unit_cost
-                })
-            );
-
-        // create worksheet
-        const worksheet = XLSX.utils.json_to_sheet([]);
-
-        // TOP INFO
-        XLSX.utils.sheet_add_aoa(
-            worksheet,
-            [
-                [`Zone Name: ${selectedZone?.zone_name}`],
-                [`Location: ${selectedZone?.location}`],
-                [`Generated On: ${generatedDate}`],
-                [], // empty row
-            ],
-            { origin: "A1" }
-        );
-
-        // TABLE
-        XLSX.utils.sheet_add_json(
-            worksheet,
-            data,
-            {
-                origin: "A5"
-            }
-        );
-
-        // optional column widths
-        worksheet["!cols"] = [
-            { wch: 8 },
-            { wch: 40 },
-            { wch: 25 },
-            { wch: 15 },
-            { wch: 12 },
-            { wch: 18 }
-        ];
-
-        // workbook
-        const workbook =
-            XLSX.utils.book_new();
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            worksheet,
-            "Zone Contents"
-        );
-
-        const excelBuffer =
-            XLSX.write(workbook, {
-                bookType: "xlsx",
-                type: "array"
+                opening_quantity: openingQuantity,
+                opening_brand: templateOpeningBrand,
+                opening_expiry_date: templateOpeningExpiry || null,
+                opening_per_unit_cost: openingCost
             });
 
-        const fileData = new Blob(
-            [excelBuffer],
-            {
-                type:
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            }
-        );
+            alert("FAB template item created successfully.");
 
-        const safeDate = new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace(/:/g, "-");
+            setTemplateMedicine("");
+            setTemplateMedicineSearch("");
+            setTemplateQuantity("");
+            setTemplateOpeningQuantity("");
+            setTemplateOpeningBrand("");
+            setTemplateOpeningExpiry("");
+            setTemplateOpeningCost("");
+            setShowTemplateForm(false);
 
-        saveAs(
-            fileData,
-            `${selectedZone?.zone_name}_${safeDate}.xlsx`
-        );
+            const inventoryResponse = await api.get(
+                `/api/fab/inventory/${selectedZone.id}`
+            );
 
+            setInventory(inventoryResponse.data.inventory || []);
+        } catch (error) {
+            console.error("Failed to create FAB template:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to create FAB template"
+            );
+        } finally {
+            setFabLoading(false);
+        }
     };
 
-    const saveConsumption = async () => {
+    const consumeMedicine = async () => {
+        if (!selectedZone || !openVisit || !consumptionMedicine) {
+            alert("Please select a medicine.");
+            return;
+        }
+
+        const quantity = Number(consumptionQuantity);
+
+        if (!Number.isInteger(quantity) || quantity < 1) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+
+        if (quantity > consumptionMedicine.current_quantity) {
+            alert(
+                `Only ${consumptionMedicine.current_quantity} units are currently available in this FAB.`
+            );
+            return;
+        }
 
         try {
+            setFabLoading(true);
 
-            const entries =
-                Object.entries(
-                    consumeInputs
-                );
+            await api.post("/api/fab/consume", {
+                zone_id: selectedZone.id,
+                medicine_id: consumptionMedicine.medicine_id,
+                quantity,
+                reason: consumptionReason.trim(),
+                consumed_by: user?.name || user?.username || "Unknown",
+            });
 
-            if (
-                entries.length === 0
-            ) {
+            alert("Medicine consumed successfully.");
 
-                alert(
-                    "No consumption entered"
-                );
+            setConsumptionMedicine(null);
+            setConsumptionQuantity("");
+            setConsumptionReason("");
+            setShowConsumeForm(false);
 
+            const inventoryResponse = await api.get(
+                `/api/fab/inventory/${selectedZone.id}`
+            );
+
+            setInventory(inventoryResponse.data.inventory || []);
+        } catch (error) {
+            console.error("Failed to consume medicine:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to consume medicine"
+            );
+        } finally {
+            setFabLoading(false);
+        }
+    };
+
+    const handlePhysicalQuantityChange = (medicineId, value) => {
+        setPhysicalQuantities((previous) => ({
+            ...previous,
+            [medicineId]: value
+        }));
+    };
+
+    const saveStockCount = async () => {
+        if (!selectedZone || !openVisit) {
+            alert("Please open a FAB visit first.");
+            return;
+        }
+
+        const counts = inventory.map((item) => ({
+            medicine_id: item.medicine_id,
+            counted_quantity: Number(
+                physicalQuantities[item.medicine_id] ?? ""
+            )
+        }));
+
+        for (const item of counts) {
+            if (!Number.isInteger(item.counted_quantity) || item.counted_quantity < 0) {
+                alert("Please enter a valid physical quantity for every medicine.");
                 return;
             }
-
-            for (const [
-                batchId,
-                qty
-            ] of entries) {
-
-                const quantity =
-                    Number(qty);
-
-                if (
-                    quantity < 1
-                ) {
-                    continue;
-                }
-
-                await api.post(
-
-                    `/api/fab/inventory/${selectedZone.id}/consume`,
-
-                    {
-                        visit_id: activeVisit?.id,
-                        inventory_batch_id:
-                            batchId,
-
-                        quantity,
-
-                        reason:
-                            "USED"
-                    }
-                );
-            }
-
-            const inventoryRes =
-                await api.get(
-
-                    `/api/fab/inventory/${selectedZone.id}/inventory`
-                );
-
-            setInventoryBatches(
-                inventoryRes.data
-            );
-
-            setConsumeInputs({});
-
-            alert(
-                "Consumption saved"
-            );
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                err?.response?.data?.message
-                || "Consumption failed"
-            );
         }
-    };
 
-    const openHistory = async (
-        zone
-    ) => {
+        setFabLoading(true);
 
         try {
-
-            const res =
-                await api.get(
-
-                    `/api/fab/inventory/${zone.id}/history`
-                );
-
-            setVisitHistory(
-                res.data
-            );
-
-            setSelectedZone(zone);
-
-            setHistoryModal(true);
-
-        } catch (err) {
-
-            console.error(err);
-
-            alert(
-                "Failed to load history"
-            );
-        }
-    };
-    const downloadHistoryExcel = () => {
-
-    const workbook =
-        XLSX.utils.book_new();
-
-    const rows = [];
-
-    visitHistory.forEach(
-        (entry) => {
-
-            rows.push({
-
-                "Type":
-                    "VISIT",
-
-                "Visit ID":
-                    entry.visit.id,
-
-                "Date":
-                    entry.visit.visit_date
-                        ?.slice(0, 10),
-
-                "Zone":
-                    selectedZone?.zone_name,
-
-                "Location":
-                    selectedZone?.location,
-
-                "Status":
-                    entry.visit.is_closed
-                        ? "Closed"
-                        : "Active",
-
-                "Medicine":
-                    "",
-
-                "Brand":
-                    "",
-
-                "Quantity":
-                    "",
-
-                "Action":
-                    ""
+            await api.post("/api/fab/stock-count", {
+                zone_id: selectedZone.id,
+                counts,
+                reason: "Physical stock count",
+                counted_by: user?.name || user?.username || "Unknown"
             });
 
-            entry.consumptions
-                .forEach((item) => {
+            alert("FAB stock count saved successfully.");
 
-                    rows.push({
+            setPhysicalQuantities({});
 
-                        "Type":
-                            "CONSUMPTION",
+            const inventoryResponse = await api.get(
+                `/api/fab/inventory/${selectedZone.id}`
+            );
 
-                        "Visit ID":
-                            entry.visit.id,
+            setInventory(inventoryResponse.data.inventory || []);
+        } catch (error) {
+            console.error("Failed to save FAB stock count:", error);
 
-                        "Date":
-                            entry.visit.visit_date
-                                ?.slice(0, 10),
-
-                        "Zone":
-                            "",
-
-                        "Location":
-                            "",
-
-                        "Status":
-                            "",
-
-                        "Medicine":
-                            item.item_name,
-
-                        "Brand":
-                            item.brand,
-
-                        "Quantity":
-                            item.quantity,
-
-                        "Action":
-                            "USED"
-                    });
-
-                });
-
-            entry.allocations
-                .forEach((item) => {
-
-                    rows.push({
-
-                        "Type":
-                            "REPLACEMENT",
-
-                        "Visit ID":
-                            entry.visit.id,
-
-                        "Date":
-                            entry.visit.visit_date
-                                ?.slice(0, 10),
-
-                        "Zone":
-                            "",
-
-                        "Location":
-                            "",
-
-                        "Status":
-                            "",
-
-                        "Medicine":
-                            item.item_name,
-
-                        "Brand":
-                            item.brand,
-
-                        "Quantity":
-                            item.quantity,
-
-                        "Action":
-                            "ALLOCATED"
-                    });
-
-                });
-
-            rows.push({});
+            alert(
+                error.response?.data?.message ||
+                "Failed to save FAB stock count"
+            );
+        } finally {
+            setFabLoading(false);
         }
-    );
+    };
 
-    const worksheet =
-        XLSX.utils.json_to_sheet(
-            rows
+    if (loading) {
+        return (
+            <div className="p-6">
+                Loading...
+            </div>
         );
+    }
 
-    worksheet["!cols"] = [
-
-        { wch: 18 },
-        { wch: 12 },
-        { wch: 15 },
-        { wch: 25 },
-        { wch: 25 },
-        { wch: 12 },
-        { wch: 40 },
-        { wch: 25 },
-        { wch: 12 },
-        { wch: 15 }
-    ];
-
-    XLSX.utils.book_append_sheet(
-
-        workbook,
-
-        worksheet,
-
-        "Inspection History"
-    );
-
-    const excelBuffer =
-        XLSX.write(workbook, {
-
-            bookType: "xlsx",
-
-            type: "array"
-        });
-
-    const blob = new Blob(
-
-        [excelBuffer],
-
-        {
-
-            type:
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        }
-    );
-
-    const safeDate =
-        new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace(/:/g, "-");
-
-    saveAs(
-
-        blob,
-
-        `${selectedZone?.zone_name}_Inspection_History_${safeDate}.xlsx`
-    );
-};
     return (
-        <div className="w-full bg-gray-800 p-6 rounded-xl">
-            <h3 className="text-lg font-bold">FIRST AID BOX - FAB</h3>
+        <div className="w-full p-6">
+            <h1 className="text-2xl font-bold">
+                FIRST AID BOX
+            </h1>
 
-            <div className="mt-4">
-                <p className="font-semibold mb-2">Zones</p>
+            <p className="text-sm text-gray-400 mt-1">
+                FAB Inventory Management
+            </p>
 
-                <div className="w-full flex items-center gap-2">
-                    <div className="w-4/5 flex items-center gap-2">
-                        <FaMagnifyingGlass />
-                        <input type="text"
-                            placeholder="Search Zones..."
-                            className="p-2 text-sm w-full bg-gray-700 rounded"
-                        />
-                    </div>
-                    <div className="w-1/5 flex items-center">
+            <div className="mt-6">
+                <h2 className="text-lg font-semibold">Zones</h2>
+
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {zones.map((zone) => (
                         <button
-                            onClick={() => setAddZoneModal(true)}
-                            className="p-2 text-sm bg-blue-600 flex items-center gap-2 font-semibold text-white rounded w-full"
+                            key={zone.id}
+                            type="button"
+                            onClick={() => setSelectedZone(zone)}
+                            className={`rounded-lg border p-4 text-left transition ${selectedZone?.id === zone.id
+                                ? "border-blue-500 bg-gray-800 text-white"
+                                : "border-gray-200 hover:border-blue-300 hover:bg-gray-700"
+                                }`}
                         >
-                            <FaPlus />
-                            Add New Zone
+                            <div className="font-semibold">
+                                {zone.zone_name}
+                            </div>
+
+                            {zone.location && (
+                                <div className="mt-1 text-sm text-gray-500">
+                                    {zone.location}
+                                </div>
+                            )}
                         </button>
-                    </div>
-                </div>
-
-                {addZoneModal && (
-                    <div className="fixed inset-0 flex justify-center items-center bg-black/60">
-
-                        <div className="bg-gray-900 p-6 rounded-lg w-[400px]">
-
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg font-bold">Create New Zone</h2>
-
-                                <button
-                                    onClick={() => setAddZoneModal(false)}
-                                    className="text-xl"
-                                >
-                                    x
-                                </button>
-                            </div>
-
-
-                            <div className="flex flex-col gap-3">
-
-                                <input
-                                    type="text"
-                                    placeholder="Zone Name"
-                                    value={zoneName}
-                                    onChange={(e) => setZoneName(e.target.value)}
-                                    className="bg-gray-800 p-2 rounded text-sm"
-                                />
-
-                                <input
-                                    type="text"
-                                    placeholder="Location (Building / Floor etc)"
-                                    value={zoneLocation}
-                                    onChange={(e) => setZoneLocation(e.target.value)}
-                                    className="bg-gray-800 p-2 rounded text-sm"
-                                />
-
-                            </div>
-
-
-                            <div className="flex justify-end gap-2 mt-4">
-
-                                <button
-                                    onClick={() => setAddZoneModal(false)}
-                                    className="bg-gray-600 px-3 py-1 rounded text-sm"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={createZone}
-                                    className="bg-blue-600 px-3 py-1 rounded text-sm font-semibold"
-                                >
-                                    Create
-                                </button>
-
-                            </div>
-
-                        </div>
-                    </div>
-                )}
-
-                <div className="w-full mt-4">
-                    <table className="w-full text-sm border">
-                        <thead className="bg-gray-900">
-                            <tr>
-                                <th className="p-2 border">ID</th>
-                                <th className="p-2 border">Zone Name</th>
-                                <th className="p-2 border">Location</th>
-                                <th className="p-2 border">Inspection</th>
-                                <th className="p-2 border">View</th>
-                                <th className="p-2 border">History</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {zones.map((zone) => (
-                                <tr key={zone.id}>
-                                    <td className="p-2 border">{zone.id}</td>
-                                    <td className="p-2 border">{zone.zone_name}</td>
-                                    <td className="p-2 border">{zone.location}</td>
-
-                                    <td className="p-2 border">
-
-                                        <div className="flex gap-2">
-
-                                            <button
-
-                                                onClick={() => {
-
-                                                    setVisitZone(zone);
-
-                                                    setVisitConfirmModal(true);
-                                                }}
-
-                                                disabled={
-                                                    activeVisit?.zone_id === zone.id
-                                                }
-
-                                                className={`
-                p-1 flex text-xs items-center gap-2 text-white rounded
-
-                ${activeVisit?.zone_id === zone.id
-                                                        ? "bg-gray-600 opacity-50 cursor-not-allowed"
-                                                        : "bg-blue-600"
-                                                    }
-            `}
-                                            >
-                                                <FaCalendarCheck />
-
-                                                Start Inspection
-                                            </button>
-
-
-
-                                        </div>
-
-                                    </td>
-
-                                    <td className="p-2 border">
-                                        <button
-
-                                            onClick={() =>
-                                                openInventoryView(zone)
-                                            }
-
-                                            className="p-1 bg-green-600 flex text-xs items-center gap-2 text-white rounded"
-                                        >
-                                            <FaEye />
-                                            View Details
-                                        </button>
-                                    </td>
-                                    <td className="p-2 border">
-                                        <button onClick={() => openHistory(zone)} className="flex items-center gap-2 rounded bg-orange-400 text-white text-xs p-1">
-                                            <FaClockRotateLeft />
-                                            History
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    ))}
                 </div>
             </div>
-            {visitConfirmModal && (
-
-                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
-
-                    <div className="bg-gray-900 p-6 rounded-lg w-[420px]">
-
-                        <h2 className="text-lg font-bold mb-3">
-
-                            Start Inspection
-
-                        </h2>
-
-                        <p className="text-sm text-gray-300">
-
-                            Are you sure you want to start an inspection visit for:
-
-                        </p>
-
-                        <div className="mt-3 bg-gray-800 p-3 rounded">
-
-                            <p className="font-semibold">
-
-                                {visitZone?.zone_name}
-
-                            </p>
-
-                            <p className="text-sm text-gray-400">
-
-                                {visitZone?.location}
-
-                            </p>
-
-                        </div>
-
-                        <p className="text-xs text-yellow-400 mt-3">
-
-                            Only one active visit is allowed per zone.
-
-                        </p>
-
-                        <div className="flex justify-end gap-2 mt-5">
-
-                            <button
-
-                                onClick={() => {
-
-                                    setVisitConfirmModal(false);
-
-                                    setVisitZone(null);
-                                }}
-
-                                className="bg-gray-600 px-4 py-2 rounded text-sm"
-                            >
-                                Cancel
-                            </button>
-
-                            <button
-
-                                onClick={() =>
-                                    startVisit(visitZone)
-                                }
-
-                                className="bg-green-600 px-4 py-2 rounded text-sm font-semibold"
-                            >
-                                Start Inspection
-                            </button>
-
-                        </div>
-
+            {selectedZone && (
+                <div className="mt-6 rounded-lg border p-4">
+                    <div className="text-sm text-gray-500">
+                        Selected FAB
                     </div>
 
-                </div>
-            )}
-            {templateModal && (
+                    <div className="mt-1 text-xl font-semibold">
+                        {selectedZone.zone_name}
+                    </div>
 
-                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[70]">
-
-                    <div className="bg-gray-900 p-6 rounded w-[700px]">
-
-                        <div className="flex justify-between items-center mb-4">
-
-                            <h2 className="text-lg font-bold">
-                                Add Template Medicine
-                            </h2>
-
-                            <button
-                                onClick={() =>
-                                    setTemplateModal(false)
-                                }
-                            >
-                                x
-                            </button>
-
-                        </div>
-
-                        <input
-                            type="text"
-                            placeholder="Search medicine..."
-                            value={medicineSearch}
-                            onChange={(e) =>
-                                searchMedicines(
-                                    e.target.value
-                                )
-                            }
-                            className="w-full bg-gray-800 p-2 rounded"
-                        />
-
-                        <div className="mt-4 max-h-[250px] overflow-y-auto border">
-
-                            <table className="w-full text-sm">
-
-                                <thead className="bg-gray-800">
-
-                                    <tr>
-
-                                        <th className="border p-2">
-                                            Medicine
-                                        </th>
-
-                                        <th className="border p-2">
-                                            Category
-                                        </th>
-
-                                        <th className="border p-2">
-                                            Select
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    {medicineResults.map((medicine) => (
-
-                                        <tr key={medicine.id}>
-
-                                            <td className="border p-2">
-                                                {medicine.drug_name_and_dose}
-                                            </td>
-
-                                            <td className="border p-2">
-                                                {medicine.category}
-                                            </td>
-
-                                            <td className="border p-2 text-center">
-
-                                                <input
-                                                    type="radio"
-
-                                                    checked={
-                                                        selectedTemplateMedicine?.id
-                                                        === medicine.id
-                                                    }
-
-                                                    onChange={() =>
-                                                        setSelectedTemplateMedicine(
-                                                            medicine
-                                                        )
-                                                    }
-                                                />
-
-                                            </td>
-
-                                        </tr>
-
-                                    ))}
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                        <div className="mt-4">
-
-                            <label className="text-sm">
-                                Required Quantity
-                            </label>
-
-                            <input
-                                type="number"
-                                min="1"
-                                value={requiredQty}
-                                onChange={(e) =>
-                                    setRequiredQty(
-                                        Number(e.target.value)
-                                    )
-                                }
-                                className="w-full bg-gray-800 p-2 rounded mt-1"
-                            />
-
-                        </div>
-
+                    <div className="mt-1 text-sm text-gray-500">
+                        Zone ID: {selectedZone.id}
+                    </div>
+                    <div className="mt-4">
                         <button
-                            onClick={addTemplateItem}
-                            className="mt-4 bg-green-600 px-4 py-2 rounded"
+                            type="button"
+                            onClick={() => setShowTemplateForm(!showTemplateForm)}
+                            className="rounded-md bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
                         >
-                            Add To Template
+                            {showTemplateForm ? "Cancel Template" : "Manage Template"}
                         </button>
-
                     </div>
-
-                </div>
-
-            )}
-            {allocateModal && (
-
-                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[80]">
-
-                    <div className="bg-gray-900 p-6 rounded w-[700px]">
-
-                        <div className="flex justify-between items-center mb-4">
-
-                            <h2 className="font-bold text-lg">
-                                Allocate Stock
-                            </h2>
-
-                            <button
-                                onClick={() =>
-                                    setAllocateModal(false)
-                                }
-                            >
-                                x
-                            </button>
-
-                        </div>
-
-                        <table className="w-full border text-sm">
-
-                            <thead className="bg-gray-800">
-
-                                <tr>
-
-                                    <th className="border p-2">
-                                        Brand
-                                    </th>
-
-                                    <th className="border p-2">
-                                        Expiry
-                                    </th>
-
-                                    <th className="border p-2">
-                                        Available
-                                    </th>
-
-                                    <th className="border p-2">
-                                        Cost
-                                    </th>
-
-                                    <th className="border p-2">
-                                        Select
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-                                {availableBatches.length === 0 && (
-
-                                    <tr>
-
-                                        <td
-                                            colSpan={5}
-                                            className="border p-4 text-center text-gray-400"
-                                        >
-                                            No stock batches available
-                                        </td>
-
-                                    </tr>
-
-                                )}
-
-                                {availableBatches.map((batch) => (
-
-                                    <tr key={batch.id} className={batch.id}>
-
-                                        <td className="border p-2">
-                                            {batch.brand}
-                                        </td>
-
-                                        <td className="border p-2">
-
-                                            {batch.expiry_date
-                                                ?.slice(0, 10)}
-
-                                        </td>
-
-                                        <td className="border p-2">
-                                            {batch.units}
-                                        </td>
-
-                                        <td className="border p-2">
-                                            {batch.per_unit_cost}
-                                        </td>
-
-                                        <td className="border p-2 text-center">
-
-                                            <input
-                                                type="radio"
-                                                checked={
-                                                    selectedBatch?.id
-                                                    === batch.id
-                                                }
-                                                onChange={() =>
-                                                    setSelectedBatch(batch)
-                                                }
-                                            />
-
-                                        </td>
-
-                                    </tr>
-
-                                ))}
-
-                            </tbody>
-
-                        </table>
-
-                        <p className="text-sm mb-3">
-
-                            Remaining Required:
-                            {" "}
-
-                            {
-                                selectedMedicine?.default_quantity
-                                -
-                                inventoryBatches
-                                    .filter(
-                                        batch =>
-                                            batch.medicine_id
-                                            === selectedMedicine?.medicine_id
-                                    )
-                                    .reduce(
-                                        (sum, batch) =>
-                                            sum + batch.quantity,
-                                        0
-                                    )
-                            }
-
-                        </p>
-
-                        <div className="mt-4">
-
-                            <input
-                                type="number"
-                                min="1"
-                                value={allocateQty}
-                                onChange={(e) =>
-                                    setAllocateQty(
-                                        Number(e.target.value)
-                                    )
-                                }
-                                className="bg-gray-800 p-2 rounded w-full"
-                            />
-
-                        </div>
-
-                        <button
-                            disabled={!selectedBatch}
-                            onClick={allocateStock}
-                            className={`${!selectedBatch
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""}mt-4 bg-green-600 px-4 py-2 rounded`}
-                        >
-                            Allocate
-                        </button>
-
-                    </div>
-
-                </div>
-
-            )}
-            {inspectionModal && (
-
-                <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50">
-
-                    <div className="w-4/5 h-[90vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
-
-                        <div className="flex justify-between items-center mb-4">
-
-                            <div>
-
-                                <h2 className="text-xl font-bold">
-
-                                    Inspection Visit
-
-                                </h2>
-
-                                <p className="text-sm text-gray-400">
-
-                                    {selectedZone?.zone_name} - {selectedZone.location}
-                                </p>
-
-                            </div>
-
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={downloadExcel}
-                                    className="flex items-center gap-1 bg-green-700 px-3 py-2 rounded text-sm font-semibold"
-                                >
-                                    <FaFileExcel />
-                                    Download Excel
-                                </button>
-                                <button
-
-                                    onClick={closeVisit}
-                                    disabled={
-                                        activeVisit?.zone_id !== selectedZone?.id
-                                    }
-
-                                    className={`
-                p-1 flex text-xs items-center gap-2 text-white rounded
-
-                ${activeVisit?.zone_id !== selectedZone?.id
-                                            ? "bg-gray-600 opacity-50 cursor-not-allowed"
-                                            : "bg-red-600"
-                                        }
-            `}
-                                >
-                                    <FaCalendarCheck />
-
-                                    Close Inspection
-                                </button>
-                            </div>
-
-                        </div>
-
-                        {/* TABS */}
-
-                        <div className="flex gap-2 border-b border-gray-700 pb-2 mb-4">
-
-                            <button
-
-                                onClick={() =>
-                                    setInspectionTab(
-                                        "consumption"
-                                    )
-                                }
-
-                                className={`
-                        px-4 py-2 rounded text-sm font-semibold
-
-                        ${inspectionTab === "consumption"
-                                        ? "bg-blue-600"
-                                        : "bg-gray-700"
-                                    }
-                    `}
-                            >
-                                Consumption
-                            </button>
-
-                            <button
-
-                                onClick={() =>
-                                    setInspectionTab(
-                                        "allocation"
-                                    )
-                                }
-
-                                className={`
-                        px-4 py-2 rounded text-sm font-semibold
-
-                        ${inspectionTab === "allocation"
-                                        ? "bg-green-600"
-                                        : "bg-gray-700"
-                                    }
-                    `}
-                            >
-                                Replacement
-                            </button>
-
-                        </div>
-
-                        {/* TAB CONTENT */}
-
-                        <div className="h-[calc(100%-120px)] overflow-auto">
-
-                            {inspectionTab === "consumption" && (
-
-                                <div className=" rounded h-[350px] overflow-scroll no-scrollbar">
-
-                                    {/* MOVE CONSUMPTION TABLE HERE */}
-                                    <div className="h-[350px]">
-
-                                        <h3 className="font-bold text-lg">
-
-                                            Contents of First Aid Box
-                                            {" "}
-                                            as per the Last Date of Visit
-                                            {" - "}
-
-                                            {
-                                                lastVisit?.visit_date
-                                                    ?.slice(0, 10)
-
-                                                ||
-
-                                                "No Visit Yet"
-                                            }
-
-                                        </h3>
-                                        <p className="text-sm text-gray-400 mb-2">
-
-                                            Total Batches:
-                                            {" "}
-                                            {inventoryBatches.length}
-
-                                        </p>
-                                        <div className="h-[245px] overflow-scroll no-scrollbar">
-
-
-                                            <table className="w-full border text-sm ">
-
-                                                <thead className="bg-gray-800">
-
-                                                    <tr>
-                                                        <th className="border p-1">
-                                                            Medicine
-                                                        </th>
-
-                                                        <th className="border p-1">
-                                                            Brand
-                                                        </th>
-
-                                                        <th className="border p-1">
-                                                            Expiry
-                                                        </th>
-
-                                                        <th className="border p-1">
-                                                            Quantity
-                                                        </th>
-
-                                                        <th className="border p-1">
-                                                            Cost
-                                                        </th>
-
-                                                        <th className="border p-1">
-                                                            Quantity Consumed
-                                                        </th>
-                                                    </tr>
-
-                                                </thead>
-
-                                                <tbody>
-
-                                                    {inventoryBatches.map((batch, index) => (
-
-                                                        <tr key={index}>
-                                                            <td className="border p-1">
-                                                                {batch.item_name}
-                                                            </td>
-
-                                                            <td className="border p-1">
-                                                                {batch.brand}
-                                                            </td>
-
-                                                            <td className="border p-1">
-
-                                                                {batch.expiry_date
-                                                                    ?.slice(0, 10)}
-
-                                                            </td>
-
-                                                            <td className="border p-1">
-                                                                {batch.quantity}
-                                                            </td>
-
-                                                            <td className="border p-1">
-                                                                {batch.per_unit_cost}
-                                                            </td>
-
-                                                            <td className="border p-1 text-center">
-
-                                                                <input
-                                                                    type="number"
-
-                                                                    min="0"
-
-                                                                    max={batch.quantity}
-
-                                                                    value={
-                                                                        consumeInputs[batch._id]
-                                                                        || ""
-                                                                    }
-
-                                                                    onChange={(e) => {
-
-                                                                        const value =
-                                                                            e.target.value;
-
-                                                                        setConsumeInputs({
-
-                                                                            ...consumeInputs,
-
-                                                                            [batch._id]:
-                                                                                value
-                                                                        });
-
-                                                                    }}
-
-                                                                    className="w-[80px] bg-gray-800 p-1 rounded text-center"
-                                                                />
-
-                                                            </td>
-
-                                                        </tr>
-
-                                                    ))}
-
-
-                                                </tbody>
-
-                                            </table>
-                                        </div>
-                                        <div className="flex justify-end mt-2">
-
-                                        <button
-
-                                            onClick={saveConsumption}
-
-                                            disabled={!activeVisit}
-
-                                            className={`
-        px-4 py-2 rounded text-sm font-semibold
-
-        ${!activeVisit
-                                                    ? "bg-gray-600 opacity-50 cursor-not-allowed"
-                                                    : "bg-red-600"
-                                                }
-    `}
-                                        >
-                                            Mark as Consumed
-                                        </button>
-
-                                    </div>
-                                    </div>
-                                    
-                                </div>
-                            )}
-
-                            {inspectionTab === "allocation" && (
+                    {showTemplateForm && (
+                        <div className="mt-4 rounded-lg border p-4">
+                            <h3 className="text-md font-semibold">
+                                Configure FAB Template
+                            </h3>
+
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
 
                                 <div>
+                                    <label className="text-sm font-medium">
+                                        Medicine
+                                    </label>
 
-                                    <div className="w-full h-[300px] overflow-y-auto no-scrollbar">
-                                        <table className="border w-full">
-                                            <thead className="bg-gray-800">
-                                                <tr>
-                                                    <th className="border p-1">
-                                                        S.No
-                                                    </th>
+                                    <input
+                                        type="text"
+                                        value={templateMedicineSearch}
+                                        onChange={(e) => {
+                                            setTemplateMedicineSearch(e.target.value);
+                                            setTemplateMedicine("");
+                                        }}
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Search medicine..."
+                                    />
 
-                                                    <th className="border p-1">
-                                                        Medicine
-                                                    </th>
-
-                                                    <th className="border p-1">
-                                                        Category
-                                                    </th>
-
-                                                    <th className="border p-1">
-                                                        Default Quantity
-                                                    </th>
-
-                                                    <th className="border p-1">
-                                                        Current Quantity
-                                                    </th>
-
-                                                    <th className="border p-1">
-                                                        Deficit
-                                                    </th>
-
-                                                    <th className="border p-1">
-                                                        Replace
-                                                    </th>
-                                                    <th className="border p-1">
-                                                        Actions
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-                                                {templateItems.map((item, index) => {
-                                                    const allocatedQty =
-                                                        inventoryBatches
-                                                            .filter(
-                                                                batch =>
-                                                                    batch.medicine_id
-                                                                    === item.medicine_id
-                                                            )
-                                                            .reduce(
-                                                                (sum, batch) =>
-                                                                    sum + batch.quantity,
-                                                                0
+                                    {templateMedicineSearch.trim() && (
+                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border bg-gray-800">
+                                            {medicines
+                                                .filter((medicine) =>
+                                                    medicine.drug_name_and_dose
+                                                        ?.toLowerCase()
+                                                        .includes(templateMedicineSearch.toLowerCase())
+                                                )
+                                                .map((medicine) => (
+                                                    <button
+                                                        key={medicine.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setTemplateMedicine(String(medicine.id));
+                                                            setTemplateMedicineSearch(
+                                                                medicine.drug_name_and_dose
                                                             );
+                                                        }}
+                                                        className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-700"
+                                                    >
+                                                        {medicine.drug_name_and_dose}
+                                                    </button>
+                                                ))}
 
-                                                    const remainingQty =
-                                                        item.default_quantity
-                                                        - allocatedQty;
-
-                                                    return (
-                                                        <tr key={index}>
-
-                                                            <td className="border p-1">
-                                                                {index + 1}
-                                                            </td>
-
-                                                            <td className="border p-1">
-                                                                {item.item_name}
-                                                            </td>
-
-                                                            <td className="border p-1">
-                                                                {item.category}
-                                                            </td>
-
-                                                            <td className="border p-1">
-                                                                {item.default_quantity}
-                                                            </td>
-
-                                                            <td className="border p-1 text-center">
-                                                                {allocatedQty}
-                                                            </td>
-
-                                                            <td
-                                                                className={`border p-1 text-center font-semibold ${remainingQty > 0
-                                                                    ? "text-red-400"
-                                                                    : "text-green-400"
-                                                                    }`}
-                                                            >
-                                                                {remainingQty}
-                                                            </td>
-
-                                                            <td className="border p-1">
-
-                                                                <button
-                                                                    onClick={() =>
-                                                                        openAllocateModal(item)
-                                                                    }
-
-                                                                    disabled={
-                                                                        remainingQty <= 0
-                                                                        || !activeVisit
-                                                                    }
-
-                                                                    className={`
-                px-2 py-1 rounded text-xs
-
-                ${remainingQty <= 0 || !activeVisit
-                                                                            ? "bg-gray-600 opacity-50 cursor-not-allowed"
-                                                                            : "bg-blue-600"
-                                                                        }
-            `}
-                                                                >
-                                                                    Replace
-                                                                </button>
-
-                                                            </td>
-                                                            <td className="border p-1">
-
-                                                                <div className="flex gap-2">
-
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            editTemplateItem(item)
-                                                                        }
-                                                                        className="bg-yellow-600 px-2 py-1 rounded text-xs"
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-
-                                                                    <button
-                                                                        onClick={() =>
-                                                                            deleteTemplateItem(item)
-                                                                        }
-                                                                        className="bg-red-600 px-2 py-1 rounded text-xs"
-                                                                    >
-                                                                        Delete
-                                                                    </button>
-
-                                                                </div>
-
-                                                            </td>
-
-                                                        </tr>
-
-                                                    )
-                                                })}
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="flex justify-between mt-3">
-                                        <div className="flex justify-end mb-2">
-
-                                            <button
-                                                onClick={() =>
-                                                    setTemplateModal(true)
-                                                }
-                                                className="bg-blue-600 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
-                                            >
-                                                <FaPlus />
-                                                Add Template Medicine
-                                            </button>
-
+                                            {medicines.filter((medicine) =>
+                                                medicine.drug_name_and_dose
+                                                    ?.toLowerCase()
+                                                    .includes(templateMedicineSearch.toLowerCase())
+                                            ).length === 0 && (
+                                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                                        No medicines found.
+                                                    </div>
+                                                )}
                                         </div>
-                                    </div>
-
+                                    )}
                                 </div>
-                            )}
 
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Required Quantity
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={templateQuantity}
+                                        onChange={(e) =>
+                                            setTemplateQuantity(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Enter required quantity"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Opening Quantity
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={templateOpeningQuantity}
+                                        onChange={(e) =>
+                                            setTemplateOpeningQuantity(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Enter opening quantity"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Opening Brand
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={templateOpeningBrand}
+                                        onChange={(e) =>
+                                            setTemplateOpeningBrand(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Enter brand"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Opening Expiry Date
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        value={templateOpeningExpiry}
+                                        onChange={(e) =>
+                                            setTemplateOpeningExpiry(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Opening Unit Cost
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={templateOpeningCost}
+                                        onChange={(e) =>
+                                            setTemplateOpeningCost(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Enter unit cost"
+                                    />
+                                </div>
+
+                            </div>
+
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={createTemplate}
+                                    disabled={
+                                        fabLoading ||
+                                        !templateMedicine ||
+                                        !templateQuantity
+                                    }
+                                    className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {fabLoading ? "Saving..." : "Save Template"}
+                                </button>
+                            </div>
                         </div>
+                    )}
+                    {openVisit && (
+                        <button
+                            type="button"
+                            onClick={() => setShowAllocateForm(!showAllocateForm)}
+                            className="mt-4 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                        >
+                            {showAllocateForm ? "Cancel Allocation" : "Allocate Medicine"}
+                        </button>
+                    )}
+                    {openVisit && (
+                        <button
+                            type="button"
+                            onClick={() => setShowConsumeForm(!showConsumeForm)}
+                            className="mt-4 ml-2 rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700"
+                        >
+                            {showConsumeForm ? "Cancel Consumption" : "Consume Medicine"}
+                        </button>
+                    )}
+                    <div className="mt-4 flex items-center gap-3">
+                        <span className="text-sm font-medium">
+                            Visit Status:
+                        </span>
 
+                        <span
+                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${openVisit
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-700"
+                                }`}
+                        >
+                            {openVisit ? "OPEN" : "NO OPEN VISIT"}
+                        </span>
+
+                        {/* {!openVisit && (
+        <button
+            type="button"
+            onClick={openFABVisit}
+            disabled={fabLoading}
+            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+            {fabLoading ? "Opening..." : "Open Visit"}
+        </button>
+    )} */}
+                        {openVisit ? (
+                            <button
+                                type="button"
+                                onClick={closeFABVisit}
+                                disabled={fabLoading}
+                                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {fabLoading ? "Closing..." : "Close Visit"}
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={openFABVisit}
+                                disabled={fabLoading}
+                                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {fabLoading ? "Opening..." : "Open Visit"}
+                            </button>
+                        )}
                     </div>
+                    {showAllocateForm && (
+                        <div className="mt-4 rounded-lg border p-4">
+                            <h3 className="text-md font-semibold">
+                                Allocate Medicine to FAB
+                            </h3>
 
-                </div>
-            )}
-            {viewInventoryModal && (
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Medicine
+                                    </label>
 
-                <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-40">
+                                    <select
+                                        value={selectedMedicine?.medicine_id || ""}
+                                        onChange={(e) => {
+                                            const medicine = inventory.find(
+                                                (item) =>
+                                                    item.medicine_id === Number(e.target.value)
+                                            );
 
-                    <div className="w-4/5 h-[85vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
+                                            setSelectedMedicine(medicine || null);
+                                            setSelectedStock(null);
+                                        }}
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    >
+                                        <option value="">
+                                            Select medicine
+                                        </option>
 
-                        <div className="flex justify-between items-center mb-4">
+                                        {inventory.map((item) => (
+                                            <option
+                                                key={item.medicine_id}
+                                                value={item.medicine_id}
+                                            >
+                                                {item.medicine_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                            <div>
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Central Stock Batch
+                                    </label>
 
-                                <h2 className="text-xl font-bold">
+                                    <select
+                                        value={selectedStock?.stock_id || ""}
+                                        onChange={(e) => {
+                                            const stock = centralStock.find(
+                                                (item) =>
+                                                    item.stock_id === Number(e.target.value)
+                                            );
 
-                                    Zone Inventory
+                                            setSelectedStock(stock || null);
+                                        }}
+                                        disabled={!selectedMedicine}
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    >
+                                        <option value="">
+                                            {selectedMedicine
+                                                ? "Select stock batch"
+                                                : "Select medicine first"}
+                                        </option>
 
-                                </h2>
+                                        {centralStock
+                                            .filter(
+                                                (stock) =>
+                                                    stock.medicine_id === selectedMedicine?.medicine_id
+                                            )
+                                            .map((stock) => (
+                                                <option
+                                                    key={stock.stock_id}
+                                                    value={stock.stock_id}
+                                                >
+                                                    {stock.brand || "No brand"} — {stock.units} units
+                                                    {stock.expiry_date
+                                                        ? ` — Exp: ${new Date(
+                                                            stock.expiry_date
+                                                        ).toLocaleDateString()}`
+                                                        : ""}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
 
-                                <p className="text-sm text-gray-400">
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Quantity
+                                    </label>
 
-                                    {selectedZone?.zone_name}
-
-                                </p>
-
-                                <p className="text-xs text-gray-500">
-
-                                    Last Inspection:
-                                    {" "}
-
-                                    {
-                                        lastVisit?.visit_date
-                                            ?.slice(0, 10)
-
-                                        ||
-
-                                        "No Visit Yet"
-                                    }
-
-                                </p>
-
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={allocationQuantity}
+                                        onChange={(e) =>
+                                            setAllocationQuantity(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Enter quantity"
+                                    />
+                                </div>
                             </div>
-
-                            <div className="flex gap-2">
-
+                            <div className="mt-4 flex justify-end">
                                 <button
-                                    onClick={downloadExcel}
-                                    className="bg-green-700 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
-                                >
-                                    <FaFileExcel />
-
-                                    Download Excel
-                                </button>
-
-                                <button
-                                    onClick={() =>
-                                        setViewInventoryModal(false)
+                                    type="button"
+                                    onClick={allocateMedicine}
+                                    disabled={
+                                        fabLoading ||
+                                        !selectedMedicine ||
+                                        !selectedStock ||
+                                        !allocationQuantity
                                     }
-                                    className="bg-red-600 px-3 py-2 rounded text-sm font-semibold"
+                                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Close
+                                    {fabLoading ? "Allocating..." : "Allocate"}
                                 </button>
-
                             </div>
-
                         </div>
+                    )}
+                    {showConsumeForm && (
+                        <div className="mt-4 rounded-lg border p-4">
+                            <h3 className="text-md font-semibold">
+                                Consume Medicine from FAB
+                            </h3>
 
-                        <div className="h-[calc(100%-80px)] overflow-auto no-scrollbar">
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Medicine
+                                    </label>
 
-                            <table className="w-full border text-sm">
+                                    <select
+                                        value={consumptionMedicine?.medicine_id || ""}
+                                        onChange={(e) => {
+                                            const medicine = inventory.find(
+                                                (item) =>
+                                                    item.medicine_id === Number(e.target.value)
+                                            );
 
-                                <thead className="bg-gray-800 sticky top-0">
+                                            setConsumptionMedicine(medicine || null);
+                                        }}
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    >
+                                        <option value="">
+                                            Select medicine
+                                        </option>
 
-                                    <tr>
+                                        {inventory
+                                            .filter((item) => item.current_quantity > 0)
+                                            .map((item) => (
+                                                <option
+                                                    key={item.medicine_id}
+                                                    value={item.medicine_id}
+                                                >
+                                                    {item.medicine_name} — {item.current_quantity} available
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
 
-                                        <th className="border p-2">
+                                <div>
+                                    <label className="text-sm font-medium">
+                                        Quantity
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max={consumptionMedicine?.current_quantity || undefined}
+                                        value={consumptionQuantity}
+                                        onChange={(e) =>
+                                            setConsumptionQuantity(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="Enter quantity"
+                                    />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="text-sm font-medium">
+                                        Reason
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={consumptionReason}
+                                        onChange={(e) =>
+                                            setConsumptionReason(e.target.value)
+                                        }
+                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                        placeholder="e.g. Used for first aid"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={consumeMedicine}
+                                    disabled={
+                                        fabLoading ||
+                                        !consumptionMedicine ||
+                                        !consumptionQuantity
+                                    }
+                                    className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {fabLoading ? "Consuming..." : "Consume"}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {fabLoading ? (
+                        <div className="mt-4 text-sm text-gray-500">
+                            Loading FAB data...
+                        </div>
+                    ) : (
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold">
+                                FAB Inventory
+                            </h3>
+
+                            {inventory.length === 0 ? (
+                                <div className="mt-3 rounded-lg border border-dashed p-6 text-center text-sm text-gray-500">
+                                    No medicines are configured for this FAB.
+                                </div>
+                            ) : (
+                                <div className="mt-3 overflow-hidden rounded-lg border">
+                                    <div className="grid grid-cols-6 border-b bg-gray-800 px-4 py-3 text-sm font-semibold">
+                                        <div className="col-span-2">
                                             Medicine
-                                        </th>
-
-                                        <th className="border p-2">
-                                            Brand
-                                        </th>
-
-                                        <th className="border p-2">
-                                            Expiry
-                                        </th>
-
-                                        <th className="border p-2">
-                                            Quantity
-                                        </th>
-
-                                        <th className="border p-2">
-                                            Cost
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    {inventoryBatches.map((batch, index) => (
-
-                                        <tr key={index}>
-
-                                            <td className="border p-2">
-                                                {batch.item_name}
-                                            </td>
-
-                                            <td className="border p-2">
-                                                {batch.brand}
-                                            </td>
-
-                                            <td className="border p-2">
-
-                                                {
-                                                    batch.expiry_date
-                                                        ?.slice(0, 10)
-                                                }
-
-                                            </td>
-
-                                            <td className="border p-2">
-                                                {batch.quantity}
-                                            </td>
-
-                                            <td className="border p-2">
-                                                {batch.per_unit_cost}
-                                            </td>
-
-                                        </tr>
-
-                                    ))}
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            )}
-            {historyModal && (
-
-                <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-[60]">
-
-                    <div className="w-4/5 h-[85vh] bg-gray-900 rounded-xl p-6 overflow-hidden">
-
-                        <div className="flex justify-between items-center mb-4">
-
-                            <div>
-
-                                <h2 className="text-xl font-bold">
-
-                                    Inspection History
-
-                                </h2>
-
-                                <p className="text-sm text-gray-400">
-
-                                    {selectedZone?.zone_name}
-
-                                </p>
-
-                            </div>
-
-                            <div className="flex gap-2">
-
-    <button
-
-        onClick={downloadHistoryExcel}
-
-        className="bg-green-700 px-3 py-2 rounded text-sm font-semibold flex items-center gap-2"
-    >
-        <FaFileExcel />
-
-        Download Excel
-    </button>
-
-    <button
-        onClick={() =>
-            setHistoryModal(false)
-        }
-        className="bg-red-600 px-3 py-2 rounded text-sm"
-    >
-        Close
-    </button>
-
-</div>
-
-                        </div>
-
-                        <div className="h-[calc(100%-80px)] overflow-auto no-scrollbar flex flex-col gap-4">
-
-                            {visitHistory.map((entry, index) => (
-
-                                <div
-                                    key={index}
-                                    className="bg-gray-800 rounded p-4"
-                                >
-
-                                    <div className="flex justify-between items-center">
+                                        </div>
 
                                         <div>
+                                            Required
+                                        </div>
 
-                                            <h3 className="font-bold">
+                                        <div>
+                                            Current
+                                        </div>
 
-                                                Visit #{entry.visit.id}
+                                        <div>
+                                            Physically Count
+                                        </div>
 
-                                            </h3>
+                                        <div>
+                                            Status
+                                        </div>
+                                    </div>
 
-                                            <p className="text-sm text-gray-400">
-
-                                                {
-                                                    entry.visit.visit_date
-                                                        ?.slice(0, 10)
+                                    {inventory.map((item) => (
+                                        <div
+                                            key={item.medicine_id}
+                                            className="border-b last:border-b-0"
+                                        >
+                                            <div
+                                                className="grid grid-cols-6 cursor-pointer items-center px-4 py-3 hover:bg-gray-700"
+                                                onClick={() =>
+                                                    setExpandedMedicine(
+                                                        expandedMedicine === item.medicine_id
+                                                            ? null
+                                                            : item.medicine_id
+                                                    )
                                                 }
-
-                                            </p>
-
-                                        </div>
-
-                                        <div className="text-sm">
-
-                                            {
-                                                entry.visit.is_closed
-                                                    ? "Closed"
-                                                    : "Active"
-                                            }
-
-                                        </div>
-
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-8">
-                                        
-                                    
-                                    <div className="mt-4">
-
-                                        <h4 className="font-semibold text-red-400 mb-2">
-
-                                            Consumption
-
-                                        </h4>
-
-                                        {
-                                            entry.consumptions.length === 0
-
-                                                ?
-
-                                                <p className="text-sm text-gray-500">
-
-                                                    No consumption
-
-                                                </p>
-
-                                                :
-
-                                                entry.consumptions.map((item, idx) => (
-
-                                                    <div
-                                                        key={idx}
-                                                        className="flex justify-between w-full text-sm border-b border-gray-700 py-1"
-                                                    >
-                                                        <p>{item.item_name}</p>
-                                                        {/* {" - "} */}
-                                                        <p className="text-red-500 font-bold ">- {item.quantity}</p>
+                                            >
+                                                <div className="col-span-2">
+                                                    <div className="font-medium">
+                                                        {item.medicine_name}
                                                     </div>
 
-                                                ))
-                                        }
+                                                    <div className="mt-1 text-xs text-gray-500">
+                                                        Medicine ID: {item.medicine_id}
+                                                    </div>
+                                                </div>
 
-                                    </div>
+                                                <div className="text-sm">
+                                                    {item.required_quantity}
+                                                </div>
 
-                                    <div className="mt-4">
+                                                <div className="text-sm font-medium">
+                                                    {item.current_quantity}
+                                                </div>
+                                                <div className="px-4 py-3">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="1"
+                                                        value={physicalQuantities[item.medicine_id] ?? ""}
+                                                        onChange={(e) =>
+                                                            handlePhysicalQuantityChange(
+                                                                item.medicine_id,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-24 rounded-md border bg-gray-800 px-2 py-1 text-sm"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
 
-                                        <h4 className="font-semibold text-green-400 mb-2">
-
-                                            Replacements
-
-                                        </h4>
-
-                                        {
-                                            entry.allocations.length === 0
-
-                                                ?
-
-                                                <p className="text-sm text-gray-500">
-
-                                                    No allocations
-
-                                                </p>
-
-                                                :
-
-                                                entry.allocations.map((item, idx) => (
-
-                                                    <div
-                                                        key={idx}
-                                                        className="flex justify-between text-sm border-b border-gray-700 py-1"
+                                                <div>
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${item.status === "FULL"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : item.status === "SHORT"
+                                                                ? "bg-yellow-100 text-yellow-700"
+                                                                : item.status === "EMPTY"
+                                                                    ? "bg-red-100 text-red-700"
+                                                                    : "bg-blue-100 text-blue-700"
+                                                            }`}
                                                     >
-                                                        <p>{item.item_name}</p>
-                                                        {/* {" - "} */}
-                                                        <p className="font-bold text-green-400">+ {item.quantity}</p>
+                                                        {item.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {expandedMedicine === item.medicine_id && (
+                                                <div className="border-t bg-gray-800 px-4 py-4">
+                                                    <div className="mb-3 text-sm font-semibold">
+                                                        Inventory Batches
                                                     </div>
 
-                                                ))
-                                        }
+                                                    {item.batches?.length ? (
+                                                        <div className="space-y-2">
+                                                            {item.batches.map((batch) => (
+                                                                <div
+                                                                    key={batch._id}
+                                                                    className="rounded-md border bg-gray-800 p-3"
+                                                                >
+                                                                    <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
+                                                                        <div>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                Brand
+                                                                            </div>
+                                                                            <div className="font-medium">
+                                                                                {batch.brand || "—"}
+                                                                            </div>
+                                                                        </div>
 
-                                    </div>
-                                    </div>
+                                                                        <div>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                Quantity
+                                                                            </div>
+                                                                            <div className="font-medium">
+                                                                                {batch.quantity}
+                                                                            </div>
+                                                                        </div>
 
+                                                                        <div>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                Expiry
+                                                                            </div>
+                                                                            <div>
+                                                                                {batch.expiry_date
+                                                                                    ? new Date(
+                                                                                        batch.expiry_date
+                                                                                    ).toLocaleDateString()
+                                                                                    : "—"}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                Source
+                                                                            </div>
+                                                                            <div>
+                                                                                {batch.source_type}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                Unit Cost
+                                                                            </div>
+                                                                            <div>
+                                                                                ₹{batch.per_unit_cost ?? 0}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-sm text-gray-500">
+                                                            No inventory batches.
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={saveStockCount}
+                                        disabled={fabLoading || !openVisit}
+                                        className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        Save Stock Count
+                                    </button>
                                 </div>
-
-                            ))}
-
+                            )}
                         </div>
-
-                    </div>
-
+                    )}
                 </div>
-
-            )}
-            {editTemplateModal && (
-
-                <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-[90]">
-
-                    <div className="bg-gray-900 p-6 rounded w-[400px]">
-
-                        <div className="flex justify-between items-center mb-4">
-
-                            <h2 className="font-bold text-lg">
-                                Edit Required Quantity
-                            </h2>
-
-                            <button
-                                onClick={() =>
-                                    setEditTemplateModal(false)
-                                }
-                            >
-                                x
-                            </button>
-
-                        </div>
-
-                        <p className="mb-3 text-sm">
-
-                            {editingTemplateItem?.item_name}
-
-                        </p>
-
-                        <input
-                            type="number"
-                            min="1"
-                            value={editRequiredQty}
-                            onChange={(e) =>
-                                setEditRequiredQty(
-                                    Number(e.target.value)
-                                )
-                            }
-                            className="w-full bg-gray-800 p-2 rounded"
-                        />
-
-                        <button
-                            onClick={updateTemplateQty}
-                            className="mt-4 bg-green-600 px-4 py-2 rounded"
-                        >
-                            Save
-                        </button>
-
-                    </div>
-
-                </div>
-
             )}
         </div>
     );
