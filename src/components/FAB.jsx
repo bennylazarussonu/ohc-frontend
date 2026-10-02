@@ -7,6 +7,9 @@ function FAB() {
 
     const [zones, setZones] = useState([]);
     const [selectedZone, setSelectedZone] = useState(null);
+    const [showAddZoneForm, setShowAddZoneForm] = useState(false);
+    const [newZoneName, setNewZoneName] = useState("");
+    const [newZoneLocation, setNewZoneLocation] = useState("");
     const [inventory, setInventory] = useState([]);
     const [fabLoading, setFabLoading] = useState(false);
     const [expandedMedicine, setExpandedMedicine] = useState(null);
@@ -196,6 +199,40 @@ function FAB() {
             alert(
                 error.response?.data?.message ||
                 "Failed to allocate medicine"
+            );
+        } finally {
+            setFabLoading(false);
+        }
+    };
+
+    const createZone = async () => {
+        if (!newZoneName.trim()) {
+            alert("Please enter a zone name.");
+            return;
+        }
+
+        try {
+            setFabLoading(true);
+
+            await api.post("/api/fab/zones", {
+                zone_name: newZoneName.trim(),
+                location: newZoneLocation.trim()
+            });
+
+            alert("Zone created successfully.");
+
+            setNewZoneName("");
+            setNewZoneLocation("");
+            setShowAddZoneForm(false);
+
+            const response = await api.get("/api/fab/zones");
+            setZones(response.data || []);
+        } catch (error) {
+            console.error("Failed to create zone:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to create zone"
             );
         } finally {
             setFabLoading(false);
@@ -407,6 +444,72 @@ function FAB() {
 
             <div className="mt-6">
                 <h2 className="text-lg font-semibold">Zones</h2>
+                <button
+                    type="button"
+                    onClick={() => setShowAddZoneForm(true)}
+                    className="mt-3 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                    Add New Zone
+                </button>
+
+                {showAddZoneForm && (
+                    <div className="mt-4 rounded-lg border p-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div>
+                                <label className="text-sm font-medium">
+                                    Zone Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={newZoneName}
+                                    onChange={(e) => setNewZoneName(e.target.value)}
+                                    className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    placeholder="Enter zone name"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium">
+                                    Location
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={newZoneLocation}
+                                    onChange={(e) =>
+                                        setNewZoneLocation(e.target.value)
+                                    }
+                                    className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    placeholder="Enter location"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                type="button"
+                                onClick={createZone}
+                                disabled={fabLoading}
+                                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                            >
+                                Save Zone
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowAddZoneForm(false);
+                                    setNewZoneName("");
+                                    setNewZoneLocation("");
+                                }}
+                                className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {zones.map((zone) => (
