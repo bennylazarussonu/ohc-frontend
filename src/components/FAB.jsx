@@ -239,6 +239,54 @@ function FAB() {
         }
     };
 
+    const deleteZone = async (zone) => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete "${zone.zone_name}"?`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const returnToStock = window.confirm(
+            "Add this Zones items back to stock?"
+        );
+
+        try {
+            setFabLoading(true);
+
+            await api.delete(`/api/fab/zones/${zone.id}`, {
+                data: {
+                    return_to_stock: returnToStock
+                }
+            });
+
+            alert(
+                returnToStock
+                    ? "Zone deleted and remaining stock returned successfully."
+                    : "Zone deleted successfully."
+            );
+
+            if (selectedZone?.id === zone.id) {
+                setSelectedZone(null);
+                setInventory([]);
+                setOpenVisit(null);
+            }
+
+            const response = await api.get("/api/fab/zones");
+            setZones(response.data || []);
+        } catch (error) {
+            console.error("Failed to delete zone:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to delete zone"
+            );
+        } finally {
+            setFabLoading(false);
+        }
+    };
+
     const createTemplate = async () => {
         if (!selectedZone) {
             alert("Please select a FAB.");
@@ -513,7 +561,7 @@ function FAB() {
 
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {zones.map((zone) => (
-                        <button
+                        <div
                             key={zone.id}
                             type="button"
                             onClick={() => setSelectedZone(zone)}
@@ -531,7 +579,17 @@ function FAB() {
                                     {zone.location}
                                 </div>
                             )}
-                        </button>
+                            <button
+    type="button"
+    onClick={(event) => {
+        event.stopPropagation();
+        deleteZone(zone);
+    }}
+    className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+>
+    Delete Zone
+</button>
+                        </div>
                     ))}
                 </div>
             </div>
