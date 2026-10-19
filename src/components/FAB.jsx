@@ -580,15 +580,15 @@ function FAB() {
                                 </div>
                             )}
                             <button
-    type="button"
-    onClick={(event) => {
-        event.stopPropagation();
-        deleteZone(zone);
-    }}
-    className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
->
-    Delete Zone
-</button>
+                                type="button"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    deleteZone(zone);
+                                }}
+                                className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                            >
+                                Delete Zone
+                            </button>
                         </div>
                     ))}
                 </div>
@@ -1166,7 +1166,7 @@ function FAB() {
                                                                     key={batch._id}
                                                                     className="rounded-md border bg-gray-800 p-3"
                                                                 >
-                                                                    <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
+                                                                    <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-6">
                                                                         <div>
                                                                             <div className="text-xs text-gray-500">
                                                                                 Brand
