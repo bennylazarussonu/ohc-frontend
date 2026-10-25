@@ -491,19 +491,21 @@ function FAB() {
                 FAB Inventory Management
             </p>
 
-            <div className="mt-6">
+            <div className="mt-3">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold">Zones</h2>
                     <button
-                    type="button"
-                    onClick={() => setShowAddZoneForm(true)}
-                    className="flex items-center gap-2 mt-3 rounded-md bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
-                >
-                    <FaPlus/> Add New Zone
-                </button>
+                        type="button"
+                        onClick={() => setShowAddZoneForm(true)}
+                        className="flex items-center gap-2 mt-3 rounded-md bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
+                    >
+                        <FaPlus /> Add New Zone
+                    </button>
 
+                
+                </div>
                 {showAddZoneForm && (
-                    <div className="mt-4 rounded-lg border p-4">
+                    <div className="mt-4 rounded bg-gray-800 p-3">
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
                                 <label className="text-sm font-medium">
@@ -560,7 +562,6 @@ function FAB() {
                         </div>
                     </div>
                 )}
-                </div>
                 
                 
 
@@ -570,12 +571,12 @@ function FAB() {
                             key={zone.id}
                             type="button"
                             onClick={() => setSelectedZone(zone)}
-                            className={`w-fit rounded-lg border px-3 py-1 text-left transition ${selectedZone?.id === zone.id
+                            className={`w-fit rounded-lg px-3 py-1 text-left transition cursor-pointer ${selectedZone?.id === zone.id
                                 ? "border-blue-500 bg-blue-700 text-white"
-                                : "border-blue-400 hover:border-blue-300 hover:bg-blue-400"
+                                : "bg-gray-800 hover:border hover:border-blue-600"
                                 }`}
                         >
-                            <div className="flex items-center gap-2 font-semibold">
+                            <div className={`flex items-center gap-2 ${selectedZone?.id === zone.id ? "font-bold" : ""}`}>
                                 <FaMedkit/> {zone.zone_name}
                             </div>
 
