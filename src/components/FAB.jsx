@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
+import { FaMedkit, FaPlus } from "react-icons/fa";
 
 function FAB() {
     const { user, loading } = useAuth();
@@ -492,12 +493,47 @@ function FAB() {
 
             <div className="mt-6">
                 <h2 className="text-lg font-semibold">Zones</h2>
+                
+
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                    {zones.map((zone) => (
+                        <div
+                            key={zone.id}
+                            type="button"
+                            onClick={() => setSelectedZone(zone)}
+                            className={`rounded-lg border p-1 text-left transition ${selectedZone?.id === zone.id
+                                ? "border-blue-500 bg-blue-700 text-white"
+                                : "border-blue-400 hover:border-blue-300 hover:bg-blue-400"
+                                }`}
+                        >
+                            <div className="flex items-center gap-2 font-semibold">
+                                <FaMedkit/> {zone.zone_name}
+                            </div>
+
+                            {/* {zone.location && (
+                                <div className="mt-1 text-sm text-gray-500">
+                                    {zone.location}
+                                </div>
+                            )} */}
+                            {/* <button
+                                type="button"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    deleteZone(zone);
+                                }}
+                                className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                            >
+                                Delete Zone
+                            </button> */}
+                        </div>
+                    ))}
+                </div>
                 <button
                     type="button"
                     onClick={() => setShowAddZoneForm(true)}
-                    className="mt-3 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    className="flex items-center gap-2 mt-3 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                 >
-                    Add New Zone
+                    <FaPlus/> Add New Zone
                 </button>
 
                 {showAddZoneForm && (
@@ -558,40 +594,6 @@ function FAB() {
                         </div>
                     </div>
                 )}
-
-                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {zones.map((zone) => (
-                        <div
-                            key={zone.id}
-                            type="button"
-                            onClick={() => setSelectedZone(zone)}
-                            className={`rounded-lg border p-4 text-left transition ${selectedZone?.id === zone.id
-                                ? "border-blue-500 bg-gray-800 text-white"
-                                : "border-gray-200 hover:border-blue-300 hover:bg-gray-700"
-                                }`}
-                        >
-                            <div className="font-semibold">
-                                {zone.zone_name}
-                            </div>
-
-                            {zone.location && (
-                                <div className="mt-1 text-sm text-gray-500">
-                                    {zone.location}
-                                </div>
-                            )}
-                            <button
-                                type="button"
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    deleteZone(zone);
-                                }}
-                                className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                            >
-                                Delete Zone
-                            </button>
-                        </div>
-                    ))}
-                </div>
             </div>
             {selectedZone && (
                 <div className="mt-6 rounded-lg border p-4">
