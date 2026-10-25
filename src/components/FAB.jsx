@@ -492,46 +492,12 @@ function FAB() {
             </p>
 
             <div className="mt-6">
-                <h2 className="text-lg font-semibold">Zones</h2>
-                
-
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-                    {zones.map((zone) => (
-                        <div
-                            key={zone.id}
-                            type="button"
-                            onClick={() => setSelectedZone(zone)}
-                            className={`rounded-lg border p-1 text-left transition ${selectedZone?.id === zone.id
-                                ? "border-blue-500 bg-blue-700 text-white"
-                                : "border-blue-400 hover:border-blue-300 hover:bg-blue-400"
-                                }`}
-                        >
-                            <div className="flex items-center gap-2 font-semibold">
-                                <FaMedkit/> {zone.zone_name}
-                            </div>
-
-                            {/* {zone.location && (
-                                <div className="mt-1 text-sm text-gray-500">
-                                    {zone.location}
-                                </div>
-                            )} */}
-                            {/* <button
-                                type="button"
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    deleteZone(zone);
-                                }}
-                                className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                            >
-                                Delete Zone
-                            </button> */}
-                        </div>
-                    ))}
-                </div>
-                <button
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold">Zones</h2>
+                    <button
                     type="button"
                     onClick={() => setShowAddZoneForm(true)}
-                    className="flex items-center gap-2 mt-3 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                    className="flex items-center gap-2 mt-3 rounded-md bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
                 >
                     <FaPlus/> Add New Zone
                 </button>
@@ -594,9 +560,48 @@ function FAB() {
                         </div>
                     </div>
                 )}
+                </div>
+                
+                
+
+                <div className="mt-3 flex flex-wrap items-start gap-2 text-sm">
+                    {zones.map((zone) => (
+                        <div
+                            key={zone.id}
+                            type="button"
+                            onClick={() => setSelectedZone(zone)}
+                            className={`w-fit rounded-lg border px-3 py-1 text-left transition ${selectedZone?.id === zone.id
+                                ? "border-blue-500 bg-blue-700 text-white"
+                                : "border-blue-400 hover:border-blue-300 hover:bg-blue-400"
+                                }`}
+                        >
+                            <div className="flex items-center gap-2 font-semibold">
+                                <FaMedkit/> {zone.zone_name}
+                            </div>
+
+                            {/* {zone.location && (
+                                <div className="mt-1 text-sm text-gray-500">
+                                    {zone.location}
+                                </div>
+                            )} */}
+                            {/* <button
+                                type="button"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    deleteZone(zone);
+                                }}
+                                className="mt-3 rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                            >
+                                Delete Zone
+                            </button> */}
+                        </div>
+                    ))}
+                </div>
+                
             </div>
+            
             {selectedZone && (
-                <div className="mt-6 rounded-lg border p-4">
+                <div className="mt-6 rounded-lg bg-gray-800 rounded shadow-sm p-4">
                     <div className="text-sm text-gray-500">
                         Selected FAB
                     </div>
