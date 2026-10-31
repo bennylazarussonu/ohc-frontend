@@ -26,6 +26,7 @@ function FAB() {
     const [consumptionQuantity, setConsumptionQuantity] = useState("");
     const [consumptionReason, setConsumptionReason] = useState("");
     const [physicalQuantities, setPhysicalQuantities] = useState({});
+    const [allocationQuantities, setAllocationQuantities] = useState({});
     const [medicines, setMedicines] = useState([]);
     const [templateMedicineSearch, setTemplateMedicineSearch] = useState("");
     const [showTemplateForm, setShowTemplateForm] = useState(false);
@@ -614,13 +615,13 @@ function FAB() {
                             <div className="mt-1 text-sm font-semibold flex gap-2 items-center">
                                 {selectedZone.zone_name}
                                 <span
-                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${openVisit
-                                ? "bg-green-100 text-green-700"
-                                : "border border-red-400 text-red-400"
-                                }`}
-                        >
-                            {openVisit ? "OPEN" : "NO OPEN VISIT"}
-                        </span>
+                                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${openVisit
+                                        ? "bg-green-100 text-green-700"
+                                        : "border border-red-400 text-red-400"
+                                        }`}
+                                >
+                                    {openVisit ? "OPEN" : "NO OPEN VISIT"}
+                                </span>
                             </div>
 
                             <div className="mt-1 text-xs text-gray-500">
@@ -653,24 +654,7 @@ function FAB() {
 
 
 
-                    {openVisit && (
-                        <button
-                            type="button"
-                            onClick={() => setShowAllocateForm(!showAllocateForm)}
-                            className="mt-4 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-                        >
-                            {showAllocateForm ? "Cancel Allocation" : "Allocate Medicine"}
-                        </button>
-                    )}
-                    {openVisit && (
-                        <button
-                            type="button"
-                            onClick={() => setShowConsumeForm(!showConsumeForm)}
-                            className="mt-4 ml-2 rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700"
-                        >
-                            {showConsumeForm ? "Cancel Consumption" : "Consume Medicine"}
-                        </button>
-                    )}
+
                     {/* <div className="mt-4 flex items-center gap-3">
                         <span className="text-sm font-medium">
                             Visit Status:
@@ -678,217 +662,7 @@ function FAB() {
 
                         
                     </div> */}
-                    {showAllocateForm && (
-                        <div className="mt-4 rounded-lg border p-4">
-                            <h3 className="text-md font-semibold">
-                                Allocate Medicine to FAB
-                            </h3>
 
-                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Medicine
-                                    </label>
-
-                                    <select
-                                        value={selectedMedicine?.medicine_id || ""}
-                                        onChange={(e) => {
-                                            const medicine = inventory.find(
-                                                (item) =>
-                                                    item.medicine_id === Number(e.target.value)
-                                            );
-
-                                            setSelectedMedicine(medicine || null);
-                                            setSelectedStock(null);
-                                        }}
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                    >
-                                        <option value="">
-                                            Select medicine
-                                        </option>
-
-                                        {inventory.map((item) => (
-                                            <option
-                                                key={item.medicine_id}
-                                                value={item.medicine_id}
-                                            >
-                                                {item.medicine_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Central Stock Batch
-                                    </label>
-
-                                    <select
-                                        value={selectedStock?.stock_id || ""}
-                                        onChange={(e) => {
-                                            const stock = centralStock.find(
-                                                (item) =>
-                                                    item.stock_id === Number(e.target.value)
-                                            );
-
-                                            setSelectedStock(stock || null);
-                                        }}
-                                        disabled={!selectedMedicine}
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                    >
-                                        <option value="">
-                                            {selectedMedicine
-                                                ? "Select stock batch"
-                                                : "Select medicine first"}
-                                        </option>
-
-                                        {centralStock
-                                            .filter(
-                                                (stock) =>
-                                                    stock.medicine_id === selectedMedicine?.medicine_id
-                                            )
-                                            .map((stock) => (
-                                                <option
-                                                    key={stock.stock_id}
-                                                    value={stock.stock_id}
-                                                >
-                                                    {stock.brand || "No brand"} — {stock.units} units
-                                                    {stock.expiry_date
-                                                        ? ` — Exp: ${new Date(
-                                                            stock.expiry_date
-                                                        ).toLocaleDateString()}`
-                                                        : ""}
-                                                </option>
-                                            ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Quantity
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={allocationQuantity}
-                                        onChange={(e) =>
-                                            setAllocationQuantity(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Enter quantity"
-                                    />
-                                </div>
-                            </div>
-                            <div className="mt-4 flex justify-end">
-                                <button
-                                    type="button"
-                                    onClick={allocateMedicine}
-                                    disabled={
-                                        fabLoading ||
-                                        !selectedMedicine ||
-                                        !selectedStock ||
-                                        !allocationQuantity
-                                    }
-                                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {fabLoading ? "Allocating..." : "Allocate"}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                    {showConsumeForm && (
-                        <div className="mt-4 rounded-lg border p-4">
-                            <h3 className="text-md font-semibold">
-                                Consume Medicine from FAB
-                            </h3>
-
-                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Medicine
-                                    </label>
-
-                                    <select
-                                        value={consumptionMedicine?.medicine_id || ""}
-                                        onChange={(e) => {
-                                            const medicine = inventory.find(
-                                                (item) =>
-                                                    item.medicine_id === Number(e.target.value)
-                                            );
-
-                                            setConsumptionMedicine(medicine || null);
-                                        }}
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                    >
-                                        <option value="">
-                                            Select medicine
-                                        </option>
-
-                                        {inventory
-                                            .filter((item) => item.current_quantity > 0)
-                                            .map((item) => (
-                                                <option
-                                                    key={item.medicine_id}
-                                                    value={item.medicine_id}
-                                                >
-                                                    {item.medicine_name} — {item.current_quantity} available
-                                                </option>
-                                            ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Quantity
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max={consumptionMedicine?.current_quantity || undefined}
-                                        value={consumptionQuantity}
-                                        onChange={(e) =>
-                                            setConsumptionQuantity(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Enter quantity"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="text-sm font-medium">
-                                        Reason
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        value={consumptionReason}
-                                        onChange={(e) =>
-                                            setConsumptionReason(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="e.g. Used for first aid"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mt-4 flex justify-end">
-                                <button
-                                    type="button"
-                                    onClick={consumeMedicine}
-                                    disabled={
-                                        fabLoading ||
-                                        !consumptionMedicine ||
-                                        !consumptionQuantity
-                                    }
-                                    className="rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {fabLoading ? "Consuming..." : "Consume"}
-                                </button>
-                            </div>
-                        </div>
-                    )}
                     {fabLoading ? (
                         <div className="mt-4 text-sm text-gray-500">
                             Loading FAB data...
@@ -1079,8 +853,8 @@ function FAB() {
                                     No medicines are configured for this FAB.
                                 </div>
                             ) : (
-                                <div className="mt-3 overflow-hidden rounded-lg border">
-                                    <div className="grid grid-cols-6 border-b bg-gray-800 px-4 py-3 text-sm font-semibold">
+                                <div className="mt-3 overflow-x-auto rounded-lg border">
+                                    <div className="grid grid-cols-8 min-w-[1000px] border-b bg-gray-800 px-4 py-3 text-sm font-semibold">
                                         <div className="col-span-2">
                                             Medicine
                                         </div>
@@ -1094,7 +868,15 @@ function FAB() {
                                         </div>
 
                                         <div>
-                                            Physically Count
+                                            Physical Stock
+                                        </div>
+
+                                        <div>
+                                            Consumed
+                                        </div>
+
+                                        <div>
+                                            Allocate
                                         </div>
 
                                         <div>
@@ -1108,7 +890,7 @@ function FAB() {
                                             className="border-b last:border-b-0"
                                         >
                                             <div
-                                                className="grid grid-cols-6 cursor-pointer items-center px-4 py-3 hover:bg-gray-700"
+                                                className="grid grid-cols-8 min-w-[1000px] cursor-pointer items-center px-4 py-3 hover:bg-gray-700"
                                                 onClick={() =>
                                                     setExpandedMedicine(
                                                         expandedMedicine === item.medicine_id
@@ -1147,6 +929,45 @@ function FAB() {
                                                             )
                                                         }
                                                         className="w-24 rounded-md border bg-gray-800 px-2 py-1 text-sm"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                                <div className="text-sm font-medium text-orange-400">
+                                                    {physicalQuantities[item.medicine_id] !== undefined &&
+                                                        physicalQuantities[item.medicine_id] !== ""
+                                                        ? Math.max(
+                                                            0,
+                                                            item.current_quantity -
+                                                            Number(physicalQuantities[item.medicine_id])
+                                                        )
+                                                        : "—"}
+                                                </div>
+                                                <div className="px-2">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="1"
+                                                        value={
+                                                            allocationQuantities[item.medicine_id] ??
+                                                            (
+                                                                physicalQuantities[item.medicine_id] !== undefined &&
+                                                                    physicalQuantities[item.medicine_id] !== ""
+                                                                    ? Math.max(
+                                                                        0,
+                                                                        item.required_quantity -
+                                                                        Number(physicalQuantities[item.medicine_id])
+                                                                    )
+                                                                    : ""
+                                                            )
+                                                        }
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) =>
+                                                            setAllocationQuantities((previous) => ({
+                                                                ...previous,
+                                                                [item.medicine_id]: e.target.value
+                                                            }))
+                                                        }
+                                                        className="w-20 rounded-md border bg-gray-800 px-2 py-1 text-sm"
                                                         placeholder="0"
                                                     />
                                                 </div>
