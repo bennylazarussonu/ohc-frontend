@@ -20,6 +20,8 @@ function FAB() {
     const [selectedMedicine, setSelectedMedicine] = useState(null);
     const [selectedStock, setSelectedStock] = useState(null);
     const [allocationQuantity, setAllocationQuantity] = useState("");
+    const [showReconcileModal, setShowReconcileModal] = useState(false);
+    const [reconciliationQuantities, setReconciliationQuantities] = useState({});
     const [centralStock, setCentralStock] = useState([]);
     const [showConsumeForm, setShowConsumeForm] = useState(false);
     const [consumptionMedicine, setConsumptionMedicine] = useState(null);
@@ -424,22 +426,145 @@ function FAB() {
         }));
     };
 
+    const handleReconciliationQuantityChange = (medicineId, value) => {
+        setReconciliationQuantities((previous) => ({
+            ...previous,
+            [medicineId]: value
+        }));
+    };
+
     const saveStockCount = async () => {
         if (!selectedZone || !openVisit) {
             alert("Please open a FAB visit first.");
             return;
         }
 
+        // Validate physical quantities
+        const invalidPhysicalEntries = inventory.filter((item) => {
+            const rawValue = reconciliationQuantities[item.medicine_id];
+
+            return (
+                rawValue === undefined ||
+                rawValue === "" ||
+                !Number.isInteger(Number(rawValue)) ||
+                Number(rawValue) < 0
+            );
+        });
+
+        if (invalidPhysicalEntries.length > 0) {
+            alert("Please enter a valid physical quantity for every medicine.");
+            return;
+        }
+
+
+
+        // Prepare both physical count and allocation quantities
         const counts = inventory.map((item) => ({
             medicine_id: item.medicine_id,
             counted_quantity: Number(
-                physicalQuantities[item.medicine_id] ?? ""
+                reconciliationQuantities[item.medicine_id]
             )
         }));
 
-        for (const item of counts) {
-            if (!Number.isInteger(item.counted_quantity) || item.counted_quantity < 0) {
-                alert("Please enter a valid physical quantity for every medicine.");
+        setFabLoading(true);
+
+        try {
+            const response = await api.post("/api/fab/reconcile", {
+                zone_id: selectedZone.id,
+                counts,
+                reason: "Physical stock count",
+                counted_by: user?.name || user?.username || "Unknown",
+                allocated_by: user?.name || user?.username || "Unknown"
+            });
+
+            const skippedCount = response.data.skipped_medicines || 0;
+
+            alert(
+                skippedCount > 0
+                    ? `Reconciliation saved. ${skippedCount} medicine(s) were skipped because physical quantity exceeded current stock.`
+                    : "FAB reconciliation saved successfully."
+            );
+
+            setReconciliationQuantities({});
+            // setAllocationQuantities({});
+
+            // Refresh FAB inventory
+            const inventoryResponse = await api.get(
+                `/api/fab/inventory/${selectedZone.id}`
+            );
+
+            setInventory(inventoryResponse.data.inventory || []);
+
+            // Refresh central stock
+            const stockResponse = await api.get("/api/stock");
+            setCentralStock(stockResponse.data || []);
+
+        } catch (error) {
+            console.error("Failed to reconcile FAB inventory:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to save FAB reconciliation."
+            );
+        } finally {
+            setFabLoading(false);
+        }
+    };
+
+    const saveInventoryChanges = async () => {
+        if (!selectedZone || !openVisit) {
+            alert("Please open a FAB visit first.");
+            return;
+        }
+
+        // Validate physical stock inputs
+        for (const item of inventory) {
+            const rawValue = physicalQuantities[item.medicine_id];
+
+            if (
+                rawValue !== undefined &&
+                rawValue !== "" &&
+                (
+                    !Number.isInteger(Number(rawValue)) ||
+                    Number(rawValue) < 0
+                )
+            ) {
+                alert(`Enter a valid physical stock quantity for ${item.medicine_name}.`);
+                return;
+            }
+
+            if (
+                rawValue !== undefined &&
+                rawValue !== "" &&
+                Number(rawValue) > Number(item.current_quantity)
+            ) {
+                alert(`Physical stock cannot exceed current stock for ${item.medicine_name}. Use Reconcile Stock for physical corrections.`);
+                return;
+            }
+        }
+
+        // Validate allocation inputs and central stock availability
+        for (const item of inventory) {
+            const quantity = Number(allocationQuantities[item.medicine_id] || 0);
+
+            if (!Number.isInteger(quantity) || quantity < 0) {
+                alert(`Enter a valid allocation quantity for ${item.medicine_name}.`);
+                return;
+            }
+
+            const available = centralStock
+                .filter(
+                    (stock) =>
+                        Number(stock.medicine_id) === Number(item.medicine_id) &&
+                        Number(stock.units) > 0 &&
+                        !stock.is_expired
+                )
+                .reduce((total, stock) => total + Number(stock.units), 0);
+
+            if (quantity > available) {
+                alert(
+                    `Insufficient central stock for ${item.medicine_name}. Available: ${available}, requested: ${quantity}.`
+                );
                 return;
             }
         }
@@ -447,28 +572,61 @@ function FAB() {
         setFabLoading(true);
 
         try {
-            await api.post("/api/fab/stock-count", {
+            const changes = inventory.map((item) => {
+                const rawValue = physicalQuantities[item.medicine_id];
+
+                const consumedQuantity =
+                    rawValue === undefined || rawValue === ""
+                        ? 0
+                        : Number(item.current_quantity) - Number(rawValue);
+
+                const allocationQuantity = Number(
+                    allocationQuantities[item.medicine_id] || 0
+                );
+
+                return {
+                    medicine_id: item.medicine_id,
+                    consumed_quantity: Math.max(0, consumedQuantity),
+                    allocation_quantity: allocationQuantity
+                };
+            }).filter(
+                (item) =>
+                    item.consumed_quantity > 0 ||
+                    item.allocation_quantity > 0
+            );
+
+            if (changes.length === 0) {
+                alert("No inventory changes to save.");
+                return;
+            }
+
+            await api.post("/api/fab/save-inventory", {
                 zone_id: selectedZone.id,
-                counts,
-                reason: "Physical stock count",
-                counted_by: user?.name || user?.username || "Unknown"
+                changes,
+                reason: "Inventory consumption",
+                consumed_by: user?.name || user?.username || "Unknown",
+                allocated_by: user?.name || user?.username || "Unknown"
             });
 
-            alert("FAB stock count saved successfully.");
+            alert("FAB inventory changes saved successfully.");
 
             setPhysicalQuantities({});
+            setAllocationQuantities({});
 
             const inventoryResponse = await api.get(
                 `/api/fab/inventory/${selectedZone.id}`
             );
-
             setInventory(inventoryResponse.data.inventory || []);
+
+            const stockResponse = await api.get("/api/stock");
+            setCentralStock(stockResponse.data || []);
+
         } catch (error) {
-            console.error("Failed to save FAB stock count:", error);
+            console.error("Failed to save FAB inventory changes:", error);
 
             alert(
                 error.response?.data?.message ||
-                "Failed to save FAB stock count"
+                "Failed to save FAB inventory changes."
             );
         } finally {
             setFabLoading(false);
@@ -673,7 +831,16 @@ function FAB() {
                                 <h3 className="text-lg font-semibold">
                                     FAB Inventory
                                 </h3>
-                                <div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowReconcileModal(true)}
+                                        disabled={!openVisit || fabLoading}
+                                        className="rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        Reconcile Stock
+                                    </button>
+
                                     <button
                                         type="button"
                                         onClick={() => setShowTemplateForm(!showTemplateForm)}
@@ -682,7 +849,6 @@ function FAB() {
                                         <FaTableList /> {showTemplateForm ? "Cancel" : "Add to List"}
                                     </button>
                                 </div>
-
                             </div>
 
                             {showTemplateForm && (
@@ -1051,16 +1217,114 @@ function FAB() {
                                             )}
                                         </div>
                                     ))}
+                                        <button
+                                            type="button"
+                                            onClick={saveInventoryChanges}
+                                            disabled={fabLoading || !openVisit}
+                                            className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            {fabLoading ? "Saving..." : "Save"}
+                                        </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {showReconcileModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                            <div className="w-full max-w-4xl max-h-[85vh] overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-xl">
+                                <div className="flex items-center justify-between border-b border-gray-700 px-5 py-4">
+                                    <div>
+                                        <h2 className="text-lg font-semibold">
+                                            Reconcile FAB Stock
+                                        </h2>
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            Enter the physically counted quantity for each medicine.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowReconcileModal(false);
+                                            setReconciliationQuantities({});
+                                        }}
+                                        className="rounded-md px-3 py-1 text-sm text-gray-300 hover:bg-gray-700"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+
+                                <div className="max-h-[60vh] overflow-auto">
+                                    <table className="w-full text-sm">
+                                        <thead className="sticky top-0 bg-gray-800">
+                                            <tr className="text-left">
+                                                <th className="px-4 py-3">Medicine</th>
+                                                <th className="px-4 py-3">System Quantity</th>
+                                                <th className="px-4 py-3">Physical Count</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            {inventory.map((item) => (
+                                                <tr
+                                                    key={item.medicine_id}
+                                                    className="border-t border-gray-700"
+                                                >
+                                                    <td className="px-4 py-3">
+                                                        {item.medicine_name}
+                                                    </td>
+
+                                                    <td className="px-4 py-3">
+                                                        {item.current_quantity}
+                                                    </td>
+
+                                                    <td className="px-4 py-3">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="1"
+                                                            value={
+                                                                reconciliationQuantities[item.medicine_id] ?? ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleReconciliationQuantityChange(
+                                                                    item.medicine_id,
+                                                                    e.target.value
+                                                                )
+                                                            }
+                                                            className="w-28 rounded-md border border-gray-600 bg-gray-800 px-2 py-1.5"
+                                                            placeholder="Enter count"
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="flex justify-end gap-2 border-t border-gray-700 px-5 py-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowReconcileModal(false);
+                                            setReconciliationQuantities({});
+                                        }}
+                                        disabled={fabLoading}
+                                        className="rounded-md bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+
                                     <button
                                         type="button"
                                         onClick={saveStockCount}
                                         disabled={fabLoading || !openVisit}
-                                        className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        Save Stock Count
+                                        {fabLoading ? "Saving..." : "Save Stock Count"}
                                     </button>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     )}
                 </div>
