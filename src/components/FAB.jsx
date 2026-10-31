@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
-import { FaMedkit, FaPlus } from "react-icons/fa";
+import { FaLock, FaLockOpen, FaMedkit, FaPlus } from "react-icons/fa";
+import { FaFloppyDisk, FaTableList } from "react-icons/fa6";
 
 function FAB() {
     const { user, loading } = useAuth();
@@ -493,22 +494,24 @@ function FAB() {
 
             <div className="mt-3">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">Zones</h2>
+                    <h2 className="text-sm font-semibold">Zones</h2>
                     <button
                         type="button"
                         onClick={() => setShowAddZoneForm(true)}
-                        className="flex items-center gap-2 mt-3 rounded-md bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
+                        className="flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700"
                     >
                         <FaPlus /> Add New Zone
                     </button>
 
-                
+
                 </div>
                 {showAddZoneForm && (
                     <div className="mt-4 rounded bg-gray-800 p-3">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <h3 className="text-sm font-semibold flex items-center gap-2"><FaPlus /> Add New Zone</h3>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mt-2">
+
                             <div>
-                                <label className="text-sm font-medium">
+                                <label className="text-xs font-medium">
                                     Zone Name
                                 </label>
 
@@ -516,13 +519,13 @@ function FAB() {
                                     type="text"
                                     value={newZoneName}
                                     onChange={(e) => setNewZoneName(e.target.value)}
-                                    className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    className="mt-1 w-full rounded-md bg-gray-900 px-2 py-2 text-xs"
                                     placeholder="Enter zone name"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-sm font-medium">
+                                <label className="text-xs font-medium">
                                     Location
                                 </label>
 
@@ -532,7 +535,7 @@ function FAB() {
                                     onChange={(e) =>
                                         setNewZoneLocation(e.target.value)
                                     }
-                                    className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                    className="mt-1 w-full rounded-md bg-gray-900 px-2 py-2 text-xs"
                                     placeholder="Enter location"
                                 />
                             </div>
@@ -543,9 +546,9 @@ function FAB() {
                                 type="button"
                                 onClick={createZone}
                                 disabled={fabLoading}
-                                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                                className="flex items-center gap-2 rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white hover:border hover:border-green-500 disabled:opacity-50"
                             >
-                                Save Zone
+                                <FaFloppyDisk /> Save Zone
                             </button>
 
                             <button
@@ -555,15 +558,15 @@ function FAB() {
                                     setNewZoneName("");
                                     setNewZoneLocation("");
                                 }}
-                                className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-gray-700"
+                                className="rounded-md px-2 py-1 text-xs font-medium bg-gray-700 hover:border hover:border-green-500 "
                             >
                                 Cancel
                             </button>
                         </div>
                     </div>
                 )}
-                
-                
+
+
 
                 <div className="mt-3 flex flex-wrap items-start gap-2 text-sm">
                     {zones.map((zone) => (
@@ -577,7 +580,7 @@ function FAB() {
                                 }`}
                         >
                             <div className={`flex items-center gap-2 ${selectedZone?.id === zone.id ? "font-bold" : ""}`}>
-                                <FaMedkit/> {zone.zone_name}
+                                <FaMedkit /> {zone.zone_name}
                             </div>
 
                             {/* {zone.location && (
@@ -598,193 +601,58 @@ function FAB() {
                         </div>
                     ))}
                 </div>
-                
+
             </div>
-            
+
             {selectedZone && (
                 <div className="mt-6 rounded-lg bg-gray-800 rounded shadow-sm p-4">
-                    <div className="text-sm text-gray-500">
+                    {/* <div className="text-sm text-gray-500">
                         Selected FAB
-                    </div>
-
-                    <div className="mt-1 text-xl font-semibold">
-                        {selectedZone.zone_name}
-                    </div>
-
-                    <div className="mt-1 text-sm text-gray-500">
-                        Zone ID: {selectedZone.id}
-                    </div>
-                    <div className="mt-4">
-                        <button
-                            type="button"
-                            onClick={() => setShowTemplateForm(!showTemplateForm)}
-                            className="rounded-md bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
+                    </div> */}
+                    <div className="flex items-center justify-between">
+                        <div className="">
+                            <div className="mt-1 text-sm font-semibold flex gap-2 items-center">
+                                {selectedZone.zone_name}
+                                <span
+                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${openVisit
+                                ? "bg-green-100 text-green-700"
+                                : "border border-red-400 text-red-400"
+                                }`}
                         >
-                            {showTemplateForm ? "Cancel Template" : "Manage Template"}
-                        </button>
-                    </div>
-                    {showTemplateForm && (
-                        <div className="mt-4 rounded-lg border p-4">
-                            <h3 className="text-md font-semibold">
-                                Configure FAB Template
-                            </h3>
-
-                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Medicine
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        value={templateMedicineSearch}
-                                        onChange={(e) => {
-                                            setTemplateMedicineSearch(e.target.value);
-                                            setTemplateMedicine("");
-                                        }}
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Search medicine..."
-                                    />
-
-                                    {templateMedicineSearch.trim() && (
-                                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border bg-gray-800">
-                                            {medicines
-                                                .filter((medicine) =>
-                                                    medicine.drug_name_and_dose
-                                                        ?.toLowerCase()
-                                                        .includes(templateMedicineSearch.toLowerCase())
-                                                )
-                                                .map((medicine) => (
-                                                    <button
-                                                        key={medicine.id}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setTemplateMedicine(String(medicine.id));
-                                                            setTemplateMedicineSearch(
-                                                                medicine.drug_name_and_dose
-                                                            );
-                                                        }}
-                                                        className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-700"
-                                                    >
-                                                        {medicine.drug_name_and_dose}
-                                                    </button>
-                                                ))}
-
-                                            {medicines.filter((medicine) =>
-                                                medicine.drug_name_and_dose
-                                                    ?.toLowerCase()
-                                                    .includes(templateMedicineSearch.toLowerCase())
-                                            ).length === 0 && (
-                                                    <div className="px-3 py-2 text-sm text-gray-500">
-                                                        No medicines found.
-                                                    </div>
-                                                )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Required Quantity
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={templateQuantity}
-                                        onChange={(e) =>
-                                            setTemplateQuantity(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Enter required quantity"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Opening Quantity
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={templateOpeningQuantity}
-                                        onChange={(e) =>
-                                            setTemplateOpeningQuantity(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Enter opening quantity"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Opening Brand
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        value={templateOpeningBrand}
-                                        onChange={(e) =>
-                                            setTemplateOpeningBrand(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Enter brand"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Opening Expiry Date
-                                    </label>
-
-                                    <input
-                                        type="date"
-                                        value={templateOpeningExpiry}
-                                        onChange={(e) =>
-                                            setTemplateOpeningExpiry(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">
-                                        Opening Unit Cost
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={templateOpeningCost}
-                                        onChange={(e) =>
-                                            setTemplateOpeningCost(e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
-                                        placeholder="Enter unit cost"
-                                    />
-                                </div>
-
+                            {openVisit ? "OPEN" : "NO OPEN VISIT"}
+                        </span>
                             </div>
 
-                            <div className="mt-4 flex justify-end">
-                                <button
-                                    type="button"
-                                    onClick={createTemplate}
-                                    disabled={
-                                        fabLoading ||
-                                        !templateMedicine ||
-                                        !templateQuantity
-                                    }
-                                    className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {fabLoading ? "Saving..." : "Save Template"}
-                                </button>
+                            <div className="mt-1 text-xs text-gray-500">
+                                Zone ID: {selectedZone.id}
                             </div>
                         </div>
-                    )}
+                        <div>
+                            {openVisit ? (
+                                <button
+                                    type="button"
+                                    onClick={closeFABVisit}
+                                    disabled={fabLoading}
+                                    className="rounded-md flex items-center gap-1 bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <FaLockOpen />{fabLoading ? "Closing..." : "Close Visit"}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={openFABVisit}
+                                    disabled={fabLoading}
+                                    className="rounded-md flex items-center gap-1 bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <FaLock /> {fabLoading ? "Opening..." : "Open Visit"}
+                                </button>
+                            )}
+                        </div>
+
+                    </div>
+
+
+
                     {openVisit && (
                         <button
                             type="button"
@@ -803,50 +671,13 @@ function FAB() {
                             {showConsumeForm ? "Cancel Consumption" : "Consume Medicine"}
                         </button>
                     )}
-                    <div className="mt-4 flex items-center gap-3">
+                    {/* <div className="mt-4 flex items-center gap-3">
                         <span className="text-sm font-medium">
                             Visit Status:
                         </span>
 
-                        <span
-                            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${openVisit
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-700"
-                                }`}
-                        >
-                            {openVisit ? "OPEN" : "NO OPEN VISIT"}
-                        </span>
-
-                        {/* {!openVisit && (
-        <button
-            type="button"
-            onClick={openFABVisit}
-            disabled={fabLoading}
-            className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-            {fabLoading ? "Opening..." : "Open Visit"}
-        </button>
-    )} */}
-                        {openVisit ? (
-                            <button
-                                type="button"
-                                onClick={closeFABVisit}
-                                disabled={fabLoading}
-                                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                {fabLoading ? "Closing..." : "Close Visit"}
-                            </button>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={openFABVisit}
-                                disabled={fabLoading}
-                                className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                {fabLoading ? "Opening..." : "Open Visit"}
-                            </button>
-                        )}
-                    </div>
+                        
+                    </div> */}
                     {showAllocateForm && (
                         <div className="mt-4 rounded-lg border p-4">
                             <h3 className="text-md font-semibold">
@@ -1063,10 +894,185 @@ function FAB() {
                             Loading FAB data...
                         </div>
                     ) : (
-                        <div className="mt-6">
-                            <h3 className="text-lg font-semibold">
-                                FAB Inventory
-                            </h3>
+                        <div className="mt-3">
+                            <div className="flex justify-between">
+                                <h3 className="text-lg font-semibold">
+                                    FAB Inventory
+                                </h3>
+                                <div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowTemplateForm(!showTemplateForm)}
+                                        className="rounded-md flex items-center gap-1 bg-purple-600 text-xs px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700"
+                                    >
+                                        <FaTableList /> {showTemplateForm ? "Cancel" : "Add to List"}
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            {showTemplateForm && (
+                                <div className="mt-4 rounded-lg border p-4">
+                                    <h3 className="text-md font-semibold">
+                                        Configure FAB Template
+                                    </h3>
+
+                                    <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                                        <div>
+                                            <label className="text-sm font-medium">
+                                                Medicine
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                value={templateMedicineSearch}
+                                                onChange={(e) => {
+                                                    setTemplateMedicineSearch(e.target.value);
+                                                    setTemplateMedicine("");
+                                                }}
+                                                className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                                placeholder="Search medicine..."
+                                            />
+
+                                            {templateMedicineSearch.trim() && (
+                                                <div className="mt-2 max-h-48 overflow-y-auto rounded-md border bg-gray-800">
+                                                    {medicines
+                                                        .filter((medicine) =>
+                                                            medicine.drug_name_and_dose
+                                                                ?.toLowerCase()
+                                                                .includes(templateMedicineSearch.toLowerCase())
+                                                        )
+                                                        .map((medicine) => (
+                                                            <button
+                                                                key={medicine.id}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setTemplateMedicine(String(medicine.id));
+                                                                    setTemplateMedicineSearch(
+                                                                        medicine.drug_name_and_dose
+                                                                    );
+                                                                }}
+                                                                className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-700"
+                                                            >
+                                                                {medicine.drug_name_and_dose}
+                                                            </button>
+                                                        ))}
+
+                                                    {medicines.filter((medicine) =>
+                                                        medicine.drug_name_and_dose
+                                                            ?.toLowerCase()
+                                                            .includes(templateMedicineSearch.toLowerCase())
+                                                    ).length === 0 && (
+                                                            <div className="px-3 py-2 text-sm text-gray-500">
+                                                                No medicines found.
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">
+                                                Required Quantity
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={templateQuantity}
+                                                onChange={(e) =>
+                                                    setTemplateQuantity(e.target.value)
+                                                }
+                                                className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                                placeholder="Enter required quantity"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">
+                                                Opening Quantity
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={templateOpeningQuantity}
+                                                onChange={(e) =>
+                                                    setTemplateOpeningQuantity(e.target.value)
+                                                }
+                                                className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                                placeholder="Enter opening quantity"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">
+                                                Opening Brand
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                value={templateOpeningBrand}
+                                                onChange={(e) =>
+                                                    setTemplateOpeningBrand(e.target.value)
+                                                }
+                                                className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                                placeholder="Enter brand"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">
+                                                Opening Expiry Date
+                                            </label>
+
+                                            <input
+                                                type="date"
+                                                value={templateOpeningExpiry}
+                                                onChange={(e) =>
+                                                    setTemplateOpeningExpiry(e.target.value)
+                                                }
+                                                className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">
+                                                Opening Unit Cost
+                                            </label>
+
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={templateOpeningCost}
+                                                onChange={(e) =>
+                                                    setTemplateOpeningCost(e.target.value)
+                                                }
+                                                className="mt-1 w-full rounded-md border bg-gray-800 px-3 py-2 text-sm"
+                                                placeholder="Enter unit cost"
+                                            />
+                                        </div>
+
+                                    </div>
+
+                                    <div className="mt-4 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={createTemplate}
+                                            disabled={
+                                                fabLoading ||
+                                                !templateMedicine ||
+                                                !templateQuantity
+                                            }
+                                            className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            {fabLoading ? "Saving..." : "Save Template"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {inventory.length === 0 ? (
                                 <div className="mt-3 rounded-lg border border-dashed p-6 text-center text-sm text-gray-500">
