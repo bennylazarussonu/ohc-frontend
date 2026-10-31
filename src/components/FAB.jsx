@@ -947,19 +947,7 @@ function FAB() {
                                                         type="number"
                                                         min="0"
                                                         step="1"
-                                                        value={
-                                                            allocationQuantities[item.medicine_id] ??
-                                                            (
-                                                                physicalQuantities[item.medicine_id] !== undefined &&
-                                                                    physicalQuantities[item.medicine_id] !== ""
-                                                                    ? Math.max(
-                                                                        0,
-                                                                        item.required_quantity -
-                                                                        Number(physicalQuantities[item.medicine_id])
-                                                                    )
-                                                                    : ""
-                                                            )
-                                                        }
+                                                        value={allocationQuantities[item.medicine_id] ?? ""}
                                                         onClick={(e) => e.stopPropagation()}
                                                         onChange={(e) =>
                                                             setAllocationQuantities((previous) => ({
