@@ -932,7 +932,7 @@ function FAB() {
                                                         placeholder="0"
                                                     />
                                                 </div>
-                                                <div className="text-sm font-medium text-orange-400">
+                                                <div className="text-sm font-medium text-orange-400 text-center">
                                                     {physicalQuantities[item.medicine_id] !== undefined &&
                                                         physicalQuantities[item.medicine_id] !== ""
                                                         ? Math.max(
