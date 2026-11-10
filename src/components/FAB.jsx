@@ -27,7 +27,7 @@ function FAB() {
     const [consumptionMedicine, setConsumptionMedicine] = useState(null);
     const [consumptionQuantity, setConsumptionQuantity] = useState("");
     const [consumptionReason, setConsumptionReason] = useState("");
-    const [physicalQuantities, setPhysicalQuantities] = useState({});
+    const [consumedQuantities, setConsumedQuantities] = useState({});
     const [allocationQuantities, setAllocationQuantities] = useState({});
     const [medicines, setMedicines] = useState([]);
     const [templateMedicineSearch, setTemplateMedicineSearch] = useState("");
@@ -419,8 +419,8 @@ function FAB() {
         }
     };
 
-    const handlePhysicalQuantityChange = (medicineId, value) => {
-        setPhysicalQuantities((previous) => ({
+    const handleConsumedQuantityChange = (medicineId, value) => {
+        setConsumedQuantities((previous) => ({
             ...previous,
             [medicineId]: value
         }));
@@ -518,27 +518,21 @@ function FAB() {
         }
 
         // Validate physical stock inputs
+        // Validate consumed quantities
         for (const item of inventory) {
-            const rawValue = physicalQuantities[item.medicine_id];
+            const quantity = Number(
+                consumedQuantities[item.medicine_id] || 0
+            );
 
-            if (
-                rawValue !== undefined &&
-                rawValue !== "" &&
-                (
-                    !Number.isInteger(Number(rawValue)) ||
-                    Number(rawValue) < 0
-                )
-            ) {
-                alert(`Enter a valid physical stock quantity for ${item.medicine_name}.`);
+            if (!Number.isInteger(quantity) || quantity < 0) {
+                alert(`Enter a valid consumed quantity for ${item.medicine_name}.`);
                 return;
             }
 
-            if (
-                rawValue !== undefined &&
-                rawValue !== "" &&
-                Number(rawValue) > Number(item.current_quantity)
-            ) {
-                alert(`Physical stock cannot exceed current stock for ${item.medicine_name}. Use Reconcile Stock for physical corrections.`);
+            if (quantity > Number(item.current_quantity)) {
+                alert(
+                    `Consumed quantity cannot exceed available FAB stock for ${item.medicine_name}.`
+                );
                 return;
             }
         }
@@ -573,12 +567,9 @@ function FAB() {
 
         try {
             const changes = inventory.map((item) => {
-                const rawValue = physicalQuantities[item.medicine_id];
-
-                const consumedQuantity =
-                    rawValue === undefined || rawValue === ""
-                        ? 0
-                        : Number(item.current_quantity) - Number(rawValue);
+                const consumedQuantity = Number(
+                    consumedQuantities[item.medicine_id] || 0
+                );
 
                 const allocationQuantity = Number(
                     allocationQuantities[item.medicine_id] || 0
@@ -586,7 +577,7 @@ function FAB() {
 
                 return {
                     medicine_id: item.medicine_id,
-                    consumed_quantity: Math.max(0, consumedQuantity),
+                    consumed_quantity: consumedQuantity,
                     allocation_quantity: allocationQuantity
                 };
             }).filter(
@@ -610,7 +601,7 @@ function FAB() {
 
             alert("FAB inventory changes saved successfully.");
 
-            setPhysicalQuantities({});
+            setConsumedQuantities({});
             setAllocationQuantities({});
 
             const inventoryResponse = await api.get(
@@ -1020,7 +1011,7 @@ function FAB() {
                                 </div>
                             ) : (
                                 <div className="mt-3 overflow-x-auto rounded-lg border">
-                                    <div className="grid grid-cols-8 min-w-[1000px] border-b bg-gray-800 px-4 py-3 text-sm font-semibold">
+                                    <div className="grid grid-cols-8 min-w-[1200px] border-b bg-gray-800 px-4 py-3 text-sm font-semibold">
                                         <div className="col-span-2">
                                             Medicine
                                         </div>
@@ -1034,15 +1025,15 @@ function FAB() {
                                         </div>
 
                                         <div>
-                                            Physical Stock
-                                        </div>
-
-                                        <div>
                                             Consumed
                                         </div>
 
                                         <div>
-                                            Allocate
+                                            Replace
+                                        </div>
+
+                                        <div>
+                                            Last Replaced
                                         </div>
 
                                         <div>
@@ -1056,7 +1047,7 @@ function FAB() {
                                             className="border-b last:border-b-0"
                                         >
                                             <div
-                                                className="grid grid-cols-8 min-w-[1000px] cursor-pointer items-center px-4 py-3 hover:bg-gray-700"
+                                                className="grid grid-cols-8 min-w-[1200px] cursor-pointer items-center px-4 py-3 hover:bg-gray-700"
                                                 onClick={() =>
                                                     setExpandedMedicine(
                                                         expandedMedicine === item.medicine_id
@@ -1082,31 +1073,23 @@ function FAB() {
                                                 <div className="text-sm font-medium">
                                                     {item.current_quantity}
                                                 </div>
-                                                <div className="px-4 py-3">
+                                                <div className="px-2">
                                                     <input
                                                         type="number"
                                                         min="0"
+                                                        max={item.current_quantity}
                                                         step="1"
-                                                        value={physicalQuantities[item.medicine_id] ?? ""}
+                                                        value={consumedQuantities[item.medicine_id] ?? ""}
+                                                        onClick={(e) => e.stopPropagation()}
                                                         onChange={(e) =>
-                                                            handlePhysicalQuantityChange(
+                                                            handleConsumedQuantityChange(
                                                                 item.medicine_id,
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="w-24 rounded-md border bg-gray-800 px-2 py-1 text-sm"
+                                                        className="w-20 rounded-md border bg-gray-800 px-2 py-1 text-sm"
                                                         placeholder="0"
                                                     />
-                                                </div>
-                                                <div className="text-sm font-medium text-orange-400 text-center">
-                                                    {physicalQuantities[item.medicine_id] !== undefined &&
-                                                        physicalQuantities[item.medicine_id] !== ""
-                                                        ? Math.max(
-                                                            0,
-                                                            item.current_quantity -
-                                                            Number(physicalQuantities[item.medicine_id])
-                                                        )
-                                                        : "—"}
                                                 </div>
                                                 <div className="px-2">
                                                     <input
@@ -1126,18 +1109,33 @@ function FAB() {
                                                     />
                                                 </div>
 
+                                                <div className="text-xs text-gray-300 whitespace-nowrap">
+                                                    {item.last_replacement_date
+                                                        ? new Date(item.last_replacement_date).toLocaleDateString(
+                                                            "en-IN",
+                                                            {
+                                                                day: "2-digit",
+                                                                month: "short",
+                                                                year: "numeric"
+                                                            }
+                                                        )
+                                                        : "—"}
+                                                </div>
+
                                                 <div>
                                                     <span
-                                                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${item.status === "FULL"
-                                                            ? "bg-green-100 text-green-700"
-                                                            : item.status === "SHORT"
-                                                                ? "bg-yellow-100 text-yellow-700"
-                                                                : item.status === "EMPTY"
-                                                                    ? "bg-red-100 text-red-700"
-                                                                    : "bg-blue-100 text-blue-700"
+                                                        className={`inline-flex whitespace-nowrap rounded-full px-2 py-1 text-xs font-semibold ${item.status === "FULLY_RESTOCKED"
+                                                                ? "bg-green-100 text-green-700"
+                                                                : item.status === "PARTIALLY_RESTOCKED"
+                                                                    ? "bg-yellow-100 text-yellow-700"
+                                                                    : "bg-red-100 text-red-700"
                                                             }`}
                                                     >
-                                                        {item.status}
+                                                        {item.status === "FULLY_RESTOCKED"
+                                                            ? "Fully Restocked"
+                                                            : item.status === "PARTIALLY_RESTOCKED"
+                                                                ? "Partially Restocked"
+                                                                : "Not Restocked"}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1217,14 +1215,14 @@ function FAB() {
                                             )}
                                         </div>
                                     ))}
-                                        <button
-                                            type="button"
-                                            onClick={saveInventoryChanges}
-                                            disabled={fabLoading || !openVisit}
-                                            className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            {fabLoading ? "Saving..." : "Save"}
-                                        </button>
+                                    <button
+                                        type="button"
+                                        onClick={saveInventoryChanges}
+                                        disabled={fabLoading || !openVisit}
+                                        className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {fabLoading ? "Saving..." : "Save"}
+                                    </button>
                                 </div>
                             )}
                         </div>
