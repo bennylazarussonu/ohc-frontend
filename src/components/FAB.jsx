@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
+import * as XLSX from "xlsx";
 import { FaLock, FaLockOpen, FaMedkit, FaPlus } from "react-icons/fa";
-import { FaFloppyDisk, FaTableList } from "react-icons/fa6";
+import { FaFloppyDisk, FaTableList, FaFileExcel } from "react-icons/fa6";
 
 function FAB() {
     const { user, loading } = useAuth();
@@ -38,6 +39,10 @@ function FAB() {
     const [templateOpeningBrand, setTemplateOpeningBrand] = useState("");
     const [templateOpeningExpiry, setTemplateOpeningExpiry] = useState("");
     const [templateOpeningCost, setTemplateOpeningCost] = useState("");
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [visitHistory, setVisitHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyError, setHistoryError] = useState("");
 
     useEffect(() => {
         const loadZones = async () => {
@@ -511,6 +516,72 @@ function FAB() {
         }
     };
 
+    const downloadFABExcel = () => {
+        if (!inventory.length) {
+            alert("No FAB inventory available to export.");
+            return;
+        }
+
+        const excelData = inventory.map((item) => ({
+            "Medicine ID": item.medicine_id,
+            "Medicine": item.medicine_name,
+            "Required Quantity": item.required_quantity,
+            "Current Quantity": item.current_quantity,
+            "Last Replaced": item.last_replacement_date
+                ? new Date(item.last_replacement_date).toLocaleDateString("en-IN")
+                : "—",
+            "Status": item.status === "FULLY_RESTOCKED"
+                ? "Fully Restocked"
+                : item.status === "PARTIALLY_RESTOCKED"
+                    ? "Partially Restocked"
+                    : "Not Restocked"
+        }));
+
+        const worksheet = XLSX.utils.aoa_to_sheet([
+            ["FIRST AID BOX (FAB) INVENTORY REPORT"],
+            [`Zone: ${selectedZone.zone_name}`],
+            [`Zone ID: ${selectedZone.id}`],
+            [`Generated On: ${new Date().toLocaleDateString("en-IN")}`],
+            []
+        ]);
+
+        // Add column headings in row 6 and inventory data below them
+        XLSX.utils.sheet_add_json(worksheet, excelData, {
+            origin: "A6"
+        });
+
+        // Set column widths
+        worksheet["!cols"] = [
+            { wch: 15 },
+            { wch: 35 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 20 },
+            { wch: 22 }
+        ];
+
+        // Merge heading across all six columns
+        worksheet["!merges"] = [
+            {
+                s: { r: 0, c: 0 },
+                e: { r: 0, c: 5 }
+            }
+        ];
+
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "FAB Inventory"
+        );
+
+        const fileName = `${selectedZone.zone_name
+            .replace(/[^a-z0-9]/gi, "_")}_FAB_Inventory.xlsx`;
+
+        XLSX.writeFile(workbook, fileName);
+    };
+
     const saveInventoryChanges = async () => {
         if (!selectedZone || !openVisit) {
             alert("Please open a FAB visit first.");
@@ -621,6 +692,33 @@ function FAB() {
             );
         } finally {
             setFabLoading(false);
+        }
+    };
+
+    const openVisitHistory = async () => {
+        if (!selectedZone) return;
+
+        setShowHistoryModal(true);
+        setHistoryLoading(true);
+        setHistoryError("");
+        setVisitHistory([]);
+
+        try {
+            const response = await api.get(
+                `/api/fab/visit/history/${selectedZone.id}`
+            );
+
+            setVisitHistory(response.data.visits || []);
+
+        } catch (error) {
+            console.error("Failed to fetch FAB visit history:", error);
+
+            setHistoryError(
+                error.response?.data?.message ||
+                "Failed to load visit history."
+            );
+        } finally {
+            setHistoryLoading(false);
         }
     };
 
@@ -777,7 +875,7 @@ function FAB() {
                                 Zone ID: {selectedZone.id}
                             </div>
                         </div>
-                        <div>
+                        <div className="flex items-center gap-2">
                             {openVisit ? (
                                 <button
                                     type="button"
@@ -792,11 +890,19 @@ function FAB() {
                                     type="button"
                                     onClick={openFABVisit}
                                     disabled={fabLoading}
-                                    className="rounded-md flex items-center gap-1 bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="rounded-md flex items-center gap-1 bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     <FaLock /> {fabLoading ? "Opening..." : "Open Visit"}
                                 </button>
                             )}
+                            <button
+                                type="button"
+                                onClick={openVisitHistory}
+                                disabled={fabLoading}
+                                className="rounded-md bg-yellow-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                History
+                            </button>
                         </div>
 
                     </div>
@@ -823,6 +929,15 @@ function FAB() {
                                     FAB Inventory
                                 </h3>
                                 <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={downloadFABExcel}
+                                        disabled={fabLoading || inventory.length === 0}
+                                        className="flex items-center gap-2 rounded-md bg-green-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <FaFileExcel />
+                                        Download Excel
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => setShowReconcileModal(true)}
@@ -1321,6 +1436,198 @@ function FAB() {
                                     >
                                         {fabLoading ? "Saving..." : "Save Stock Count"}
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {showHistoryModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+
+                            <div className="w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-lg border border-gray-700 bg-gray-900 shadow-xl">
+
+                                {/* Header */}
+                                <div className="flex items-center justify-between border-b border-gray-700 px-5 py-4">
+                                    <div>
+                                        <h2 className="text-lg font-semibold">
+                                            FAB Visit History
+                                        </h2>
+
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            {selectedZone?.zone_name}
+                                            {" "} | Zone ID: {selectedZone?.id}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowHistoryModal(false)}
+                                        className="rounded-md bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+
+                                {/* Content */}
+                                <div className="max-h-[75vh] overflow-y-auto p-5">
+
+                                    {historyLoading ? (
+                                        <div className="py-10 text-center text-sm text-gray-400">
+                                            Loading visit history...
+                                        </div>
+                                    ) : historyError ? (
+                                        <div className="py-10 text-center text-sm text-red-400">
+                                            {historyError}
+                                        </div>
+                                    ) : visitHistory.length === 0 ? (
+                                        <div className="py-10 text-center text-sm text-gray-400">
+                                            No previous visits found for this FAB.
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-5">
+
+                                            {visitHistory.map((visit, index) => (
+                                                <div
+                                                    key={visit._id}
+                                                    className="overflow-hidden rounded-lg border border-gray-700"
+                                                >
+
+                                                    {/* Visit Header */}
+                                                    <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-800 p-4">
+
+                                                        <div>
+                                                            <h3 className="font-semibold">
+                                                                Visit #{visitHistory.length - index}
+                                                            </h3>
+
+                                                            <p className="mt-1 text-xs text-gray-400">
+                                                                Started:{" "}
+                                                                {visit.started_at
+                                                                    ? new Date(visit.started_at).toLocaleString("en-IN")
+                                                                    : "—"}
+                                                            </p>
+
+                                                            <p className="mt-1 text-xs text-gray-400">
+                                                                Started By: {visit.started_by || "—"}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="text-right">
+                                                            <span
+                                                                className={`rounded-full px-3 py-1 text-xs font-semibold ${visit.status === "OPEN"
+                                                                        ? "bg-green-100 text-green-700"
+                                                                        : "bg-gray-700 text-gray-200"
+                                                                    }`}
+                                                            >
+                                                                {visit.status}
+                                                            </span>
+
+                                                            <p className="mt-2 text-xs text-gray-400">
+                                                                Closed:{" "}
+                                                                {visit.closed_at
+                                                                    ? new Date(visit.closed_at).toLocaleString("en-IN")
+                                                                    : "—"}
+                                                            </p>
+
+                                                            <p className="mt-1 text-xs text-gray-400">
+                                                                Closed By: {visit.closed_by || "—"}
+                                                            </p>
+                                                        </div>
+
+                                                    </div>
+
+                                                    {/* Operations */}
+                                                    <div className="p-4">
+
+                                                        <div className="mb-3 flex items-center justify-between">
+                                                            <h4 className="text-sm font-semibold">
+                                                                Operations Performed
+                                                            </h4>
+
+                                                            <span className="text-xs text-gray-400">
+                                                                {visit.operations?.length || 0} operations
+                                                            </span>
+                                                        </div>
+
+                                                        {!visit.operations?.length ? (
+                                                            <div className="rounded-md border border-dashed border-gray-700 p-5 text-center text-sm text-gray-500">
+                                                                No operations recorded during this visit.
+                                                            </div>
+                                                        ) : (
+                                                            <div className="overflow-x-auto rounded-md border border-gray-700">
+                                                                <table className="w-full min-w-[850px] text-sm">
+
+                                                                    <thead className="bg-gray-800 text-left">
+                                                                        <tr>
+                                                                            <th className="px-3 py-3">Date & Time</th>
+                                                                            <th className="px-3 py-3">Operation</th>
+                                                                            <th className="px-3 py-3">Medicine</th>
+                                                                            <th className="px-3 py-3">Brand</th>
+                                                                            <th className="px-3 py-3">Quantity</th>
+                                                                            <th className="px-3 py-3">Performed By</th>
+                                                                            <th className="px-3 py-3">Reason</th>
+                                                                        </tr>
+                                                                    </thead>
+
+                                                                    <tbody>
+                                                                        {visit.operations.map((operation) => (
+                                                                            <tr
+                                                                                key={operation._id}
+                                                                                className="border-t border-gray-700"
+                                                                            >
+                                                                                <td className="whitespace-nowrap px-3 py-3 text-xs">
+                                                                                    {operation.performed_at
+                                                                                        ? new Date(operation.performed_at).toLocaleString("en-IN")
+                                                                                        : "—"}
+                                                                                </td>
+
+                                                                                <td className="px-3 py-3">
+                                                                                    <span
+                                                                                        className={`whitespace-nowrap rounded-full px-2 py-1 text-xs font-medium ${operation.operation_type === "ALLOCATION"
+                                                                                                ? "bg-green-100 text-green-700"
+                                                                                                : "bg-orange-100 text-orange-700"
+                                                                                            }`}
+                                                                                    >
+                                                                                        {operation.operation}
+                                                                                    </span>
+                                                                                </td>
+
+                                                                                <td className="px-3 py-3">
+                                                                                    {operation.item_name || "—"}
+                                                                                    <div className="mt-1 text-xs text-gray-500">
+                                                                                        ID: {operation.medicine_id}
+                                                                                    </div>
+                                                                                </td>
+
+                                                                                <td className="px-3 py-3">
+                                                                                    {operation.brand || "—"}
+                                                                                </td>
+
+                                                                                <td className="px-3 py-3 font-semibold">
+                                                                                    {operation.quantity}
+                                                                                </td>
+
+                                                                                <td className="px-3 py-3">
+                                                                                    {operation.performed_by || "—"}
+                                                                                </td>
+
+                                                                                <td className="px-3 py-3 text-xs text-gray-400">
+                                                                                    {operation.reason || "—"}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+
+                                                                </table>
+                                                            </div>
+                                                        )}
+
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                        </div>
+                                    )}
+
                                 </div>
                             </div>
                         </div>
