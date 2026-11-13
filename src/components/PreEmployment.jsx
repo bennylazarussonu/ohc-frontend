@@ -1,4 +1,5 @@
 import DataEntry from "./DataEntry";
+import DataEntryDupe from "./DataEntryDupe";
 import ExaminationParameters from "./ExaminationParameters";
 import PreEmploymentReports from "./PreEmploymentReports";
 import BloodGroup from "./BloodGroup";
