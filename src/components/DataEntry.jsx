@@ -3,7 +3,7 @@ import api from "../api/axios";
 import { FaFloppyDisk, FaCamera } from "react-icons/fa6";
 import AadharScanner from "./AadharScanner";
 
-function DataEntryDupe({ form, setForm }) {
+function DataEntry({ form, setForm }) {
   const [loading, setLoading] = useState(false);
   const [dobFocus, setDobFocus] = useState(false);
   const [dojFocus, setDojFocus] = useState(false);
@@ -301,4 +301,4 @@ function DataEntryDupe({ form, setForm }) {
   );
 }
 
-export default DataEntryDupe;
+export default DataEntry;
